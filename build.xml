@@ -1,0 +1,74 @@
+<project name="kawala" default="compile">
+  <description>kawala</description>
+
+  <macrodef name="compile">
+    <attribute name="srcdir" />
+    <attribute name="destdir" />
+    <element name="additional-classpath" optional="true" />
+    <sequential>
+      <javac srcdir="@{srcdir}" destdir="@{destdir}" 
+          debug="true" debuglevel="lines,vars,source" target="1.6">
+        <classpath refid="classpath-main" />
+        <additional-classpath />
+      </javac>
+      <copy todir="@{destdir}">
+        <fileset dir="src">
+          <exclude name="**/*.java" />
+          <exclude name="**/*.scala" />
+        </fileset>
+      </copy>
+    </sequential>
+  </macrodef>
+  
+  <path id="classpath-main">
+    <fileset dir="lib/main">
+      <include name="**/*.jar" />
+      <exclude name="**/*-src.jar" />
+    </fileset>
+  </path>
+
+  <path id="classpath-test">
+    <fileset dir="lib/test">
+      <include name="**/*.jar" />
+      <exclude name="**/*-src.jar" />
+    </fileset>
+  </path>
+  
+  <target name="clean">
+    <delete dir="target" />
+    <delete dir="RPMS" />
+  </target>
+
+  <target name="init">
+    <mkdir dir="target" />
+    <mkdir dir="target/bin" />
+    <mkdir dir="target/bin-testing" />
+    <mkdir dir="target/bin-test" />
+  </target>
+
+  <target name="compile-src" depends="init">
+    <compile srcdir="src" destdir="target/bin" />
+  </target>
+
+  <target name="compile-srctesting" depends="compile-src">
+    <compile srcdir="srctesting" destdir="target/bin-testing">
+      <additional-classpath>
+        <classpath refid="classpath-test" />
+        <classpath path="target/bin" />
+      </additional-classpath>
+    </compile>
+  </target>
+
+  <target name="compile-srctest" depends="compile-src,compile-srctesting">
+    <compile srcdir="srctesting" destdir="target/bin-test">
+      <additional-classpath>
+        <classpath refid="classpath-test" />
+        <classpath path="target/bin" />
+        <classpath path="target/bin-testing" />
+      </additional-classpath>
+    </compile>
+  </target>
+  
+  <target name="compile" depends="compile-src,compile-srctesting,compile-srctest" />
+  
+</project>
