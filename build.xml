@@ -1,6 +1,13 @@
 <project name="kawala" default="compile">
   <description>kawala</description>
 
+  <taskdef classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" name="junit">
+    <classpath>
+      <pathelement location="lib/test/ant-junit-1.7.0.jar" />
+      <pathelement location="lib/test/junit-4.3.1.jar" />
+    </classpath>
+  </taskdef>
+  
   <macrodef name="compile">
     <attribute name="srcdir" />
     <attribute name="destdir" />
@@ -12,7 +19,7 @@
         <additional-classpath />
       </javac>
       <copy todir="@{destdir}">
-        <fileset dir="src">
+        <fileset dir="@{srcdir}">
           <exclude name="**/*.java" />
           <exclude name="**/*.scala" />
         </fileset>
@@ -44,6 +51,7 @@
     <mkdir dir="target/bin" />
     <mkdir dir="target/bin-testing" />
     <mkdir dir="target/bin-test" />
+    <mkdir dir="target/reports" />
   </target>
 
   <target name="compile-src" depends="init">
@@ -60,7 +68,7 @@
   </target>
 
   <target name="compile-srctest" depends="compile-src,compile-srctesting">
-    <compile srcdir="srctesting" destdir="target/bin-test">
+    <compile srcdir="srctest" destdir="target/bin-test">
       <additional-classpath>
         <classpath refid="classpath-test" />
         <classpath path="target/bin" />
@@ -72,7 +80,20 @@
   <target name="compile" depends="compile-src,compile-srctesting,compile-srctest" />
   
   <target name="test" depends="compile">
-    <!-- junit integration here -->
+    <junit printsummary="yes" haltonfailure="yes" fork="true"
+        maxmemory="1024M" showoutput="no">
+      <jvmarg value="-XX:MaxPermSize=256m"/>
+      <jvmarg value="-Xms128m"/>
+      <jvmarg value="-Xmx1700m"/>
+      <classpath refid="classpath-main" />
+      <classpath refid="classpath-test" />
+      <classpath path="target/bin" />
+      <classpath path="target/bin-testing" />
+      <classpath path="target/bin-test" />
+      <formatter type="xml" usefile="true" />
+      <test name="com.kaching.platform.AllTests"
+          todir="target/reports" unless="testcase" />
+    </junit>
   </target>
   
   <target name="smoke" description="Smoke Build" depends="clean,test" />
