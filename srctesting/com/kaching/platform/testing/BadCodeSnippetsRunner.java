@@ -20,8 +20,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import junit.framework.AssertionFailedError;
-
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
@@ -83,13 +81,13 @@ public class BadCodeSnippetsRunner extends Runner {
       notifier.fireTestStarted(description);
       CodeSnippets codeSnippets = klass.getAnnotation(CodeSnippets.class);
       if (codeSnippets == null) {
-        throw new AssertionFailedError(format(
+        throw new AssertionError(format(
             "missing @%s annotation", CodeSnippets.class.getSimpleName()));
       }
       for (Check check : codeSnippets.value()) {
         checkBadCodeSnippet(check.paths(), check.snippets());
       }
-    } catch (AssertionFailedError e) {
+    } catch (AssertionError e) {
       notifier.fireTestFailure(new Failure(description, e));
     } catch (IOException e) {
       notifier.fireTestFailure(new Failure(description, e));
@@ -149,7 +147,7 @@ public class BadCodeSnippetsRunner extends Runner {
         }
         patternsToExceptions.put(Pattern.compile(snippet.value()), files);
       } catch (PatternSyntaxException e) {
-        throw new AssertionFailedError(e.getMessage());
+        throw new AssertionError(e.getMessage());
       }
     }
     return patternsToExceptions;
