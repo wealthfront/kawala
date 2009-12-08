@@ -1,4 +1,4 @@
-package com.kaching.platform.util.collect;
+package com.kaching.platform.common;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.kaching.platform.util.collect.GenerativeMap;
+import com.kaching.platform.common.GenerativeMap;
 
 public class GenerativeMapTest {
 

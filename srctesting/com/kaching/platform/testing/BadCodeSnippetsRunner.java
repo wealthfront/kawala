@@ -27,7 +27,7 @@ import org.junit.runner.notification.RunNotifier;
 
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
-import com.kaching.platform.util.collect.GenerativeMap;
+import com.kaching.platform.common.GenerativeMap;
 
 public class BadCodeSnippetsRunner extends Runner {
 
