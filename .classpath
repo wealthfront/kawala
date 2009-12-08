@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="lib/main/google-guava-r3.jar" sourcepath="lib/main/google-guava-r3-src.jar"/>
 	<classpathentry kind="lib" path="lib/test/junit-4.3.1.jar" sourcepath="lib/test/junit-4.3.1-src.jar"/>
 	<classpathentry kind="lib" path="lib/main/google-collect-1.0-rc2.jar" sourcepath="lib/main/google-collect-1.0-rc2-src.jar"/>
+	<classpathentry kind="lib" path="lib/main/guice-2.0.jar" sourcepath="lib/main/guice-2.0-src.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
