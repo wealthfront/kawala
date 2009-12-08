@@ -5,12 +5,10 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.AssertionFailedError;
-
 /**
  * Thrown when an assertion failed for multiple reasons.
  */
-public class CombinedAssertionFailedError extends AssertionFailedError {
+public class CombinedAssertionFailedError extends AssertionError {
 
   private static final long serialVersionUID = 5967202290583940192L;
 
