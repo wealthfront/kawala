@@ -71,4 +71,10 @@
   
   <target name="compile" depends="compile-src,compile-srctesting,compile-srctest" />
   
+  <target name="test" depends="compile">
+    <!-- junit integration here -->
+  </target>
+  
+  <target name="smoke" description="Smoke Build" depends="clean,test" />
+  
 </project>
