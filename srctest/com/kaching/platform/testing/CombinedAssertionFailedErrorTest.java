@@ -1,8 +1,8 @@
 package com.kaching.platform.testing;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
@@ -44,11 +44,23 @@ public class CombinedAssertionFailedErrorTest {
   @Test
   public void hasErrors() {
     CombinedAssertionFailedError error = new CombinedAssertionFailedError("message");
-    assertFalse(error.hasErrors());
+    error.throwIfHasErrors();
+    
     error.addError("first");
-    assertTrue(error.hasErrors());
+    try {
+     error.throwIfHasErrors();
+     fail();
+    } catch (CombinedAssertionFailedError e) {
+      assertTrue(error == e);
+    }
+    
     error.addError("second");
-    assertTrue(error.hasErrors());
+    try {
+      error.throwIfHasErrors();
+      fail();
+     } catch (CombinedAssertionFailedError e) {
+       assertTrue(error == e);
+     }
   }
 
 }

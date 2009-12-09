@@ -134,9 +134,7 @@ public class BadCodeSnippetsRunner extends Runner {
       }
     }
 
-    if (error.hasErrors()) {
-      throw error;
-    }
+    error.throwIfHasErrors();
   }
 
   private Map<Pattern, Set<File>> patternsToExceptions(Snippet[] snippets) {
