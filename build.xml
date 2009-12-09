@@ -1,3 +1,13 @@
+<!--
+Copyright 2009 KaChing Group Inc. Licensed under the Apache License,
+Version 2.0 (the "License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law
+or agreed to in writing, software distributed under the License is
+distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+-->
 <project name="kawala" default="compile">
   <description>kawala</description>
 
@@ -54,20 +64,15 @@
     <mkdir dir="target/reports" />
   </target>
 
-  <target name="compile-src" depends="init">
+  <target name="compile" depends="init">
     <compile srcdir="src" destdir="target/bin" />
-  </target>
-
-  <target name="compile-srctesting" depends="compile-src">
-    <compile srcdir="srctesting" destdir="target/bin-testing">
+    <compile srcdir="srctesting/com/kaching/platform/testing"
+        destdir="target/bin-testing">
       <additional-classpath>
         <classpath refid="classpath-test" />
         <classpath path="target/bin" />
       </additional-classpath>
     </compile>
-  </target>
-
-  <target name="compile-srctest" depends="compile-src,compile-srctesting">
     <compile srcdir="srctest" destdir="target/bin-test">
       <additional-classpath>
         <classpath refid="classpath-test" />
@@ -76,9 +81,7 @@
       </additional-classpath>
     </compile>
   </target>
-  
-  <target name="compile" depends="compile-src,compile-srctesting,compile-srctest" />
-  
+
   <target name="test" depends="compile">
     <junit printsummary="yes" haltonfailure="yes" fork="true"
         maxmemory="1024M" showoutput="no">
