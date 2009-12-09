@@ -46,8 +46,14 @@ public class CombinedAssertionFailedError extends AssertionError {
     return builder.toString();
   }
 
-  public boolean hasErrors() {
-    return !errors.isEmpty();
+  /**
+   * Throws this {@link CombinedAssertionFailedError} if any error was
+   * encountered.
+   */
+  public void throwIfHasErrors() {
+    if (!errors.isEmpty()) {
+      throw this;
+    }
   }
 
 }
