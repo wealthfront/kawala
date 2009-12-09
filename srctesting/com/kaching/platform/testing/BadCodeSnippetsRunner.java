@@ -40,6 +40,7 @@ public class BadCodeSnippetsRunner extends Runner {
   }
 
   @Retention(RUNTIME)
+  @Target({})
   public @interface Check {
 
     public String[] paths();
@@ -49,6 +50,7 @@ public class BadCodeSnippetsRunner extends Runner {
   }
 
   @Retention(RUNTIME)
+  @Target({})
   public @interface Snippet {
 
     public String value();
