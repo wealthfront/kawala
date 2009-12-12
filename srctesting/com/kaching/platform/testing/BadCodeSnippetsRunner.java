@@ -7,8 +7,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.junit.runner.Description.createSuiteDescription;
-import static org.junit.runner.Description.createTestDescription;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,16 +18,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.junit.runner.Description;
-import org.junit.runner.Runner;
-import org.junit.runner.notification.Failure;
-import org.junit.runner.notification.RunNotifier;
-
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
 import com.kaching.platform.common.GenerativeMap;
 
-public class BadCodeSnippetsRunner extends Runner {
+public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCodeSnippetsRunner.CodeSnippets> {
 
   @Target(TYPE)
   @Retention(RUNTIME)
@@ -59,42 +52,17 @@ public class BadCodeSnippetsRunner extends Runner {
 
   }
 
-  private final Description description;
-  private final Class<?> klass;
-  private Description suiteDescription;
-
   /**
    * Internal use only.
    */
   public BadCodeSnippetsRunner(Class<?> klass) {
-    this.klass = klass;
-    suiteDescription = createSuiteDescription(klass);
-    suiteDescription.addChild(description = createTestDescription(klass, "checking"));
+    super(klass, CodeSnippets.class);
   }
 
   @Override
-  public Description getDescription() {
-    return suiteDescription;
-  }
-
-  @Override
-  public void run(RunNotifier notifier) {
-    try {
-      notifier.fireTestStarted(description);
-      CodeSnippets codeSnippets = klass.getAnnotation(CodeSnippets.class);
-      if (codeSnippets == null) {
-        throw new AssertionError(format(
-            "missing @%s annotation", CodeSnippets.class.getSimpleName()));
-      }
-      for (Check check : codeSnippets.value()) {
-        checkBadCodeSnippet(check.paths(), check.snippets());
-      }
-    } catch (AssertionError e) {
-      notifier.fireTestFailure(new Failure(description, e));
-    } catch (IOException e) {
-      notifier.fireTestFailure(new Failure(description, e));
-    } finally {
-      notifier.fireTestFinished(description);
+  protected void runTest(CodeSnippets codeSnippets) throws IOException {
+    for (Check check : codeSnippets.value()) {
+      checkBadCodeSnippet(check.paths(), check.snippets());
     }
   }
 
