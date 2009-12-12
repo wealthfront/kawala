@@ -38,7 +38,7 @@ public class DependencyTestRunner extends AbstractDeclarativeTestRunner<Dependen
     
     public String binDirectory() default "bin";
     
-    public String binDirectoryProperty() default "com.kaching.bin_directory";
+    public String binDirectoryProperty() default "kawala.bin_directory";
 
   }
 
