@@ -36,9 +36,9 @@ public class DependencyTestRunner extends AbstractDeclarativeTestRunner<Dependen
 
     public CheckPackage[] ensure();
     
-    public String binDirectory() default "bin";
+    public String[] binDirectories() default "bin";
     
-    public String binDirectoryProperty() default "kawala.bin_directory";
+    public String binDirectoryProperty() default "kawala.bin_directories";
 
   }
 
@@ -60,8 +60,13 @@ public class DependencyTestRunner extends AbstractDeclarativeTestRunner<Dependen
   @SuppressWarnings("unchecked")
   protected void runTest(Dependencies dependencies) throws IOException {
     JDepend jDepend = new JDepend();
-    jDepend.addDirectory(getProperty(
-        dependencies.binDirectoryProperty(), dependencies.binDirectory()));
+    String binDirectoryProperty = getProperty(dependencies.binDirectoryProperty());
+    String[] binDirectories = binDirectoryProperty != null ?
+        binDirectoryProperty.split(":") :
+        dependencies.binDirectories();
+    for (String binDirectory : binDirectories) {
+      jDepend.addDirectory(binDirectory);
+    }
     jDepend.analyzeInnerClasses(true);
     jDepend.analyze();
     
