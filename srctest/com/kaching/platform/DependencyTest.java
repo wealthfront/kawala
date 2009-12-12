@@ -18,7 +18,7 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
 
 @RunWith(DependencyTestRunner.class)
 @Dependencies(
-    minClasses = 30,
+    minClasses = 10,
     forPackages = {
         "com.kaching.platform.testing",
         "com.kaching.platform.util"

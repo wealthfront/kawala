@@ -85,7 +85,8 @@ governing permissions and limitations under the License.
   <target name="test" depends="compile">
     <junit printsummary="yes" haltonfailure="yes" fork="true"
         maxmemory="1024M" showoutput="no">
-      <sysproperty key="kawala.bin_directory" file="target/bin" />
+      <sysproperty
+          key="kawala.bin_directories" file="target/bin:target/bin-testing" />
       <jvmarg value="-XX:MaxPermSize=256m"/>
       <jvmarg value="-Xms128m"/>
       <jvmarg value="-Xmx1700m"/>
