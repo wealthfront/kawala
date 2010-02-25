@@ -9,7 +9,6 @@ import java.lang.annotation.Annotation;
 
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
-import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
 /**
@@ -52,21 +51,17 @@ public abstract class AbstractDeclarativeTestRunner<A extends Annotation> extend
   @Override
   @SuppressWarnings("unchecked")
   public void run(RunNotifier notifier) {
-    try {
-      notifier.fireTestStarted(description);
-      A annotation = (A) klass.getAnnotation(topLevelAnnotation);
-      if (annotation == null) {
-        throw new AssertionError(format(
-            "missing @%s annotation", topLevelAnnotation.getSimpleName()));
+    new SingleTestExecutor(notifier) {
+      @Override
+      protected void doWork() throws Exception {
+        A annotation = (A) klass.getAnnotation(topLevelAnnotation);
+        if (annotation == null) {
+          throw new AssertionError(format(
+              "missing @%s annotation", topLevelAnnotation.getSimpleName()));
+        }
+        runTest(annotation);
       }
-      runTest(annotation);
-    } catch (AssertionError e) {
-      notifier.fireTestFailure(new Failure(description, e));
-    } catch (IOException e) {
-      notifier.fireTestFailure(new Failure(description, e));
-    } finally {
-      notifier.fireTestFinished(description);
-    }
+    }.runSingleTest(description);
   }
 
   /**
