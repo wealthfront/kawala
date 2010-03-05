@@ -12,6 +12,8 @@ package com.kaching.platform.common.values;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.Serializable;
+
 /**
  * Abstract class providing the skeleton to create type-safe identifiers. This
  * class implements {@link #hashCode()}, {@link #equals(Object)},
@@ -31,8 +33,10 @@ class PersonId extends AbstractIdentifier&lt;Long&gt; {
  * 
  * @param <I> the type of the wrapped identifier
  */
-public abstract class AbstractIdentifier<I extends Comparable<I>>
-    implements Comparable<AbstractIdentifier<I>> {
+public abstract class AbstractIdentifier<I extends Comparable<I>> implements
+    Comparable<AbstractIdentifier<I>>, Serializable {
+  
+  private static final long serialVersionUID = 8147623822365809694L;
   
   private final I id;
 
