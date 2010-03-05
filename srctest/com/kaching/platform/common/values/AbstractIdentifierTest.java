@@ -45,6 +45,7 @@ public class AbstractIdentifierTest {
   
   @Test
   public void compareToTest() {
+    assertEquals(1, new MyId1("a").compareTo(null));
     compareToTest("a", "a");
     compareToTest("a", "b");
   }

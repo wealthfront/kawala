@@ -25,6 +25,20 @@ public class EquivalenceTester {
     List<List<Object>> ec =
         newArrayListWithExpectedSize(equivalenceClasses.length);
 
+    // nothing can be equal to null
+    for (Collection<? extends Object> congruenceClass : equivalenceClasses) {
+      for (Object element : congruenceClass) {
+        try {
+          assertFalse(
+              format("%s can not be equal to null", element),
+              element.equals(null));
+        } catch (NullPointerException e) {
+          throw new AssertionError(
+              format("NullPointerException when comparing %s to null", element));
+        }
+      }
+    }
+    
     // reflexivity
     for (Collection<? extends Object> congruenceClass : equivalenceClasses) {
       List<Object> c = newArrayList();
