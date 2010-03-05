@@ -61,6 +61,8 @@ public abstract class AbstractIdentifier<I extends Comparable<I>> implements
   public boolean equals(Object that) {
     if (this == that) {
       return true;
+    } else if (that == null) {
+      return false;
     }
     if (this.getClass().equals(that.getClass())) {
       return this.getId().equals(((AbstractIdentifier) that).getId());
@@ -71,7 +73,7 @@ public abstract class AbstractIdentifier<I extends Comparable<I>> implements
   
   @Override
   public int compareTo(AbstractIdentifier<I> that) {
-    return this.getId().compareTo(that.getId());
+    return that == null ? 1 : this.getId().compareTo(that.getId());
   }
   
   @Override
