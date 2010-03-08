@@ -24,11 +24,24 @@ import com.kaching.platform.common.GenerativeMap;
 
 public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCodeSnippetsRunner.CodeSnippets> {
 
+  /**
+   * Top level annotation used to describe the bad code snippet test.
+   */
   @Target(TYPE)
   @Retention(RUNTIME)
   public @interface CodeSnippets {
 
+    /**
+     * Lists all the checks that must be performed by this bad code snippet
+     * test.
+     */
     public Check[] value();
+    
+    /**
+     * Specifies the file extension to check for bad code snippet. The default
+     * is {@code java}.
+     */
+    public String fileExtension() default "java";
 
   }
 
@@ -62,12 +75,12 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
   @Override
   protected void runTest(CodeSnippets codeSnippets) throws IOException {
     for (Check check : codeSnippets.value()) {
-      checkBadCodeSnippet(check.paths(), check.snippets());
+      checkBadCodeSnippet(check, codeSnippets.fileExtension());
     }
   }
 
   private void checkBadCodeSnippet(
-      String[] paths, Snippet[] snippets) throws IOException {
+      Check check, String fileExtension) throws IOException {
     Map<Pattern, Set<File>> patternsToUses =
       new GenerativeMap<Pattern, Set<File>>() {
         @Override
@@ -75,10 +88,10 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
           return newHashSet();
         }};
 
-    Map<Pattern, Set<File>> patternsToExceptions = patternsToExceptions(snippets);
+    Map<Pattern, Set<File>> patternsToExceptions = patternsToExceptions(check.snippets());
     Set<Pattern> patterns = patternsToExceptions.keySet();
-    for (String path : paths) {
-      collectUses(new File(path), patterns, patternsToUses);
+    for (String path : check.paths()) {
+      collectUses(fileExtension, new File(path), patterns, patternsToUses);
     }
 
     CombinedAssertionFailedError error =
@@ -122,10 +135,10 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
   }
 
   private void collectUses(
-      File f, Iterable<Pattern> patterns, Map<Pattern, Set<File>> uses)
+      String fileExtension, File f, Iterable<Pattern> patterns, Map<Pattern, Set<File>> uses)
       throws IOException {
     if (f.isFile()) {
-      if (f.getName().endsWith(".java")) {
+      if (f.getName().endsWith("." + fileExtension)) {
         String code = Files.toString(f, UTF_8);
         for (Pattern p : patterns) {
           if (p.matcher(code).find()) {
@@ -135,7 +148,7 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
       }
     } else if (f.isDirectory()) {
       for (File c : f.listFiles()) {
-        collectUses(c, patterns, uses);
+        collectUses(fileExtension, c, patterns, uses);
       }
     }
   }
