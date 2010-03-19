@@ -110,8 +110,8 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
       uses.removeAll(exceptions);
       if (!uses.isEmpty()) {
         error.addError(format(
-            "%s: found new uses in:\n    %s",
-            pattern, Joiner.on("\n   ").join(uses)));
+            "%s: found %s bad snippets in:\n    %s",
+            pattern, uses.size(), Joiner.on("\n   ").join(uses)));
       }
     }
 
