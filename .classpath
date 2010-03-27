@@ -10,8 +10,6 @@
 	<classpathentry kind="lib" path="lib/main/guice-2.0.jar" sourcepath="lib/main/guice-2.0-src.jar"/>
 	<classpathentry kind="lib" path="lib/test/jdepend-2.9.1b.jar" sourcepath="lib/test/jdepend-2.9.1b-src.jar"/>
 	<classpathentry kind="lib" path="lib/test/bsh-core-2.0b4.jar"/>
-	<classpathentry kind="lib" path="lib/test/cglib-2.1_3-src.jar"/>
-	<classpathentry kind="lib" path="lib/test/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="lib" path="lib/test/hamcrest-core-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/test/hamcrest-library-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/test/jmock-2.5.1.jar"/>
@@ -29,5 +27,6 @@
 	<classpathentry kind="lib" path="lib/main/hibernate/required/slf4j-api-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/main/commons-logging-1.1-src.jar"/>
 	<classpathentry kind="lib" path="lib/main/commons-logging-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/main/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
