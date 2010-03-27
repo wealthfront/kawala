@@ -20,24 +20,39 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
 @Dependencies(
     minClasses = 10,
     forPackages = {
-        "com.kaching.platform.testing",
-        "com.kaching.platform.util"
+        "com.kaching.platform.*"
     },
     ensure = {
       @CheckPackage(name = "com.kaching.platform.*", mayDependOn = {
           "java.*",
           "com.google.common.*"
       }),
+      @CheckPackage(name = "com.kaching.platform.converters", mayDependOn = {
+          // nothing
+      }),
+      @CheckPackage(name = "com.kaching.platform.guice", mayDependOn = {
+          "com.google.inject.*"
+      }),
+      @CheckPackage(name = "com.kaching.platform.hibernate.types", mayDependOn = {
+          "org.hibernate.*",
+          "org.apache.commons.logging", // TODO(adam): remove
+          
+          // internal
+          "com.kaching.platform.converters"
+      }),
       @CheckPackage(name = "com.kaching.platform.testing", mayDependOn = {
           "jdepend.framework",
           "junit.*",
           "org.junit.*",
+          
+          // internal
           "com.kaching.platform.common"
       }),
       @CheckPackage(name = "com.kaching.platform.util", mayDependOn = {
           // nothing
       })
-    }
+    },
+    binDirectories = { "bin", "target/bin", "target/bin-testing" }
 )
 public class DependencyTest {
 }
