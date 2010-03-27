@@ -62,12 +62,14 @@ public class AbstractIdentifierTest {
   }
   
   static class MyId1 extends AbstractIdentifier<String> {
+    private static final long serialVersionUID = 937579551932508792L;
     public MyId1(String id) {
       super(id);
     }
   }
   
   static class MyId2 extends AbstractIdentifier<String> {
+    private static final long serialVersionUID = -4598517783225143579L;
     public MyId2(String id) {
       super(id);
     }
