@@ -12,13 +12,14 @@ package com.kaching.platform.hibernate.types;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 
 import org.junit.Before;
 import org.junit.Test;
 
-public class AbstractImmutableTypeTest {
+public class AbstractTypeTest {
 
   private AbstractImmutableType type;
   private Serializable serializable;
@@ -33,25 +34,16 @@ public class AbstractImmutableTypeTest {
   }
   
   @Test
-  public void assemble() {
-    assertEquals(serializable, type.assemble(serializable, null));
-    assertEquals(serializable, type.assemble(serializable, null, null));
+  public void equality() {
+    assertTrue(type.equals(null, null));
+    assertFalse(type.equals(serializable, null));
+    assertFalse(type.equals(null, serializable));
+    assertTrue(type.equals(serializable, serializable));
   }
   
   @Test
-  public void deepCopy() {
-    assertEquals(serializable, type.deepCopy(serializable));
+  public void hashing() {
+    assertEquals(serializable.hashCode(), type.hashCode(serializable));
   }
-  
-  @Test
-  public void disassemble() {
-    assertEquals(serializable, type.disassemble(serializable));
-    assertEquals(serializable, type.disassemble(serializable, null));
-  }
-  
-  @Test
-  public void isMutable() {
-    assertFalse(type.isMutable());
-  }
-  
+
 }

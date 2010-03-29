@@ -17,31 +17,13 @@ import org.hibernate.usertype.UserType;
  * immutable values. This class provides default implementation for boiler plate
  * methods.
  */
-public abstract class AbstractImmutableType {
+public abstract class AbstractImmutableType extends AbstractType {
 
   private final static Log log;
   private final static boolean IS_TRACE_ENABLED;
   static {
     log = getLog(AbstractImmutableType.class);
     IS_TRACE_ENABLED = log.isTraceEnabled();
-  }
-
-  /**
-   * Delegating to object's {@link #equals} method with proper {@code null}
-   * checks.
-   */
-  public final boolean equals(Object x, Object y) throws HibernateException {
-    if (x == y) {
-      return true;
-    } else if (x == null || y == null) {
-      return false;
-    } else {
-      return x.equals(y);
-    }
-  }
-
-  public final int hashCode(Object value) throws HibernateException {
-    return value.hashCode();
   }
 
   /**
