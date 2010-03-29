@@ -18,9 +18,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.collect.MapMaker;
 import com.google.common.io.Files;
-import com.kaching.platform.common.GenerativeMap;
 
 public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCodeSnippetsRunner.CodeSnippets> {
 
@@ -81,12 +82,12 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
 
   private void checkBadCodeSnippet(
       Check check, String fileExtension) throws IOException {
-    Map<Pattern, Set<File>> patternsToUses =
-      new GenerativeMap<Pattern, Set<File>>() {
-        @Override
-        protected Set<File> compute(Pattern key) {
-          return newHashSet();
-        }};
+    Map<Pattern, Set<File>> patternsToUses = new MapMaker().makeComputingMap(
+        new Function<Pattern, Set<File>>() {
+          @Override
+          public Set<File> apply(Pattern key) {
+            return newHashSet();
+          }});
 
     Map<Pattern, Set<File>> patternsToExceptions = patternsToExceptions(check.snippets());
     Set<Pattern> patterns = patternsToExceptions.keySet();
