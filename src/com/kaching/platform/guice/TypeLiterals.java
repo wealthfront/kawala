@@ -10,14 +10,9 @@
  */
 package com.kaching.platform.guice;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Lists.transform;
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.inject.TypeLiteral;
 
 
@@ -76,32 +71,6 @@ public class TypeLiterals {
 
     public Type getRawType() {
       return type;
-    }
-
-    @Override
-    public String toString() {
-      return new StringBuilder()
-          .append(convertTypeToString(type))
-          .append("<")
-          .append(Joiner.on(", ").join(transform(
-              newArrayList(parameters),
-              new Function<Type, String>() {
-                @Override
-                public String apply(Type from) {
-                  return convertTypeToString(from);
-                }
-              })))
-          .append(">")
-          .toString();
-    }
-
-    // TODO move this to a generic type pretty printer
-    private String convertTypeToString(Type t) {
-      if (t instanceof Class<?>) {
-        return ((Class<?>) t).getName();
-      } else {
-        return t.toString();
-      }
     }
 
   }
