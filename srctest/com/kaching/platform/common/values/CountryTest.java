@@ -12,12 +12,7 @@ public class CountryTest {
   public void getNumber() throws Exception {
     assertEquals(233, US.getNumber()); 
   }
-  
-  @Test
-  public void fromNumber() throws Exception {
-    assertEquals(US, Country.fromNumber(233));
-  }
-  
+
   @Test
   public void getCountryName() throws Exception {
     assertEquals("United States", US.getCountryName()); 
