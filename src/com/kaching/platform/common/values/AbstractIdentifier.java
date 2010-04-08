@@ -22,12 +22,12 @@ import java.io.Serializable;
  * A typical use of this class is to introduce a marker type for a specific
  * identifier. In the following example, we are introducing a {@code PersonId}
  * which wraps a long.
-<pre>
-class PersonId extends AbstractIdentifier&lt;Long&gt; {
-  public PersonId(long id) {
-    super(id);
-  }
-}</pre>
+ * <pre>
+ * class PersonId extends AbstractIdentifier&lt;Long&gt; {
+ *   public PersonId(long id) {
+ *     super(id);
+ *   }
+ * }</pre>
  * Using such identifiers makes it possible to have the compiler ensure these
  * identifiers are used consistently.
  * 
