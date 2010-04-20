@@ -10,12 +10,12 @@
  */
 package com.kaching.platform.converters;
 
+import static com.google.common.collect.ImmutableMap.builder;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.inject.internal.ImmutableMap.builder;
 
 import java.util.Map;
 
-import com.google.inject.internal.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * A converter for a finite set of values.
