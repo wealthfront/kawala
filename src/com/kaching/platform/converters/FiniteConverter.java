@@ -48,7 +48,7 @@ public class FiniteConverter<T> extends NullHandlingConverter<T> {
    * name as the key. This allows a converter for an enum type to be
    * expresses as {@code super(getMap(EnumType.values()))}
    */
-  protected static <T extends Enum<T>> Map<String, T> getMap(T[] values) {
+  static <T extends Enum<T>> Map<String, T> getMap(T[] values) {
     ImmutableMap.Builder<String, T> builder = builder();
     for (T value : values) {
       builder.put(value.name().toLowerCase(), value);
