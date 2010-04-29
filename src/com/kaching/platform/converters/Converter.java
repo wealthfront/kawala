@@ -10,15 +10,14 @@
  */
 package com.kaching.platform.converters;
 
-import java.net.URL;
-
+import java.net.URI;
 
 /**
  * <p>A converter is responsible for converting to and from a textual
- * representation of a value object. For instance, a {@link URL} can be
+ * representation of a value object. For instance, a {@link URI} can be
  * represented as the string {@code "http://www.kaching.com"} and a converter
- * would create a {@link URL} object from this representation and produce this
- * string from a {@link URL} instance.</p>
+ * would create a {@link URI} object from this representation and produce this
+ * string from a {@link URI} instance.</p>
  *
  * <p>Converters much ensure that the textual representation produced by
  * {@link #toString(Object)} is compatible with {@link #fromString(String)} such
