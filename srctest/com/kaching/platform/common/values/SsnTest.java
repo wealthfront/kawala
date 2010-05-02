@@ -97,7 +97,6 @@ public class SsnTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void equivalence() {
     check(
         newArrayList(

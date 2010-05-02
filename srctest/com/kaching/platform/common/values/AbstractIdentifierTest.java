@@ -25,7 +25,6 @@ public class AbstractIdentifierTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void equivalence() {
     EquivalenceTester.check(
         newArrayList(
