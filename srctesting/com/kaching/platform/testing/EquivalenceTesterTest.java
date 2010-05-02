@@ -18,7 +18,6 @@ import org.junit.Test;
 public class EquivalenceTesterTest {
 
   @Test(expected = AssertionError.class)
-  @SuppressWarnings("unchecked")
   public void nothinCanBeEqualToNull() {
     EquivalenceTester.check(newArrayList(new EqualsDoesNotHandleNullArg()));
   }

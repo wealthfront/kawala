@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class EquivalenceTester {
 
-  public static void check(Collection<? extends Object>... equivalenceClasses) {
+  public static void check(Collection<?>... equivalenceClasses) {
     List<List<Object>> ec =
         newArrayListWithExpectedSize(equivalenceClasses.length);
 
