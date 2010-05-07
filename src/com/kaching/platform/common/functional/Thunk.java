@@ -26,7 +26,7 @@ public abstract class Thunk<T> {
     return threadsafeGetter.get();
   }
 
-  abstract protected T compute();
+  protected abstract T compute();
 
 
   private static abstract class Getter<T> { abstract T get(); }
