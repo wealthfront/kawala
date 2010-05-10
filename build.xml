@@ -65,7 +65,7 @@ governing permissions and limitations under the License.
   </target>
 
   <target name="compile" depends="init">
-    <ivy:resolve conf="kawala" />
+    <ivy:resolve conf="kawala" type="jar"/>
     <ivy:cachepath pathid="classpath-kawala-deps" conf="kawala"/>
     <compile srcdir="src" destdir="target/bin">
       <additional-classpath>
