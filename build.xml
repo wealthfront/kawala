@@ -37,7 +37,7 @@ governing permissions and limitations under the License.
     </sequential>
   </macrodef>
   
-  <!-- google guava is not configured correctly in the maven repo -->
+  <!-- google guava is not configured correctly in the maven repo, so create a special classpath -->
   <path id="classpath-main">
     <fileset dir="lib/main">
       <include name="**/google-guava-r3.jar" />
