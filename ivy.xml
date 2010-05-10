@@ -17,13 +17,13 @@ governing permissions and limitations under the License.
     <artifact name="kawala" type="jar" conf="kawala" ext="jar"/>
   </publications>
   <dependencies>
-    <dependency org="cglib" name="cglib-nodep" rev="2.1_3" transitive="false"/>
-    <dependency org="commons-logging" name="commons-logging" rev="1.1" transitive="false"/>
-    <dependency org="com.google.collections" name="google-collections" rev="1.0-rc2" transitive="false"/>
+    <dependency org="cglib" name="cglib-nodep" rev="2.1_3" transitive="false" />
+    <dependency org="commons-logging" name="commons-logging" rev="1.1" transitive="false" />
+    <dependency org="com.google.collections" name="google-collections" rev="1.0-rc2" transitive="false" />
     <!-- guava in maven repo is fucked so it doesn't import
     <dependency org="com.google.guava" name="guava" rev="r03"/>
     -->
-    <dependency org="com.google.inject" name="guice" rev="2.0" transitive="false"/>
-    <dependency org="org.hibernate" name="hibernate" rev="3.2.1.ga" transitive="false"/>
+    <dependency org="com.google.inject" name="guice" rev="2.0" transitive="false" />
+    <dependency org="org.hibernate" name="hibernate" rev="3.2.1.ga" transitive="false" />
   </dependencies>
 </ivy-module>
