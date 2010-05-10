@@ -28,10 +28,6 @@ governing permissions and limitations under the License.
     <artifact name="kawala-testing" type="jar" conf="testing" ext="jar"/>
   </publications>
   <dependencies>
-    <!-- guava in maven repo is fucked so it doesn't import
-    <dependency org="com.google.guava" name="guava" rev="r03"/>
-    -->
-
     <!-- kawala-common -->
     <dependency org="com.google.collections" name="google-collections" rev="1.0-rc2" conf="common->default" transitive="false" />
 
@@ -48,5 +44,8 @@ governing permissions and limitations under the License.
     <!-- kawala-testing -->
     <dependency org="cglib" name="cglib-nodep" rev="2.1_3" conf="testing->default" transitive="false" />
     <dependency org="com.google.collections" name="google-collections" rev="1.0-rc2" conf="testing->default" transitive="false" />
+    <!-- guava in maven repo is fucked so it doesn't import
+    <dependency org="com.google.guava" name="guava" rev="r03" conf="testing->default" transitive="false"/>
+    -->
   </dependencies>
 </ivy-module>
