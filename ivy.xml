@@ -9,15 +9,14 @@ KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 -->
 <ivy-module version="2.0">
-  <info organisation="kaching" module="kawala"/>
+  <info organisation="com.kaching" module="kawala"/>
   <configurations>
+    <conf name="kawala" description="all of kawala" extends="common,converters,guice,hibernate,testing"/>
     <conf name="common" description="kawala common"/>
     <conf name="converters" description="kawala converters"/>
     <conf name="guice" description="kawala guice"/>
     <conf name="hibernate" description="kawala hibernate"/>
     <conf name="testing" description="kawala testing"/>
-
-    <conf name="kawala" description="all of kawala" extends="common,converters,guice,hibernate,testing"/>
   </configurations>
   <publications>
     <artifact name="kawala" type="jar" conf="kawala" ext="jar"/>
