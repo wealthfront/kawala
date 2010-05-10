@@ -43,13 +43,6 @@ governing permissions and limitations under the License.
     </fileset>
   </path>
 
-  <path id="classpath-test">
-    <fileset dir="lib/test">
-      <include name="**/*.jar" />
-      <exclude name="**/*-src.jar" />
-    </fileset>
-  </path>
-
   <target name="clean">
     <delete dir="target" />
     <delete dir="RPMS" />
@@ -84,14 +77,12 @@ governing permissions and limitations under the License.
         destdir="target/bin-testing">
       <additional-classpath>
         <classpath refid="classpath-guava" />
-        <classpath refid="classpath-test" />
         <classpath refid="classpath-kawala-testing" />
         <classpath path="target/bin" />
       </additional-classpath>
     </compile>
     <compile srcdir="srctest" destdir="target/bin-test">
       <additional-classpath>
-        <classpath refid="classpath-test" />
         <classpath refid="classpath-kawala" />
         <classpath path="target/bin" />
         <classpath path="target/bin-testing" />
@@ -109,7 +100,6 @@ governing permissions and limitations under the License.
       <jvmarg value="-Xmx1700m"/>
       <classpath refid="classpath-kawala" />
       <classpath refid="classpath-guava" />
-      <classpath refid="classpath-test" />
       <classpath path="target/bin" />
       <classpath path="target/bin-testing" />
       <classpath path="target/bin-test" />

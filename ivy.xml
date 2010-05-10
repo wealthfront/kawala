@@ -47,5 +47,14 @@ governing permissions and limitations under the License.
     <!-- guava in maven repo is fucked so it doesn't import
     <dependency org="com.google.guava" name="guava" rev="r03" conf="testing->default" transitive="false"/>
     -->
+    <dependency org="jdepend" name="jdepend" rev="2.9.1" transitive="false"/>
+    <dependency org="junit" name="junit" rev="4.3.1" transitive="false"/>
+    <dependency org="org.objenesis" name="objenesis" rev="1.0" transitive="false"/>
+    <dependency org="org.jmock" name="jmock" rev="2.5.1" transitive="false"/>
+    <dependency org="org.jmock" name="jmock-legacy" rev="2.5.1" transitive="false"/>
+    <dependency org="org.apache.ant" name="ant-junit" rev="1.7.0" transitive="false"/>
+    <dependency org="org.beanshell" name="bsh-core" rev="2.0b4" transitive="false"/>
+    <dependency org="org.hamcrest" name="hamcrest-core" rev="1.1" transitive="false"/>
+    <dependency org="org.hamcrest" name="hamcrest-library" rev="1.1" transitive="false"/>
   </dependencies>
 </ivy-module>
