@@ -5,3 +5,8 @@ kawala uses Apache Ivy for dependency management, so first bootstrap ivy:
 Then build kawala:
 
   $ ant
+
+To integrate with Eclipse please: 
+
+  * Install the IvyDE plugin from http://ant.apache.org/ivy/ivyde.
+  * Right-click on ivy.xml and choose "Add Ivy Library..." which will configure the classpath.
