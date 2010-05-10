@@ -1,0 +1,11 @@
+kawala uses Apache Ivy for dependency management, so first:
+
+  $ ant init-ivy
+
+Then to get the dependencies (this step to be removed):
+
+  $ ant resolve
+
+Then to build:
+
+  $ ant
