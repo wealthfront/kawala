@@ -66,24 +66,33 @@ governing permissions and limitations under the License.
 
   <target name="compile" depends="init">
     <ivy:resolve conf="kawala" type="jar"/>
-    <ivy:cachepath pathid="classpath-kawala-deps" conf="kawala"/>
+    <ivy:cachepath pathid="classpath-kawala-common" conf="common"/>
+    <ivy:cachepath pathid="classpath-kawala-converters" conf="converters"/>
+    <ivy:cachepath pathid="classpath-kawala-guice" conf="guice"/>
+    <ivy:cachepath pathid="classpath-kawala-hibernate" conf="hibernate"/>
+    <ivy:cachepath pathid="classpath-kawala-testing" conf="testing"/>
+    <ivy:cachepath pathid="classpath-kawala" conf="kawala"/>
+
     <compile srcdir="src" destdir="target/bin">
       <additional-classpath>
-        <classpath refid="classpath-kawala-deps" />
+        <classpath refid="classpath-kawala-common" />
+        <classpath refid="classpath-kawala-converters" />
+        <classpath refid="classpath-kawala-guice" />
+        <classpath refid="classpath-kawala-hibernate" />
       </additional-classpath>
     </compile>
     <compile srcdir="srctesting/com/kaching/platform/testing"
         destdir="target/bin-testing">
       <additional-classpath>
-        <classpath refid="classpath-kawala-deps" />
         <classpath refid="classpath-test" />
+        <classpath refid="classpath-kawala-testing" />
         <classpath path="target/bin" />
       </additional-classpath>
     </compile>
     <compile srcdir="srctest" destdir="target/bin-test">
       <additional-classpath>
-        <classpath refid="classpath-kawala-deps" />
         <classpath refid="classpath-test" />
+        <classpath refid="classpath-kawala" />
         <classpath path="target/bin" />
         <classpath path="target/bin-testing" />
       </additional-classpath>
@@ -98,7 +107,7 @@ governing permissions and limitations under the License.
       <jvmarg value="-XX:MaxPermSize=256m"/>
       <jvmarg value="-Xms128m"/>
       <jvmarg value="-Xmx1700m"/>
-      <classpath refid="classpath-kawala-deps" />
+      <classpath refid="classpath-kawala" />
       <classpath refid="classpath-main" />
       <classpath refid="classpath-test" />
       <classpath path="target/bin" />

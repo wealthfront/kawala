@@ -11,19 +11,42 @@ governing permissions and limitations under the License.
 <ivy-module version="2.0">
   <info organisation="kaching" module="kawala"/>
   <configurations>
-    <conf name="kawala" description="all of kawala"/>
+    <conf name="common" description="kawala common"/>
+    <conf name="converters" description="kawala converters"/>
+    <conf name="guice" description="kawala guice"/>
+    <conf name="hibernate" description="kawala hibernate"/>
+    <conf name="testing" description="kawala testing"/>
+
+    <conf name="kawala" description="all of kawala" extends="common,converters,guice,hibernate,testing"/>
   </configurations>
   <publications>
     <artifact name="kawala" type="jar" conf="kawala" ext="jar"/>
+    <artifact name="kawala-common" type="jar" conf="common" ext="jar"/>
+    <artifact name="kawala-converters" type="jar" conf="converters" ext="jar"/>
+    <artifact name="kawala-guice" type="jar" conf="guice" ext="jar"/>
+    <artifact name="kawala-hibernate" type="jar" conf="hibernate" ext="jar"/>
+    <artifact name="kawala-testing" type="jar" conf="testing" ext="jar"/>
   </publications>
   <dependencies>
-    <dependency org="cglib" name="cglib-nodep" rev="2.1_3" transitive="false" />
-    <dependency org="commons-logging" name="commons-logging" rev="1.1" transitive="false" />
-    <dependency org="com.google.collections" name="google-collections" rev="1.0-rc2" transitive="false" />
     <!-- guava in maven repo is fucked so it doesn't import
     <dependency org="com.google.guava" name="guava" rev="r03"/>
     -->
-    <dependency org="com.google.inject" name="guice" rev="2.0" transitive="false" />
-    <dependency org="org.hibernate" name="hibernate" rev="3.2.1.ga" transitive="false" />
+
+    <!-- kawala-common -->
+    <dependency org="com.google.collections" name="google-collections" rev="1.0-rc2" conf="common->default" transitive="false" />
+
+    <!-- kawala-converters -->
+    <dependency org="com.google.collections" name="google-collections" rev="1.0-rc2" conf="converters->default" transitive="false" />
+
+    <!-- kawala-guice -->
+    <dependency org="com.google.inject" name="guice" rev="2.0" conf="guice->default" transitive="false" />
+
+    <!-- kawala-hibernate -->
+    <dependency org="org.hibernate" name="hibernate" rev="3.2.1.ga" conf="hibernate->default" transitive="false" />
+    <dependency org="commons-logging" name="commons-logging" rev="1.1" conf="hibernate->default" transitive="false" />
+
+    <!-- kawala-testing -->
+    <dependency org="cglib" name="cglib-nodep" rev="2.1_3" conf="testing->default" transitive="false" />
+    <dependency org="com.google.collections" name="google-collections" rev="1.0-rc2" conf="testing->default" transitive="false" />
   </dependencies>
 </ivy-module>
