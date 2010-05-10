@@ -37,11 +37,21 @@ governing permissions and limitations under the License.
     </sequential>
   </macrodef>
   
+<!--
   <path id="classpath-main">
     <fileset dir="lib/main">
       <include name="**/*.jar" />
       <exclude name="**/*-src.jar" />
     </fileset>
+  </path>
+-->
+  <ivy:cachepath pathid="classpath-kawala" conf="kawala"/>
+  <!-- google guava is not configured correctly in the maven repo -->
+  <path id="classpath-main">
+    <fileset dir="lib/main">
+      <include name="**/google-guava-r3.jar" />
+    </fileset>
+    <path refid="classpath-kawala" />
   </path>
 
   <path id="classpath-test">
@@ -51,9 +61,8 @@ governing permissions and limitations under the License.
     </fileset>
   </path>
 
-  <property name="ivy.lib.dir" value="libivy"/>
-  <target name="resolve" description="--> retrieve dependencies with ivy">
-    <ivy:retrieve />
+  <target name="resolve" description="retrieve dependencies with ivy">
+    <ivy:retrieve type="jar"/>
   </target>
   
   <target name="clean">
