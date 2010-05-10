@@ -11,13 +11,6 @@ governing permissions and limitations under the License.
 <project name="kawala" default="compile" xmlns:ivy="antlib:org.apache.ivy.ant">
   <description>kawala</description>
 
- <taskdef classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" name="junit">
-    <classpath>
-      <pathelement location="lib/test/ant-junit-1.7.0.jar" />
-      <pathelement location="lib/test/junit-4.3.1.jar" />
-    </classpath>
-  </taskdef>
-  
   <macrodef name="compile">
     <attribute name="srcdir" />
     <attribute name="destdir" />
@@ -36,19 +29,12 @@ governing permissions and limitations under the License.
     </sequential>
   </macrodef>
   
-  <!-- google guava is not configured correctly in the maven repo, so create a special classpath -->
-  <path id="classpath-guava">
-    <fileset dir="lib/main">
-      <include name="**/google-guava-r3.jar" />
-    </fileset>
-  </path>
-
   <target name="clean">
     <delete dir="target" />
     <delete dir="RPMS" />
   </target>
 
-  <target name="init">
+  <target name="init" depends="ivy-classpaths">
     <mkdir dir="target" />
     <mkdir dir="target/bin" />
     <mkdir dir="target/bin-testing" />
@@ -56,15 +42,14 @@ governing permissions and limitations under the License.
     <mkdir dir="target/reports" />
   </target>
 
-  <target name="compile" depends="init">
-    <ivy:resolve conf="kawala" type="jar"/>
-    <ivy:cachepath pathid="classpath-kawala-common" conf="common"/>
-    <ivy:cachepath pathid="classpath-kawala-converters" conf="converters"/>
-    <ivy:cachepath pathid="classpath-kawala-guice" conf="guice"/>
-    <ivy:cachepath pathid="classpath-kawala-hibernate" conf="hibernate"/>
-    <ivy:cachepath pathid="classpath-kawala-testing" conf="testing"/>
-    <ivy:cachepath pathid="classpath-kawala" conf="kawala"/>
+  <!-- google guava is not configured correctly in the maven repo, so create a special classpath -->
+  <path id="classpath-guava">
+    <fileset dir="lib/main">
+      <include name="**/google-guava-r3.jar" />
+    </fileset>
+  </path>
 
+  <target name="compile" depends="init">
     <compile srcdir="src" destdir="target/bin">
       <additional-classpath>
         <classpath refid="classpath-kawala-common" />
@@ -110,6 +95,15 @@ governing permissions and limitations under the License.
   </target>
   
   <target name="smoke" description="Smoke Build" depends="clean,test" />
+
+  <!-- TODO: real versioning -->
+  <property name="kawala-version" value="0.1" />
+  <target name="jar" description="builds jars" depends="smoke">
+    <jar destfile="target/kawala-${kawala-version}.jar">
+      <fileset dir="target/bin"/>
+      <fileset dir="target/bin-testing"/>
+    </jar>
+  </target>
   
   <property name="ivy.install.version" value="2.1.0" />
   <condition property="ivy.home" value="${env.IVY_HOME}">
@@ -141,5 +135,16 @@ governing permissions and limitations under the License.
   <target name="ivy-clean" description="clean ivy dependencies">
     <ivy:cleancache />
   </target>
+ 
+  <target name="ivy-classpaths">
+    <ivy:resolve conf="kawala" type="jar"/>
+    <ivy:cachepath pathid="classpath-kawala-common" conf="common"/>
+    <ivy:cachepath pathid="classpath-kawala-converters" conf="converters"/>
+    <ivy:cachepath pathid="classpath-kawala-guice" conf="guice"/>
+    <ivy:cachepath pathid="classpath-kawala-hibernate" conf="hibernate"/>
+    <ivy:cachepath pathid="classpath-kawala-testing" conf="testing"/>
+    <ivy:cachepath pathid="classpath-kawala" conf="kawala"/>
+  </target>
   
+ 
 </project>
