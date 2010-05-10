@@ -25,7 +25,6 @@ governing permissions and limitations under the License.
     <sequential>
       <javac srcdir="@{srcdir}" destdir="@{destdir}" 
           debug="true" debuglevel="lines,vars,source" target="1.6">
-        <classpath refid="classpath-main" />
         <additional-classpath />
       </javac>
       <copy todir="@{destdir}">
@@ -38,7 +37,7 @@ governing permissions and limitations under the License.
   </macrodef>
   
   <!-- google guava is not configured correctly in the maven repo, so create a special classpath -->
-  <path id="classpath-main">
+  <path id="classpath-guava">
     <fileset dir="lib/main">
       <include name="**/google-guava-r3.jar" />
     </fileset>
@@ -84,6 +83,7 @@ governing permissions and limitations under the License.
     <compile srcdir="srctesting/com/kaching/platform/testing"
         destdir="target/bin-testing">
       <additional-classpath>
+        <classpath refid="classpath-guava" />
         <classpath refid="classpath-test" />
         <classpath refid="classpath-kawala-testing" />
         <classpath path="target/bin" />
@@ -108,7 +108,7 @@ governing permissions and limitations under the License.
       <jvmarg value="-Xms128m"/>
       <jvmarg value="-Xmx1700m"/>
       <classpath refid="classpath-kawala" />
-      <classpath refid="classpath-main" />
+      <classpath refid="classpath-guava" />
       <classpath refid="classpath-test" />
       <classpath path="target/bin" />
       <classpath path="target/bin-testing" />
