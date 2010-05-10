@@ -1,0 +1,30 @@
+<!--
+Copyright 2010 KaChing Group Inc. Licensed under the Apache License,
+Version 2.0 (the "License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at
+http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law
+or agreed to in writing, software distributed under the License is
+distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.
+-->
+<ivy-module version="2.0">
+  <info organisation="kaching" module="kawala"/>
+  <configurations>
+    <conf name="kawala" description="all of kawala"/>
+  </configurations>
+  <publications>
+    <artifact name="kawala" type="jar" conf="kawala" ext="jar"/>
+  </publications>
+  <dependencies>
+    <dependency org="cglib" name="cglib-nodep" rev="2.1_3"/>
+    <dependency org="commons-logging" name="commons-logging" rev="1.1"/>
+    <dependency org="com.google.collections" name="google-collections" rev="1.0-rc2"/>
+    <!-- guava in maven repo is fucked so it doesn't import
+    <dependency org="com.google.guava" name="guava" rev="r03"/>
+    -->
+    <dependency org="com.google.inject" name="guice" rev="2.0"/>
+    <dependency org="org.hibernate" name="hibernate" rev="3.2.1.ga" transitive="false">
+    </dependency>
+  </dependencies>
+</ivy-module>
