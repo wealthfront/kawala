@@ -98,6 +98,7 @@ governing permissions and limitations under the License.
       <jvmarg value="-XX:MaxPermSize=256m"/>
       <jvmarg value="-Xms128m"/>
       <jvmarg value="-Xmx1700m"/>
+      <classpath refid="classpath-kawala-deps" />
       <classpath refid="classpath-main" />
       <classpath refid="classpath-test" />
       <classpath path="target/bin" />
