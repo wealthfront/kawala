@@ -139,10 +139,6 @@ governing permissions and limitations under the License.
              uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
   </target>
  
-  <target name="ivy-resolve" description="retrieve dependencies with ivy">
-    <ivy:retrieve type="jar" />
-  </target>
-
   <target name="ivy-clean" description="clean ivy dependencies">
     <ivy:cleancache />
   </target>
