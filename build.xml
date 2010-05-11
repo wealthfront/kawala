@@ -96,6 +96,18 @@ governing permissions and limitations under the License.
   
   <target name="smoke" description="Smoke Build" depends="clean,test" />
 
+  <macrodef name="jar-sub-project">
+    <attribute name="name" />
+    <attribute name="base" />
+    <sequential>
+      <jar destfile="target/kawala-@{name}-${kawala-version}.jar">
+        <fileset dir="@{base}">
+          <include name="com/kaching/platform/@{name}/**/**.class" />
+        </fileset>
+      </jar>
+    </sequential>
+  </macrodef>
+
   <!-- TODO: real versioning -->
   <property name="kawala-version" value="0.1" />
   <target name="jar" description="builds jars" depends="smoke">
@@ -103,6 +115,11 @@ governing permissions and limitations under the License.
       <fileset dir="target/bin"/>
       <fileset dir="target/bin-testing"/>
     </jar>
+    <jar-sub-project name="common" base="target/bin"/>
+    <jar-sub-project name="converters" base="target/bin"/>
+    <jar-sub-project name="guice" base="target/bin"/>
+    <jar-sub-project name="hibernate" base="target/bin"/>
+    <jar-sub-project name="testing" base="target/bin-testing"/>
   </target>
   
   <property name="ivy.install.version" value="2.1.0" />
