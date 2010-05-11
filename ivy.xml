@@ -9,7 +9,11 @@ KIND, either express or implied. See the License for the specific language
 governing permissions and limitations under the License.
 -->
 <ivy-module version="2.0">
-  <info organisation="com.kaching" module="kawala"/>
+  <info organisation="com.kaching" module="kawala">
+    <license name="Apache 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+    <ivyauthor name="kaChing" url="http://kaching.com"/>
+    <description homepage="http://code.google.com/p/kawala">kawala: kaChing's software platform</description>
+  </info>
   <configurations>
     <conf name="kawala" description="all of kawala" extends="common,converters,guice,hibernate,testing"/>
     <conf name="common" description="kawala common"/>
