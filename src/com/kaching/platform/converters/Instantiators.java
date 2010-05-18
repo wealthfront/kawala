@@ -45,37 +45,42 @@ public class Instantiators {
   @SuppressWarnings("unchecked")
   static Converter<?> createConverter(
       Type type, Annotation[] annotations) {
-    try {
-      // 1. explicit binding
-      if (type instanceof Class) {
-        // 2. @ConvertedBy
-        Annotation[] typeAnnotations = ((Class) type).getAnnotations();
-        // need to throw if two @ConvertedBy!!!
-        for (Annotation typeAnnotation : typeAnnotations) {
-          if (typeAnnotation instanceof ConvertedBy) {
+    // TODO(pascal): this code would benefit greatly from using smaller
+    // methods returning Option<Converter<?>>.
+    
+    // 1. explicit binding
+    // TODO(pascal): implement the first case
+    if (type instanceof Class) {
+      // 2. @ConvertedBy
+      Annotation[] typeAnnotations = ((Class) type).getAnnotations();
+      for (Annotation typeAnnotation : typeAnnotations) {
+        if (typeAnnotation instanceof ConvertedBy) {
+          try {
             return ((ConvertedBy) typeAnnotation).value().newInstance();
+          } catch (InstantiationException e) {
+            // proper error handling
+            throw new RuntimeException(e);
+          } catch (IllegalAccessException e) {
+            // proper error handling
+            throw new RuntimeException(e);
           }
         }
-        // 3. has <init>(Ljava/lang/String;)V;
-        Constructor stringConstructor = ((Class) type).getConstructor(String.class);
-        stringConstructor.setAccessible(true);
-        return null;//new ConstructorAndToStringConverter<?>(stringConstructor);
       }
-      return null; // TODO(pascal): should accumulate error (i.e. binding error,
-      // cannot create converter for type XYZ)
-    } catch (InstantiationException e) {
-      // proper error handling
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      // proper error handling
-      throw new RuntimeException(e);
-    } catch (SecurityException e) {
-      // proper error handling
-      throw new RuntimeException(e);
-    } catch (NoSuchMethodException e) {
-      // proper error handling
-      throw new RuntimeException(e);
+      try {
+        // 3. has <init>(Ljava/lang/String;)V;
+        Constructor stringConstructor = ((Class) type).getDeclaredConstructor(String.class);
+        stringConstructor.setAccessible(true);
+        return new ConstructorAndToStringConverter<Object>(stringConstructor);
+      } catch (SecurityException e) {
+        // proper error handling
+        throw new RuntimeException(e);
+      } catch (NoSuchMethodException e) {
+        // proper error handling
+        throw new RuntimeException(e);
+      }
     }
+    return null; // TODO(pascal): should accumulate error (i.e. binding error,
+    // cannot create converter for type XYZ)
   }
 
   @VisibleForTesting

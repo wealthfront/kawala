@@ -20,7 +20,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.BindingAnnotation;
@@ -48,7 +47,6 @@ public class InstantiatorsTest {
   }
   
   @Test
-  @Ignore
   public void createConverterDefaultIfHasStringConstructor() throws Exception {
     Converter<?> converter =
         Instantiators.createConverter(HasStringConstructor.class, null);
