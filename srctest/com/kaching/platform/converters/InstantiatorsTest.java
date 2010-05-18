@@ -20,6 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.BindingAnnotation;
@@ -44,6 +45,28 @@ public class InstantiatorsTest {
     public String toString(HasConvertedBy value) { return null; }
     @Override
     public HasConvertedBy fromString(String representation) { return null; }
+  }
+  
+  @Test
+  @Ignore
+  public void createConverterConvertedByWrongBound() throws Exception {
+    Instantiators.createConverter(HasConvertedByWrongBound.class, null);
+    // TODO(pascal): the createConverter must return and error or a converter,
+    // here we would check that the error clearly indicates the wrong bound
+  }
+  
+  @ConvertedBy(HasConvertedByConverterWrongBound.class)
+  static class HasConvertedByWrongBound {
+  }
+  
+  /* This converter does not produce objects of type HasConvertedByWrongBound
+   * and therefore cannot be used as a converter for HasConvertedByWrongBound.
+   */
+  static class HasConvertedByConverterWrongBound implements Converter<String> {
+    @Override
+    public String toString(String value) { return null; }
+    @Override
+    public String fromString(String representation) { return null; }
   }
   
   @Test
