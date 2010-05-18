@@ -11,6 +11,7 @@
 package com.kaching.platform.converters;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -19,13 +20,47 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.name.Named;
 
 public class InstantiatorsTest {
-
+  
+  @Test
+  public void createConverterConvertedBy() throws Exception {
+    Converter<?> converter =
+        Instantiators.createConverter(HasConvertedBy.class, null);
+    assertNotNull(converter);
+    assertEquals(HasConvertedByConverter.class, converter.getClass());
+  }
+  
+  @ConvertedBy(HasConvertedByConverter.class)
+  static class HasConvertedBy {
+  }
+  
+  static class HasConvertedByConverter implements Converter<HasConvertedBy> {
+    @Override
+    public String toString(HasConvertedBy value) { return null; }
+    @Override
+    public HasConvertedBy fromString(String representation) { return null; }
+  }
+  
+  @Test
+  @Ignore
+  public void createConverterDefaultIfHasStringConstructor() throws Exception {
+    Converter<?> converter =
+        Instantiators.createConverter(HasStringConstructor.class, null);
+    assertNotNull(converter);
+    assertEquals(ConstructorAndToStringConverter.class, converter.getClass());
+  }
+  
+  static class HasStringConstructor {
+    HasStringConstructor(String representation) {
+    }
+  }
+  
   @Test
   public void getPublicConstructor() throws Exception {
     Instantiators.getConstructor(A.class);
