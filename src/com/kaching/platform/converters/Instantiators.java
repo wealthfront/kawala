@@ -56,7 +56,10 @@ public class Instantiators {
       for (Annotation typeAnnotation : typeAnnotations) {
         if (typeAnnotation instanceof ConvertedBy) {
           try {
-            return ((ConvertedBy) typeAnnotation).value().newInstance();
+            Class<? extends Converter<?>> converterClass = ((ConvertedBy) typeAnnotation).value();
+            // TODO(pascal): we need to check using unification that the
+            // converter produces objects of the correct type
+            return converterClass.newInstance();
           } catch (InstantiationException e) {
             // proper error handling
             throw new RuntimeException(e);
