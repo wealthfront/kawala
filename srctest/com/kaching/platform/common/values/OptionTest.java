@@ -38,6 +38,16 @@ public class OptionTest {
     assertTrue(reached);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void noneGet() {
+    Option.none().get();
+  }
+
+  @Test
+  public void someGet() {
+    assertEquals(600, Option.some(600).get());
+  }
+
   @Test
   public void testOfToString() {
     assertEquals("Option.None", Option.none().toString());

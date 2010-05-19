@@ -26,6 +26,10 @@ public abstract class Option<T> implements Iterable<T> {
       };
     }
 
+    public Object get() {
+      throw new IllegalArgumentException();
+    };
+
     public int hashCode() {
       return 0;
     };
@@ -69,6 +73,11 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public U get() {
+      return u;
+    }
+
+    @Override
     public int hashCode() {
       return u.hashCode();
     }
@@ -90,6 +99,12 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
   }
+
+  /**
+   * Gets the value of this option. If this is a Some(T) the value is returned,
+   * otherwise an {@link IllegalArgumentException} is thrown.
+   */
+  public abstract T get();
 
   /**
    * Get the none object for the given type.<br />
