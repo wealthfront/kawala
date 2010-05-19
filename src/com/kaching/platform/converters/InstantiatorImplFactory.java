@@ -15,15 +15,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.kaching.platform.common.types.Unification;
 
 class InstantiatorImplFactory<T> {
-  
+
+  private final Errors errors = new Errors();
   private final Class<T> klass;
 
   InstantiatorImplFactory(Class<T> klass) {
     this.klass = klass;
   }
-  
+
   InstantiatorImpl<T> build() {
     // 1. find constructor
     Constructor<T> constructor = getConstructor(klass);
@@ -41,26 +43,32 @@ class InstantiatorImplFactory<T> {
     // 3. done
     return new InstantiatorImpl<T>(constructor, converters);
   }
-  
+
   @VisibleForTesting
   @SuppressWarnings("unchecked")
-  static Converter<?> createConverter(
-      Type type, Annotation[] annotations) {
+  Converter<?> createConverter(
+      Type targetType, Annotation[] annotations) {
     // TODO(pascal): this code would benefit greatly from using smaller
     // methods returning Option<Converter<?>>.
-    
+
     // 1. explicit binding
     // TODO(pascal): implement the first case
-    if (type instanceof Class) {
+    if (targetType instanceof Class) {
+      Class targetClass = (Class) targetType;
       // 2. @ConvertedBy
-      Annotation[] typeAnnotations = ((Class) type).getAnnotations();
+      Annotation[] typeAnnotations = targetClass.getAnnotations();
       for (Annotation typeAnnotation : typeAnnotations) {
         if (typeAnnotation instanceof ConvertedBy) {
           try {
             Class<? extends Converter<?>> converterClass = ((ConvertedBy) typeAnnotation).value();
-            // TODO(pascal): we need to check using unification that the
-            // converter produces objects of the correct type
-            return converterClass.newInstance();
+            Type producedType =
+                Unification.getActualTypeArgument(converterClass, Converter.class, 0);
+            if (targetType.equals(producedType)) {
+              return converterClass.newInstance();
+            } else {
+              errors.incorrectBoundForConverter(targetClass, converterClass, producedType);
+              return null;
+            }
           } catch (InstantiationException e) {
             // proper error handling
             throw new RuntimeException(e);
@@ -72,7 +80,7 @@ class InstantiatorImplFactory<T> {
       }
       try {
         // 3. has <init>(Ljava/lang/String;)V;
-        Constructor stringConstructor = ((Class) type).getDeclaredConstructor(String.class);
+        Constructor stringConstructor = targetClass.getDeclaredConstructor(String.class);
         stringConstructor.setAccessible(true);
         return new StringConstructorConverter<Object>(stringConstructor);
       } catch (SecurityException e) {
@@ -86,7 +94,7 @@ class InstantiatorImplFactory<T> {
     return null; // TODO(pascal): should accumulate error (i.e. binding error,
     // cannot create converter for type XYZ)
   }
-  
+
   @VisibleForTesting
   static <T> Constructor<T> getConstructor(Class<T> clazz) {
     @SuppressWarnings("unchecked")
@@ -99,6 +107,7 @@ class InstantiatorImplFactory<T> {
           if (convertableConstructor == null) {
             convertableConstructor = constructor;
           } else {
+            // should accumulate errors here
             throw new IllegalArgumentException(clazz.toString()
                 + " has more than one constructors annotated with @"
                 + Instantiate.class.getSimpleName());
@@ -108,14 +117,20 @@ class InstantiatorImplFactory<T> {
       if (convertableConstructor != null) {
         return convertableConstructor;
       } else {
+        // should accumulate errors here
         throw new IllegalArgumentException(clazz.toString() +
             " has more than one constructors");
       }
     } else if (constructors.length == 0) {
+      // should accumulate errors here
       throw new IllegalArgumentException("No constructor found in " + clazz);
     } else {
       return constructors[0];
     }
   }
-  
+
+  Errors getErrors() {
+    return errors;
+  }
+
 }

@@ -20,7 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.List;
 
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.inject.BindingAnnotation;
@@ -28,10 +28,16 @@ import com.google.inject.name.Named;
 
 public class InstantiatorImplFactoryTest {
 
+  private InstantiatorImplFactory<?> factory;
+
+  @Before
+  public void before() {
+    factory = new InstantiatorImplFactory<Object>(null);
+  }
+
   @Test
   public void createConverterConvertedBy() throws Exception {
-    Converter<?> converter =
-        InstantiatorImplFactory.createConverter(HasConvertedBy.class, null);
+    Converter<?> converter = factory.createConverter(HasConvertedBy.class, null);
     assertNotNull(converter);
     assertEquals(HasConvertedByConverter.class, converter.getClass());
   }
@@ -48,11 +54,14 @@ public class InstantiatorImplFactoryTest {
   }
 
   @Test
-  @Ignore
   public void createConverterConvertedByWrongBound() throws Exception {
-    InstantiatorImplFactory.createConverter(HasConvertedByWrongBound.class, null);
-    // TODO(pascal): the createConverter must return and error or a converter,
-    // here we would check that the error clearly indicates the wrong bound
+    factory.createConverter(HasConvertedByWrongBound.class, null);
+    assertEquals(
+        new Errors().incorrectBoundForConverter(
+            HasConvertedByWrongBound.class,
+            HasConvertedByConverterWrongBound.class,
+            String.class),
+        factory.getErrors());
   }
 
   @ConvertedBy(HasConvertedByConverterWrongBound.class)
@@ -72,7 +81,7 @@ public class InstantiatorImplFactoryTest {
   @Test
   public void createConverterDefaultIfHasStringConstructor() throws Exception {
     Converter<?> converter =
-        InstantiatorImplFactory.createConverter(HasStringConstructor.class, null);
+        factory.createConverter(HasStringConstructor.class, null);
     assertNotNull(converter);
     assertEquals(StringConstructorConverter.class, converter.getClass());
   }
