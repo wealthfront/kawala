@@ -4,29 +4,7 @@
 	<classpathentry kind="src" output="bintest" path="srctest"/>
 	<classpathentry kind="src" path="srctesting"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.apache.ivyde.eclipse.cpcontainer.IVYDE_CONTAINER/?ivyXmlPath=ivy.xml&amp;confs=*"/>
 	<classpathentry kind="lib" path="lib/main/google-guava-r3.jar" sourcepath="lib/main/google-guava-r3-src.jar"/>
-	<classpathentry kind="lib" path="lib/test/junit-4.3.1.jar" sourcepath="lib/test/junit-4.3.1-src.jar"/>
-	<classpathentry kind="lib" path="lib/main/google-collect-1.0-rc2.jar" sourcepath="lib/main/google-collect-1.0-rc2-src.jar"/>
-	<classpathentry kind="lib" path="lib/main/guice-2.0.jar" sourcepath="lib/main/guice-2.0-src.jar"/>
-	<classpathentry kind="lib" path="lib/test/jdepend-2.9.1b.jar" sourcepath="lib/test/jdepend-2.9.1b-src.jar"/>
-	<classpathentry kind="lib" path="lib/test/bsh-core-2.0b4.jar"/>
-	<classpathentry kind="lib" path="lib/test/hamcrest-core-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/test/hamcrest-library-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/test/jmock-2.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/test/jmock-junit3-2.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/test/jmock-junit4-2.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/test/jmock-legacy-2.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/test/jmock-script-2.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/test/objenesis-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/main/hibernate/hibernate3.3.2.ga.jar"/>
-	<classpathentry kind="lib" path="lib/main/hibernate/required/antlr-2.7.6.jar"/>
-	<classpathentry kind="lib" path="lib/main/hibernate/required/commons-collections-3.1.jar"/>
-	<classpathentry kind="lib" path="lib/main/hibernate/required/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/main/hibernate/required/javassist-3.9.0.GA.jar"/>
-	<classpathentry kind="lib" path="lib/main/hibernate/required/jta-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/main/hibernate/required/slf4j-api-1.5.8.jar"/>
-	<classpathentry kind="lib" path="lib/main/commons-logging-1.1-src.jar"/>
-	<classpathentry kind="lib" path="lib/main/commons-logging-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/main/cglib-nodep-2.1_3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
