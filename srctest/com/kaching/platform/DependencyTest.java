@@ -28,7 +28,7 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
           "com.google.common.*"
       }),
       @CheckPackage(name = "com.kaching.platform.converters", mayDependOn = {
-          // nothing
+          "com.kaching.platform.common.*"
       }),
       @CheckPackage(name = "com.kaching.platform.guice", mayDependOn = {
           "com.google.inject.*"
@@ -36,7 +36,7 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
       @CheckPackage(name = "com.kaching.platform.hibernate.types", mayDependOn = {
           "org.hibernate.*",
           "org.apache.commons.logging", // TODO(adam): remove
-          
+
           // internal
           "com.kaching.platform.converters"
       }),
@@ -44,7 +44,7 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
           "jdepend.framework",
           "junit.*",
           "org.junit.*",
-          
+
           // internal
           "com.kaching.platform.common"
       }),
