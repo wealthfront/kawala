@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
  * calling the constructor and produces textual representation by calling
  * {@link #toString()}.
  */
-class ConstructorAndToStringConverter<T> implements Converter<T> {
+class StringConstructorConverter<T> implements Converter<T> {
 
   private final Constructor<?> constructor;
 
@@ -30,7 +30,7 @@ class ConstructorAndToStringConverter<T> implements Converter<T> {
    * use sites. We're purposely choosing to be less type safe for overall code
    * clarity.
    */
-  ConstructorAndToStringConverter(Constructor<?> constructor) {
+  StringConstructorConverter(Constructor<?> constructor) {
     Class<?>[] parameterTypes = constructor.getParameterTypes();
     checkArgument(
         parameterTypes.length == 1 &&

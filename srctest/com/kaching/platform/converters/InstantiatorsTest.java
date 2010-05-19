@@ -74,7 +74,7 @@ public class InstantiatorsTest {
     Converter<?> converter =
         Instantiators.createConverter(HasStringConstructor.class, null);
     assertNotNull(converter);
-    assertEquals(ConstructorAndToStringConverter.class, converter.getClass());
+    assertEquals(StringConstructorConverter.class, converter.getClass());
   }
   
   static class HasStringConstructor {
