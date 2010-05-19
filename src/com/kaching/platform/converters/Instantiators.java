@@ -73,7 +73,7 @@ public class Instantiators {
         // 3. has <init>(Ljava/lang/String;)V;
         Constructor stringConstructor = ((Class) type).getDeclaredConstructor(String.class);
         stringConstructor.setAccessible(true);
-        return new ConstructorAndToStringConverter<Object>(stringConstructor);
+        return new StringConstructorConverter<Object>(stringConstructor);
       } catch (SecurityException e) {
         // proper error handling
         throw new RuntimeException(e);

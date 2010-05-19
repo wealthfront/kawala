@@ -17,7 +17,7 @@ import java.lang.reflect.Constructor;
 
 import org.junit.Test;
 
-public class ConstructorAndToStringConverterTest {
+public class StringConstructorConverterTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void checksConstructorIsTakesOneString1() {
@@ -31,7 +31,7 @@ public class ConstructorAndToStringConverterTest {
   
   @Test
   public void convertsProperly() {
-    ConstructorAndToStringConverter<TakesSingleString> converter = converter(TakesSingleString.class);
+    StringConstructorConverter<TakesSingleString> converter = converter(TakesSingleString.class);
     
     // from string
     TakesSingleString fromString = converter.fromString("hello world");
@@ -43,10 +43,10 @@ public class ConstructorAndToStringConverterTest {
   }
 
   @SuppressWarnings("unchecked")
-  private <T> ConstructorAndToStringConverter<T> converter(Class<T> klass) {
+  private <T> StringConstructorConverter<T> converter(Class<T> klass) {
     Constructor<?>[] declaredConstructors = klass.getDeclaredConstructors();
     assertEquals(1, declaredConstructors.length);
-    return (ConstructorAndToStringConverter<T>) new ConstructorAndToStringConverter<Object>(declaredConstructors[0]);
+    return (StringConstructorConverter<T>) new StringConstructorConverter<Object>(declaredConstructors[0]);
   }
   
   static class TakesSingleString {
