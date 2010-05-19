@@ -131,6 +131,11 @@ public class UnificationTest {
             ScalaInstanceOfAbstractManyTypeParams.class, ManyTypeParams.class, 0));
   }
 
+  JAVA CODE
+
+  static class AbstractManyTypeParams<A, B, C> implements ManyTypeParams<A, B, C> {
+  }
+
   SCALA CODE
 
   class ScalaInstanceOfManyTypeParams extends ManyTypeParams[URI, String, Byte] {
