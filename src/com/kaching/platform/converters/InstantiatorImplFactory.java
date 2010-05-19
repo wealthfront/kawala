@@ -52,51 +52,62 @@ class InstantiatorImplFactory<T> {
   @SuppressWarnings("unchecked")
   Option<? extends Converter<?>> createConverter(
       Type targetType, Annotation[] annotations) {
-    // TODO(pascal): this code would benefit greatly from using smaller
-    // methods returning Option<Converter<?>>.
-
     // 1. explicit binding
     // TODO(pascal): implement the first case
     if (targetType instanceof Class) {
       Class targetClass = (Class) targetType;
       // 2. @ConvertedBy
-      Annotation[] typeAnnotations = targetClass.getAnnotations();
-      for (Annotation typeAnnotation : typeAnnotations) {
-        if (typeAnnotation instanceof ConvertedBy) {
-          try {
-            Class<? extends Converter<?>> converterClass = ((ConvertedBy) typeAnnotation).value();
-            Type producedType =
-                Unification.getActualTypeArgument(converterClass, Converter.class, 0);
-            if (targetType.equals(producedType)) {
-              return Option.some(converterClass.newInstance());
-            } else {
-              errors.incorrectBoundForConverter(targetClass, converterClass, producedType);
-              return Option.none();
-            }
-          } catch (InstantiationException e) {
-            // proper error handling
-            throw new RuntimeException(e);
-          } catch (IllegalAccessException e) {
-            // proper error handling
-            throw new RuntimeException(e);
-          }
-        }
+      for (Converter<?> converter : createConverterUsingConvertedBy(targetClass)) {
+        return Option.some(converter);
       }
-      try {
-        // 3. has <init>(Ljava/lang/String;)V;
-        Constructor stringConstructor = targetClass.getDeclaredConstructor(String.class);
-        stringConstructor.setAccessible(true);
-        return Option.some(new StringConstructorConverter<Object>(stringConstructor));
-      } catch (SecurityException e) {
-        // proper error handling
-        throw new RuntimeException(e);
-      } catch (NoSuchMethodException e) {
-        // proper error handling
-        throw new RuntimeException(e);
+      // 3. has <init>(Ljava/lang/String;)V;
+      for (Converter<?> converter : createConverterUsingStringConstructor(targetClass)) {
+        return Option.some(converter);
       }
     }
-    return Option.none(); // TODO(pascal): should accumulate error (i.e. binding error,
-    // cannot create converter for type XYZ)
+    return Option.none();
+  }
+
+  private Option<? extends Converter<?>> createConverterUsingConvertedBy(
+      final Class<?> targetClass) {
+    Annotation[] typeAnnotations = targetClass.getAnnotations();
+    for (Annotation typeAnnotation : typeAnnotations) {
+      if (typeAnnotation instanceof ConvertedBy) {
+        try {
+          Class<? extends Converter<?>> converterClass = ((ConvertedBy) typeAnnotation).value();
+          Type producedType =
+              Unification.getActualTypeArgument(converterClass, Converter.class, 0);
+          if (targetClass.equals(producedType)) {
+            return Option.some(converterClass.newInstance());
+          } else {
+            errors.incorrectBoundForConverter(targetClass, converterClass, producedType);
+            return Option.none();
+          }
+        } catch (InstantiationException e) {
+          // proper error handling
+          throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+          // proper error handling
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    return Option.none();
+  }
+
+  private Option<? extends Converter<?>> createConverterUsingStringConstructor(
+      final Class<?> targetClass) {
+    Constructor<?> stringConstructor;
+    try {
+      stringConstructor = targetClass.getDeclaredConstructor(String.class);
+    } catch (SecurityException e) {
+      // do proper exception handling, add this to errors
+      throw new RuntimeException(e);
+    } catch (NoSuchMethodException e) {
+      // Not having a String constructor is an acceptable outcome.
+      return Option.none();
+    }
+    return Option.some(new StringConstructorConverter<Object>(stringConstructor));
   }
 
   @VisibleForTesting
