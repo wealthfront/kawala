@@ -35,6 +35,16 @@ public class InstantiatorImplFactoryTest {
     factory = new InstantiatorImplFactory<Object>(null);
   }
 
+  @Test(expected = RuntimeException.class)
+  public void buildShouldFailIfErrorsExist() {
+    new InstantiatorImplFactory<SomethingUsingHasConvertedByWrongBound>(SomethingUsingHasConvertedByWrongBound.class).build();
+  }
+
+  static class SomethingUsingHasConvertedByWrongBound {
+    SomethingUsingHasConvertedByWrongBound(HasConvertedByWrongBound p0) {
+    }
+  }
+
   @Test
   public void createConverterConvertedBy() throws Exception {
     Converter<?> converter = factory.createConverter(HasConvertedBy.class, null).get();

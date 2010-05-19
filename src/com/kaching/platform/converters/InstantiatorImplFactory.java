@@ -44,6 +44,7 @@ class InstantiatorImplFactory<T> {
       }
     }
     // 3. done
+    errors.throwIfHasErrors();
     return new InstantiatorImpl<T>(constructor, converters);
   }
 

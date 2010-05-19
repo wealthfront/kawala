@@ -68,11 +68,14 @@ class Errors {
     }
     return this.messages == null ?
         ((Errors) that).messages == null :
-        ((Errors) that).messages.equals(this.messages);
+          this.messages.equals(((Errors) that).messages);
   }
 
   @Override
   public String toString() {
+    if (messages == null) {
+      return "no errors";
+    }
     StringBuilder buf = new StringBuilder();
     int num = 1;
     String separator = "";
