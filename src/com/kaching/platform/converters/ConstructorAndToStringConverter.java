@@ -10,6 +10,8 @@
  */
 package com.kaching.platform.converters;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
@@ -23,7 +25,16 @@ class ConstructorAndToStringConverter<T> implements Converter<T> {
 
   private final Constructor<?> constructor;
 
+  /* Here, T should be equal to the type bound on Constructor. However, Java's
+   * type system is not up to par to capture that and still have clear code at
+   * use sites. We're purposely choosing to be less type safe for overall code
+   * clarity.
+   */
   ConstructorAndToStringConverter(Constructor<?> constructor) {
+    Class<?>[] parameterTypes = constructor.getParameterTypes();
+    checkArgument(
+        parameterTypes.length == 1 &&
+        parameterTypes[0].equals(String.class));
     this.constructor = constructor;
   }
   
