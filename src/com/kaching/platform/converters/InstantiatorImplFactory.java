@@ -16,6 +16,7 @@ import java.lang.reflect.Type;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.kaching.platform.common.types.Unification;
+import com.kaching.platform.common.values.Option;
 
 class InstantiatorImplFactory<T> {
 
@@ -37,8 +38,10 @@ class InstantiatorImplFactory<T> {
     Converter<?>[] converters =
         parametersCount == 0 ? null : new Converter<?>[parametersCount];
     for (int i = 0; i < parametersCount; i++) {
-      converters[i] = createConverter(
-          genericParameterTypes[i], parameterAnnotations[i]);
+      for (Converter<?> converter : createConverter(
+          genericParameterTypes[i], parameterAnnotations[i])) {
+        converters[i] = converter;
+      }
     }
     // 3. done
     return new InstantiatorImpl<T>(constructor, converters);
@@ -46,7 +49,7 @@ class InstantiatorImplFactory<T> {
 
   @VisibleForTesting
   @SuppressWarnings("unchecked")
-  Converter<?> createConverter(
+  Option<? extends Converter<?>> createConverter(
       Type targetType, Annotation[] annotations) {
     // TODO(pascal): this code would benefit greatly from using smaller
     // methods returning Option<Converter<?>>.
@@ -64,10 +67,10 @@ class InstantiatorImplFactory<T> {
             Type producedType =
                 Unification.getActualTypeArgument(converterClass, Converter.class, 0);
             if (targetType.equals(producedType)) {
-              return converterClass.newInstance();
+              return Option.some(converterClass.newInstance());
             } else {
               errors.incorrectBoundForConverter(targetClass, converterClass, producedType);
-              return null;
+              return Option.none();
             }
           } catch (InstantiationException e) {
             // proper error handling
@@ -82,7 +85,7 @@ class InstantiatorImplFactory<T> {
         // 3. has <init>(Ljava/lang/String;)V;
         Constructor stringConstructor = targetClass.getDeclaredConstructor(String.class);
         stringConstructor.setAccessible(true);
-        return new StringConstructorConverter<Object>(stringConstructor);
+        return Option.some(new StringConstructorConverter<Object>(stringConstructor));
       } catch (SecurityException e) {
         // proper error handling
         throw new RuntimeException(e);
@@ -91,7 +94,7 @@ class InstantiatorImplFactory<T> {
         throw new RuntimeException(e);
       }
     }
-    return null; // TODO(pascal): should accumulate error (i.e. binding error,
+    return Option.none(); // TODO(pascal): should accumulate error (i.e. binding error,
     // cannot create converter for type XYZ)
   }
 
