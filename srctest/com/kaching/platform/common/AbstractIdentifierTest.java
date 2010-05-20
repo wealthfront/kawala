@@ -8,13 +8,14 @@
  * KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package com.kaching.platform.common.values;
+package com.kaching.platform.common;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.kaching.platform.common.AbstractIdentifier;
 import com.kaching.platform.testing.EquivalenceTester;
 
 public class AbstractIdentifierTest {
