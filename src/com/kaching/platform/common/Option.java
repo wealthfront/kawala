@@ -26,22 +26,27 @@ public abstract class Option<T> implements Iterable<T> {
       };
     }
 
+    @Override
     public Object getOrElse(Object defaultValue) {
       return defaultValue;
     }
 
+    @Override
     public Object getOrElse(Thunk<Object> defaultValue) {
       return defaultValue.get();
     }
 
+    @Override
     public Object getOrThrow() {
       return getOrThrow(new IllegalArgumentException());
     }
 
+    @Override
     public <E extends Throwable> Object getOrThrow(E e) throws E {
       throw e;
     }
 
+    @Override
     public boolean isEmpty() {
       return true;
     }
@@ -90,6 +95,7 @@ public abstract class Option<T> implements Iterable<T> {
       };
     }
 
+    @Override
     public U getOrElse(U defaultValue) {
       return u;
     }
