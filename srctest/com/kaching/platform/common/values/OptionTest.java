@@ -18,6 +18,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import com.kaching.platform.common.Option;
 import com.kaching.platform.testing.EquivalenceTester;
 
 public class OptionTest {

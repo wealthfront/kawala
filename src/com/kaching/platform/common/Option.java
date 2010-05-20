@@ -1,4 +1,4 @@
-package com.kaching.platform.common.values;
+package com.kaching.platform.common;
 
 import static java.lang.String.format;
 
