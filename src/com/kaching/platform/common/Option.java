@@ -28,27 +28,31 @@ public abstract class Option<T> implements Iterable<T> {
 
     public Object getOrElse(Object defaultValue) {
       return defaultValue;
-    };
+    }
+
+    public Object getOrElse(Thunk<Object> defaultValue) {
+      return defaultValue.get();
+    }
 
     public Object getOrThrow() {
       return getOrThrow(new IllegalArgumentException());
-    };
+    }
 
     public <E extends Throwable> Object getOrThrow(E e) throws E {
       throw e;
-    };
+    }
 
     public boolean isEmpty() {
       return true;
-    };
+    }
 
     public int hashCode() {
       return 0;
-    };
+    }
 
     public boolean equals(Object that) {
       return this == that;
-    };
+    }
 
     @Override
     public String toString() {
@@ -86,7 +90,12 @@ public abstract class Option<T> implements Iterable<T> {
 
     public U getOrElse(U defaultValue) {
       return u;
-    };
+    }
+
+    @Override
+    public U getOrElse(Thunk<U> defaultValue) {
+      return u;
+    }
 
     @Override
     public U getOrThrow() {
@@ -131,6 +140,12 @@ public abstract class Option<T> implements Iterable<T> {
    * {@code defaultValue}. Note that {@code defaultValue} is eagerly evaluated.
    */
   public abstract T getOrElse(T defaultValue);
+
+  /**
+   * If the option is nonempty returns its value, otherwise returns
+   * {@code defaultValue}. The {@code defaultValue} is lazily evaluated.
+   */
+  public abstract T getOrElse(Thunk<T> defaultValue);
 
   /**
    * Gets the value of this option. If this is a Some(T) the value is returned,
