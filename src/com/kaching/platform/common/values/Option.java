@@ -26,8 +26,20 @@ public abstract class Option<T> implements Iterable<T> {
       };
     }
 
-    public Object get() {
-      throw new IllegalArgumentException();
+    public Object getOrElse(Object defaultValue) {
+      return defaultValue;
+    };
+
+    public Object getOrThrow() {
+      return getOrThrow(new IllegalArgumentException());
+    };
+
+    public <E extends Throwable> Object getOrThrow(E e) throws E {
+      throw e;
+    };
+
+    public boolean isEmpty() {
+      return true;
     };
 
     public int hashCode() {
@@ -72,9 +84,23 @@ public abstract class Option<T> implements Iterable<T> {
       };
     }
 
-    @Override
-    public U get() {
+    public U getOrElse(U defaultValue) {
       return u;
+    };
+
+    @Override
+    public U getOrThrow() {
+      return u;
+    }
+
+    @Override
+    public <E extends Throwable> U getOrThrow(E e) throws E {
+      return u;
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return false;
     }
 
     @Override
@@ -101,17 +127,39 @@ public abstract class Option<T> implements Iterable<T> {
   }
 
   /**
+   * If the option is nonempty returns its value, otherwise returns
+   * {@code defaultValue}. Note that {@code defaultValue} is eagerly evaluated.
+   */
+  public abstract T getOrElse(T defaultValue);
+
+  /**
    * Gets the value of this option. If this is a Some(T) the value is returned,
    * otherwise an {@link IllegalArgumentException} is thrown.
    */
-  public abstract T get();
+  public abstract T getOrThrow();
 
   /**
-   * Get the none object for the given type.<br />
-   * This method is needed to have only one uncheck warning in order to cope
-   * with the lack of a bottom type in Java.
-   * @param <T> the type parameter
-   * @return a type safe none value
+   * Returns its value if not empty, otherwise throws {@code e}.
+   */
+  public abstract <E extends Throwable> T getOrThrow(E e) throws E;
+
+  /**
+   * Returns {@code true} if the option is the {@code None} value.
+   */
+  public abstract boolean isEmpty();
+
+  /**
+   * Returns {@code true} if the option is a {@code Some(...)}.
+   */
+  public boolean isDefined() {
+    return !isEmpty();
+  }
+
+  /**
+   * Gets the none object for the given type.
+   *
+   * Note: using a freely parameterized type {@code T} with an unchecked warning
+   * allows to simulate a bottom type in Java.
    */
   @SuppressWarnings("unchecked")
   public static <T> Option<T> none() {
@@ -119,10 +167,7 @@ public abstract class Option<T> implements Iterable<T> {
   }
 
   /**
-   * Get the some object wrapping the given object.
-   * @param <T> the type parameter
-   * @param t the object to wrap
-   * @return the option object wrapping <tt>t</tt>
+   * Gets the some object wrapping the given value.
    */
   public static <T> Option<T> some(T t) {
     return new Option.Some<T>(t);

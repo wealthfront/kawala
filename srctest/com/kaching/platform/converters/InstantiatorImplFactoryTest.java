@@ -47,7 +47,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverterConvertedBy() throws Exception {
-    Converter<?> converter = factory.createConverter(HasConvertedBy.class, null).get();
+    Converter<?> converter = factory.createConverter(HasConvertedBy.class, null).getOrThrow();
     assertNotNull(converter);
     assertEquals(HasConvertedByConverter.class, converter.getClass());
   }
@@ -91,7 +91,7 @@ public class InstantiatorImplFactoryTest {
   @Test
   public void createConverterDefaultIfHasStringConstructor() throws Exception {
     Converter<?> converter =
-        factory.createConverter(HasStringConstructor.class, null).get();
+        factory.createConverter(HasStringConstructor.class, null).getOrThrow();
     assertNotNull(converter);
     assertEquals(StringConstructorConverter.class, converter.getClass());
   }

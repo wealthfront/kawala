@@ -12,6 +12,7 @@ package com.kaching.platform.common.values;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -39,13 +40,46 @@ public class OptionTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void noneGet() {
-    Option.none().get();
+  public void noneGetOrThrowNoParam() {
+    Option.none().getOrThrow();
   }
 
   @Test
-  public void someGet() {
-    assertEquals(600, Option.some(600).get());
+  public void noneGetOrThrowWithParam() {
+    RuntimeException eThrown = new RuntimeException();
+    try {
+      Option.none().getOrThrow(eThrown);
+      fail();
+    } catch (RuntimeException eCaught) {
+      assertTrue(eCaught == eThrown);
+    }
+  }
+
+  @Test
+  public void someGetOrThrowNoParam() {
+    assertEquals(600, Option.some(600).getOrThrow());
+  }
+
+  @Test
+  public void someGetOrThrowWithParam() {
+    assertEquals("", Option.some("").getOrThrow(new RuntimeException()));
+  }
+
+  @Test
+  public void getOrElse() {
+    assertEquals(3, Option.some(3).getOrElse(2));
+    assertEquals(2, Option.none().getOrElse(2));
+  }
+
+  @Test
+  public void isEmptyIsDefined() {
+    // isEmpty
+    assertFalse(Option.some("").isEmpty());
+    assertTrue(Option.none().isEmpty());
+
+    // isDefined
+    assertTrue(Option.some("").isDefined());
+    assertFalse(Option.none().isDefined());
   }
 
   @Test
