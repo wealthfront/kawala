@@ -15,8 +15,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.kaching.platform.common.Option;
 import com.kaching.platform.common.types.Unification;
-import com.kaching.platform.common.values.Option;
 
 class InstantiatorImplFactory<T> {
 
