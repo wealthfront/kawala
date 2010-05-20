@@ -18,7 +18,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.kaching.platform.common.Option;
 import com.kaching.platform.testing.EquivalenceTester;
 
 public class OptionTest {
@@ -67,9 +66,31 @@ public class OptionTest {
   }
 
   @Test
-  public void getOrElse() {
+  public void getOrElseEager() {
     assertEquals(3, Option.some(3).getOrElse(2));
     assertEquals(2, Option.none().getOrElse(2));
+  }
+
+  @Test
+  public void getOrElseLazy() {
+    Thunk<Integer> defaultValue = new Thunk<Integer>() {
+      @Override
+      protected Integer compute() {
+        return 2;
+      }
+    };
+
+    assertEquals(3, Option.some(3).getOrElse(defaultValue));
+    assertFalse(defaultValue.isEvaluated());
+
+    /* Note: Parameterizing the none call is required otherwise Object is
+     * inferred for T and getOrElse(Object) is called instead of
+     * getOrElse(Thunk<Object>). In practice, the option one would rarely write
+     * such an expression but rather key off a properly parameterized optional
+     * value.
+     */
+    assertEquals(2, Option.<Integer> none().getOrElse(defaultValue));
+    assertTrue(defaultValue.isEvaluated());
   }
 
   @Test
