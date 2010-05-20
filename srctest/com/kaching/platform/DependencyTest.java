@@ -30,7 +30,7 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
       @CheckPackage(name = "com.kaching.platform.converters", mayDependOn = {
           "com.kaching.platform.common.*"
       }),
-      @CheckPackage(name = "com.kaching.platform.values", mayDependOn = {
+      @CheckPackage(name = "com.kaching.platform.common.values", mayDependOn = {
           "com.kaching.platform.common"
       }),
       @CheckPackage(name = "com.kaching.platform.guice", mayDependOn = {
