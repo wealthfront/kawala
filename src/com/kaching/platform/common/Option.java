@@ -46,10 +46,12 @@ public abstract class Option<T> implements Iterable<T> {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
 
+    @Override
     public boolean equals(Object that) {
       return this == that;
     }
