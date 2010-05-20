@@ -103,28 +103,28 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void getPublicConstructor() throws Exception {
-    InstantiatorImplFactory.getConstructor(A.class);
+    factory.getConstructor(A.class);
   }
 
   @Test
   public void getProtectedConstructor() throws Exception {
-    InstantiatorImplFactory.getConstructor(B.class);
+    factory.getConstructor(B.class);
   }
 
   @Test
   public void getDefaultVisibleConstructor() throws Exception {
-    InstantiatorImplFactory.getConstructor(C.class);
+    factory.getConstructor(C.class);
   }
 
   @Test
   public void getPrivateConstructor() throws Exception {
-    InstantiatorImplFactory.getConstructor(D.class);
+    factory.getConstructor(D.class);
   }
 
   @Test
   public void getNonExistingConstructor() throws Exception {
     try {
-      InstantiatorImplFactory.getConstructor(E.class);
+      factory.getConstructor(E.class);
       fail();
     } catch (IllegalArgumentException e) {
       // expected
@@ -134,7 +134,7 @@ public class InstantiatorImplFactoryTest {
   @Test
   public void getNonUniqueConstructor() throws Exception {
     try {
-      InstantiatorImplFactory.getConstructor(F.class);
+      factory.getConstructor(F.class);
       fail();
     } catch (IllegalArgumentException e) {
       // expected
@@ -143,27 +143,25 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void getConstructorFromSuperclass() throws Exception {
-    InstantiatorImplFactory.getConstructor(G.class);
+    factory.getConstructor(G.class);
   }
 
   @Test
   public void getConstructorFromSuperclassWithMultipleConstructors() {
-    InstantiatorImplFactory.getConstructor(H.class);
+    factory.getConstructor(H.class);
   }
 
   @Test
   public void getNonUniqueConstructorWithAnnotation1() throws Exception {
-    assertNotNull(InstantiatorImplFactory.getConstructor(P.class));
+    assertNotNull(factory.getConstructor(P.class));
   }
 
   @Test
   public void getNonUniqueConstructorWithAnnotation2() throws Exception {
-    try {
-      InstantiatorImplFactory.getConstructor(Q.class);
-      fail();
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
+    factory.getConstructor(Q.class);
+    assertEquals(
+        new Errors().moreThanOnceConstructorWithInstantiate(Q.class),
+        factory.getErrors());
   }
 
   static class A {
