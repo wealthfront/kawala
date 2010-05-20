@@ -30,6 +30,9 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
       @CheckPackage(name = "com.kaching.platform.converters", mayDependOn = {
           "com.kaching.platform.common.*"
       }),
+      @CheckPackage(name = "com.kaching.platform.values", mayDependOn = {
+          "com.kaching.platform.common"
+      }),
       @CheckPackage(name = "com.kaching.platform.guice", mayDependOn = {
           "com.google.inject.*"
       }),
