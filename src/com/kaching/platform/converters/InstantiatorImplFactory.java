@@ -29,23 +29,29 @@ class InstantiatorImplFactory<T> {
 
   InstantiatorImpl<T> build() {
     // 1. find constructor
-    Constructor<T> constructor = getConstructor(klass);
-    constructor.setAccessible(true);
-    // 2. for each parameter, find converter
-    Type[] genericParameterTypes = constructor.getGenericParameterTypes();
-    Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
-    int parametersCount = genericParameterTypes.length;
-    Converter<?>[] converters =
-        parametersCount == 0 ? null : new Converter<?>[parametersCount];
-    for (int i = 0; i < parametersCount; i++) {
-      for (Converter<?> converter : createConverter(
-          genericParameterTypes[i], parameterAnnotations[i])) {
-        converters[i] = converter;
+    for (Constructor<T> constructor : getConstructor(klass)) {
+      constructor.setAccessible(true);
+      // 2. for each parameter, find converter
+      Type[] genericParameterTypes = constructor.getGenericParameterTypes();
+      Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
+      int parametersCount = genericParameterTypes.length;
+      Converter<?>[] converters =
+          parametersCount == 0 ? null : new Converter<?>[parametersCount];
+      for (int i = 0; i < parametersCount; i++) {
+        for (Converter<?> converter : createConverter(
+            genericParameterTypes[i], parameterAnnotations[i])) {
+          converters[i] = converter;
+        }
       }
+      // 3. done
+      errors.throwIfHasErrors();
+      return new InstantiatorImpl<T>(constructor, converters);
     }
-    // 3. done
+
+    // This program point is only reachable in erroneous cases and the next
+    // statement will therefore end the control flow.
     errors.throwIfHasErrors();
-    return new InstantiatorImpl<T>(constructor, converters);
+    throw new IllegalStateException();
   }
 
   @VisibleForTesting
@@ -73,22 +79,19 @@ class InstantiatorImplFactory<T> {
     Annotation[] typeAnnotations = targetClass.getAnnotations();
     for (Annotation typeAnnotation : typeAnnotations) {
       if (typeAnnotation instanceof ConvertedBy) {
+        Class<? extends Converter<?>> converterClass = ((ConvertedBy) typeAnnotation).value();
         try {
-          Class<? extends Converter<?>> converterClass = ((ConvertedBy) typeAnnotation).value();
           Type producedType =
               Unification.getActualTypeArgument(converterClass, Converter.class, 0);
           if (targetClass.equals(producedType)) {
             return Option.some(converterClass.newInstance());
           } else {
             errors.incorrectBoundForConverter(targetClass, converterClass, producedType);
-            return Option.none();
           }
         } catch (InstantiationException e) {
-          // proper error handling
-          throw new RuntimeException(e);
+          errors.unableToInstantiate(converterClass, e);
         } catch (IllegalAccessException e) {
-          // proper error handling
-          throw new RuntimeException(e);
+          errors.unableToInstantiate(converterClass, e);
         }
       }
     }
@@ -111,7 +114,7 @@ class InstantiatorImplFactory<T> {
   }
 
   @VisibleForTesting
-  static <T> Constructor<T> getConstructor(Class<T> clazz) {
+  Option<Constructor<T>> getConstructor(Class<?> clazz) {
     @SuppressWarnings("unchecked")
     Constructor<T>[] constructors =
         (Constructor<T>[]) clazz.getDeclaredConstructors();
@@ -122,15 +125,13 @@ class InstantiatorImplFactory<T> {
           if (convertableConstructor == null) {
             convertableConstructor = constructor;
           } else {
-            // should accumulate errors here
-            throw new IllegalArgumentException(clazz.toString()
-                + " has more than one constructors annotated with @"
-                + Instantiate.class.getSimpleName());
+            errors.moreThanOnceConstructorWithInstantiate(clazz);
+            return Option.none();
           }
         }
       }
       if (convertableConstructor != null) {
-        return convertableConstructor;
+        return Option.some(convertableConstructor);
       } else {
         // should accumulate errors here
         throw new IllegalArgumentException(clazz.toString() +
@@ -140,7 +141,7 @@ class InstantiatorImplFactory<T> {
       // should accumulate errors here
       throw new IllegalArgumentException("No constructor found in " + clazz);
     } else {
-      return constructors[0];
+      return Option.some(constructors[0]);
     }
   }
 

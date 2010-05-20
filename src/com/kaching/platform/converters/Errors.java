@@ -25,11 +25,12 @@ class Errors {
   // null or [E :: L] where L is any list
   private List<String> messages;
 
-  private void addMessage(String message) {
+  private Errors addMessage(String message, Object... values) {
     if (messages == null) {
       messages = newArrayList();
     }
-    messages.add(message);
+    messages.add(format(message, values));
+    return this;
   }
 
   void throwIfHasErrors() {
@@ -43,14 +44,33 @@ class Errors {
       Class<?> targetClass,
       Class<? extends Converter> converterClass,
       Type producedType) {
-    addMessage(format(
-        "The converter %2$s, mentioned on %1$s using @%4$s, does not produce " +
+    return addMessage(
+        "the converter %2$s, mentioned on %1$s using @%4$s, does not produce " +
         "instances of %1$s. It produces %3$s.",
         targetClass,
         converterClass,
         producedType,
-        ConvertedBy.class.getSimpleName()));
-    return this;
+        ConvertedBy.class.getSimpleName());
+  }
+
+  Errors moreThanOnceConstructorWithInstantiate(Class<?> klass) {
+    return addMessage(
+        "%s has more than one constructor annotated with @%s",
+        klass,
+        Instantiate.class.getSimpleName());
+  }
+
+  Errors unableToInstantiate(Class<?> klass, InstantiationException e) {
+    return addMessage(
+        "unable to instantiate %s due to %s",
+        klass,
+        e.getCause());
+  }
+
+  Errors unableToInstantiate(Class<?> klass, IllegalAccessException e) {
+    return addMessage(
+        "unable to instantiate %s because of lack of access to the definition of the constructor",
+        klass);
   }
 
   @Override

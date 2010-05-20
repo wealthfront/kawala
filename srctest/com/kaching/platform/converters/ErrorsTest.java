@@ -34,7 +34,7 @@ public class ErrorsTest {
       fail();
     } catch (RuntimeException e) {
       assertEquals(
-          "1) The converter interface com.kaching.platform.converters.Converter, " +
+          "1) the converter interface com.kaching.platform.converters.Converter, " +
           "mentioned on class java.lang.String using @ConvertedBy, " +
           "does not produce instances of class java.lang.String. It produces " +
           "class java.lang.Integer.",
