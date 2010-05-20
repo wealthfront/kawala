@@ -14,6 +14,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 
+import com.kaching.platform.common.AbstractIdentifier;
+
 /**
  * A U.S. Social Security number, as issued to an individual by the Social
  * Security Administration.

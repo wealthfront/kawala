@@ -1,4 +1,4 @@
-package com.kaching.platform.common.functional;
+package com.kaching.platform.common;
 
 /**
  * A lazy computation. No conditional logic in this super fast implementation!
