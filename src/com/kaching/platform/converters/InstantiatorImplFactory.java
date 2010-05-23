@@ -67,6 +67,9 @@ class InstantiatorImplFactory<T> {
         return Option.some(converter);
       }
       // 3. has <init>(Ljava/lang/String;)V;
+      if (targetClass.equals(String.class)) {
+        return Option.some(IdentityConverter.INSTANCE);
+      }
       for (Converter<?> converter : createConverterUsingStringConstructor(targetClass)) {
         return Option.some(converter);
       }

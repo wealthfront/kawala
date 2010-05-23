@@ -72,5 +72,19 @@ public class InstantiatorImplTest {
       assertEquals("wrong number of arguments", e.getMessage());
     }
   }
-  
+
+  @Test
+  public void nullNotAllowedIsNotOptional() throws Exception {
+    InstantiatorImpl<String> instantiator =
+      new InstantiatorImpl<String>(
+          String.class.getConstructor(String.class),
+          new Converter[] { IdentityConverter.INSTANCE });
+    try {
+      instantiator.newInstance((String) null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertEquals("parameter 1 is not optional but null was provided", e.getMessage());
+    }
+  }
+
 }
