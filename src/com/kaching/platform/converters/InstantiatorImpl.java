@@ -10,6 +10,8 @@
  */
 package com.kaching.platform.converters;
 
+import static java.lang.String.format;
+
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -25,7 +27,7 @@ class InstantiatorImpl<T> implements Instantiator<T> {
     this.constructor = constructor;
     this.converters = converters;
   }
-  
+
   @Override
   public T newInstance(String... values) {
     return newInstance(Arrays.asList(values));
@@ -42,6 +44,12 @@ class InstantiatorImpl<T> implements Instantiator<T> {
             throw new IllegalArgumentException("wrong number of arguments");
           }
           String value = valuesIterator.next();
+          // TODO(pascal): properly handle optionality as well as predicates.
+          if (value == null) {
+            throw new IllegalArgumentException(format(
+                "parameter %s is not optional but null was provided",
+                i + 1));
+          }
           parameters[i] = converters[i].fromString(value);
         }
         if (valuesIterator.hasNext()) {
@@ -58,5 +66,5 @@ class InstantiatorImpl<T> implements Instantiator<T> {
       throw new RuntimeException(e);
     }
   }
-  
+
 }

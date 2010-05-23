@@ -13,6 +13,7 @@ package com.kaching.platform.converters;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.annotation.ElementType;
@@ -94,6 +95,15 @@ public class InstantiatorImplFactoryTest {
         factory.createConverter(HasStringConstructor.class, null).getOrThrow();
     assertNotNull(converter);
     assertEquals(StringConstructorConverter.class, converter.getClass());
+  }
+
+  @Test
+  public void createConverterDefaultIfHasStringConstructorIfString() throws Exception {
+    Converter<?> converter =
+        factory.createConverter(String.class, null).getOrThrow();
+    assertNotNull(converter);
+    assertEquals(IdentityConverter.class, converter.getClass());
+    assertTrue(IdentityConverter.INSTANCE == converter);
   }
 
   static class HasStringConstructor {

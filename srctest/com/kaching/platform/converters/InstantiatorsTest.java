@@ -102,4 +102,11 @@ public class InstantiatorsTest {
 
   }
 
+  static class ConstructMe4Optionality {
+    private final String name;
+    ConstructMe4Optionality(String name) {
+      this.name = name;
+    }
+  }
+
 }
