@@ -13,6 +13,7 @@ package com.kaching.platform.converters;
 import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
@@ -44,6 +45,15 @@ public class InstantiatorsTest {
     assertEquals("Jack Bauer", instance.name.content);
     assertEquals("First", instance.pair.first);
     assertEquals("Last", instance.pair.last);
+  }
+
+  @Test
+  public void constructMe4() {
+    ConstructMe4Optionality instance = Instantiators
+        .createInstantiator(ConstructMe4Optionality.class)
+        .newInstance((String) null);
+    assertNotNull(instance);
+    assertNull(instance.name);
   }
 
   static class ConstructMe1 {
@@ -104,7 +114,7 @@ public class InstantiatorsTest {
 
   static class ConstructMe4Optionality {
     private final String name;
-    ConstructMe4Optionality(String name) {
+    ConstructMe4Optionality(@Optional String name) {
       this.name = name;
     }
   }
