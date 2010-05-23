@@ -14,18 +14,22 @@ import static java.lang.String.format;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Iterator;
 
 class InstantiatorImpl<T> implements Instantiator<T> {
 
   private final Constructor<T> constructor;
   private final Converter<?>[] converters;
+  private final BitSet optionality;
 
   InstantiatorImpl(
       Constructor<T> constructor,
-      Converter<?>[] converters) {
+      Converter<?>[] converters,
+      BitSet optionality) {
     this.constructor = constructor;
     this.converters = converters;
+    this.optionality = optionality;
   }
 
   @Override
@@ -44,13 +48,25 @@ class InstantiatorImpl<T> implements Instantiator<T> {
             throw new IllegalArgumentException("wrong number of arguments");
           }
           String value = valuesIterator.next();
-          // TODO(pascal): properly handle optionality as well as predicates.
+          Converter<?> converter = converters[i];
+          // TODO(pascal): properly handle predicates.
+          Object parameter;
           if (value == null) {
-            throw new IllegalArgumentException(format(
-                "parameter %s is not optional but null was provided",
-                i + 1));
+            if (optionality.get(i)) {
+              parameter = null;
+            } else {
+              throw new IllegalArgumentException(format(
+                  "parameter %s is not optional but null was provided",
+                  i + 1));
+            }
+          } else {
+            parameter = converter.fromString(value);
+            if (parameter == null) {
+              throw new IllegalStateException(format(
+                  "converter %s produced a null value", converter.getClass()));
+            }
           }
-          parameters[i] = converters[i].fromString(value);
+          parameters[i] = parameter;
         }
         if (valuesIterator.hasNext()) {
           throw new IllegalArgumentException("wrong number of arguments");

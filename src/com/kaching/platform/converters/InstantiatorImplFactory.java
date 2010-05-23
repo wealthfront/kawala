@@ -13,6 +13,7 @@ package com.kaching.platform.converters;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
+import java.util.BitSet;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.kaching.platform.common.Option;
@@ -37,21 +38,33 @@ class InstantiatorImplFactory<T> {
       int parametersCount = genericParameterTypes.length;
       Converter<?>[] converters =
           parametersCount == 0 ? null : new Converter<?>[parametersCount];
+      BitSet optionality = new BitSet();
       for (int i = 0; i < parametersCount; i++) {
+        Annotation[] annotations = parameterAnnotations[i];
         for (Converter<?> converter : createConverter(
-            genericParameterTypes[i], parameterAnnotations[i])) {
+            genericParameterTypes[i], annotations)) {
           converters[i] = converter;
+          optionality.set(i, containsOptionalAnnotation(annotations));
         }
       }
       // 3. done
       errors.throwIfHasErrors();
-      return new InstantiatorImpl<T>(constructor, converters);
+      return new InstantiatorImpl<T>(constructor, converters, optionality);
     }
 
     // This program point is only reachable in erroneous cases and the next
     // statement will therefore end the control flow.
     errors.throwIfHasErrors();
     throw new IllegalStateException();
+  }
+
+  private boolean containsOptionalAnnotation(Annotation[] annotations) {
+    for (Annotation annotation : annotations) {
+      if (annotation instanceof Optional) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @VisibleForTesting
