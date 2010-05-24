@@ -10,6 +10,15 @@
  */
 package com.kaching.platform.converters;
 
+import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
+import static com.kaching.platform.converters.NativeConverters.C_BYTE;
+import static com.kaching.platform.converters.NativeConverters.C_CHAR;
+import static com.kaching.platform.converters.NativeConverters.C_DOUBLE;
+import static com.kaching.platform.converters.NativeConverters.C_FLOAT;
+import static com.kaching.platform.converters.NativeConverters.C_INT;
+import static com.kaching.platform.converters.NativeConverters.C_LONG;
+import static com.kaching.platform.converters.NativeConverters.C_SHORT;
+import static java.lang.String.format;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -19,6 +28,7 @@ import static org.junit.Assert.fail;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.lang.reflect.Type;
 import java.util.List;
 
 import org.junit.Before;
@@ -26,6 +36,7 @@ import org.junit.Test;
 
 import com.google.inject.BindingAnnotation;
 import com.google.inject.name.Named;
+import com.kaching.platform.common.Option;
 
 public class InstantiatorImplFactoryTest {
 
@@ -104,6 +115,27 @@ public class InstantiatorImplFactoryTest {
     assertNotNull(converter);
     assertEquals(IdentityConverter.class, converter.getClass());
     assertTrue(IdentityConverter.INSTANCE == converter);
+  }
+
+  @Test
+  public void createConverterNatives() throws Exception {
+    Object[] fixtures = new Object[] {
+        C_BOOLEAN, Boolean.TYPE,
+        C_BYTE, Byte.TYPE,
+        C_CHAR, Character.TYPE,
+        C_DOUBLE, Double.TYPE,
+        C_FLOAT, Float.TYPE,
+        C_INT, Integer.TYPE,
+        C_LONG, Long.TYPE,
+        C_SHORT, Short.TYPE
+    };
+    for (int i = 0; i < fixtures.length; i += 2) {
+      String message = format("type %s", fixtures[i + 1]);
+      Option<? extends Converter<?>> converter =
+          factory.createConverter((Type) fixtures[i + 1], null);
+      assertTrue(message, converter.isDefined());
+      assertEquals(message, fixtures[i], converter.getOrThrow());
+    }
   }
 
   static class HasStringConstructor {

@@ -56,6 +56,15 @@ public class InstantiatorsTest {
     assertNull(instance.name);
   }
 
+  @Test
+  public void constructMe5() {
+    ConstructMe5OptionalityWithDefaultValue instance = Instantiators
+        .createInstantiator(ConstructMe5OptionalityWithDefaultValue.class)
+        .newInstance((String) null);
+    assertNotNull(instance);
+    assertEquals(90, instance.number);
+  }
+
   static class ConstructMe1 {
     ConstructMe1() {}
   }
@@ -116,6 +125,14 @@ public class InstantiatorsTest {
     private final String name;
     ConstructMe4Optionality(@Optional String name) {
       this.name = name;
+    }
+  }
+
+  static class ConstructMe5OptionalityWithDefaultValue {
+    private final Integer number;
+    ConstructMe5OptionalityWithDefaultValue(
+        @Optional("90") Integer number) {
+          this.number = number;
     }
   }
 
