@@ -10,12 +10,23 @@
  */
 package com.kaching.platform.converters;
 
+import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
+import static com.kaching.platform.converters.NativeConverters.C_BYTE;
+import static com.kaching.platform.converters.NativeConverters.C_CHAR;
+import static com.kaching.platform.converters.NativeConverters.C_DOUBLE;
+import static com.kaching.platform.converters.NativeConverters.C_FLOAT;
+import static com.kaching.platform.converters.NativeConverters.C_INT;
+import static com.kaching.platform.converters.NativeConverters.C_LONG;
+import static com.kaching.platform.converters.NativeConverters.C_SHORT;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.BitSet;
+import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.common.types.Unification;
 
@@ -23,6 +34,18 @@ class InstantiatorImplFactory<T> {
 
   private final Errors errors = new Errors();
   private final Class<T> klass;
+  private final static ConcurrentMap<Type, Converter<?>> BASE_CONVERTERS =
+      ImmutableMap.<Type, Converter<?>> builder()
+      .put(String.class, IdentityConverter.INSTANCE)
+      .put(Boolean.TYPE, C_BOOLEAN)
+      .put(Byte.TYPE, C_BYTE)
+      .put(Character.TYPE, C_CHAR)
+      .put(Double.TYPE, C_DOUBLE)
+      .put(Float.TYPE, C_FLOAT)
+      .put(Integer.TYPE, C_INT)
+      .put(Long.TYPE, C_LONG)
+      .put(Short.TYPE, C_SHORT)
+      .build();
 
   InstantiatorImplFactory(Class<T> klass) {
     this.klass = klass;
@@ -80,8 +103,8 @@ class InstantiatorImplFactory<T> {
         return Option.some(converter);
       }
       // 3. has <init>(Ljava/lang/String;)V;
-      if (targetClass.equals(String.class)) {
-        return Option.some(IdentityConverter.INSTANCE);
+      if (BASE_CONVERTERS.containsKey(targetClass)) {
+        return Option.some(BASE_CONVERTERS.get(targetClass));
       }
       for (Converter<?> converter : createConverterUsingStringConstructor(targetClass)) {
         return Option.some(converter);

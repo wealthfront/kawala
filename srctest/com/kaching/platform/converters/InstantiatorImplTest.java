@@ -10,6 +10,14 @@
  */
 package com.kaching.platform.converters;
 
+import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
+import static com.kaching.platform.converters.NativeConverters.C_BYTE;
+import static com.kaching.platform.converters.NativeConverters.C_CHAR;
+import static com.kaching.platform.converters.NativeConverters.C_DOUBLE;
+import static com.kaching.platform.converters.NativeConverters.C_FLOAT;
+import static com.kaching.platform.converters.NativeConverters.C_INT;
+import static com.kaching.platform.converters.NativeConverters.C_LONG;
+import static com.kaching.platform.converters.NativeConverters.C_SHORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -134,6 +142,50 @@ public class InstantiatorImplTest {
     private final String string;
     public WrappedString(String string) {
       this.string = string;
+    }
+  }
+
+  @Test
+  public void natives() throws Exception {
+    Natives instance = new InstantiatorImpl<Natives>(
+        Natives.class.getConstructor(
+            Integer.TYPE, Double.TYPE, Short.TYPE, Character.TYPE,
+            Long.TYPE, Boolean.TYPE, Float.TYPE, Byte.TYPE),
+        new Converter[] {
+          C_INT, C_DOUBLE, C_SHORT, C_CHAR,
+          C_LONG, C_BOOLEAN, C_FLOAT, C_BYTE },
+        new BitSet())
+        .newInstance("1", "2.6", "3", "c", "4", "true", "5.5", "6");
+    assertNotNull(instance);
+    assertEquals(1, instance.i);
+    assertEquals(2.6d, instance.d);
+    assertEquals(3, instance.s);
+    assertEquals('c', instance.c);
+    assertEquals(4L, instance.l);
+    assertEquals(true, instance.b);
+    assertEquals(5.5f, instance.f);
+    assertEquals(6, instance.y);
+  }
+
+  static class Natives {
+      private final int i;
+      private final double d;
+      private final short s;
+      private final char c;
+      private final long l;
+      private final boolean b;
+      private final float f;
+      private final byte y;
+    public Natives(
+        int i, double d, short s, char c, long l, boolean b, float f, byte y) {
+      this.i = i;
+      this.d = d;
+      this.s = s;
+      this.c = c;
+      this.l = l;
+      this.b = b;
+      this.f = f;
+      this.y = y;
     }
   }
 
