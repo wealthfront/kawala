@@ -20,6 +20,13 @@ class NativeConverters {
     }
   }
 
+  static final Converter<String> C_STRING = new ConverterWithToString<String>() {
+    @Override
+    public String fromString(String representation) {
+      return representation;
+    }
+  };
+
   static final Converter<Integer> C_INT = new ConverterWithToString<Integer>() {
     @Override
     public Integer fromString(String representation) {

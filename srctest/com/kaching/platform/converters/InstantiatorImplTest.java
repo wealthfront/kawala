@@ -18,6 +18,7 @@ import static com.kaching.platform.converters.NativeConverters.C_FLOAT;
 import static com.kaching.platform.converters.NativeConverters.C_INT;
 import static com.kaching.platform.converters.NativeConverters.C_LONG;
 import static com.kaching.platform.converters.NativeConverters.C_SHORT;
+import static com.kaching.platform.converters.NativeConverters.C_STRING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -41,7 +42,7 @@ public class InstantiatorImplTest {
         "hello",
         new InstantiatorImpl<String>(
             String.class.getConstructor(String.class),
-            new Converter[] { IdentityConverter.INSTANCE },
+            new Converter[] { C_STRING },
             new BitSet()).newInstance("hello"));
   }
 
@@ -62,7 +63,7 @@ public class InstantiatorImplTest {
     InstantiatorImpl<String> instantiator =
         new InstantiatorImpl<String>(
             String.class.getConstructor(String.class),
-            new Converter[] { IdentityConverter.INSTANCE },
+            new Converter[] { C_STRING },
             new BitSet());
     try {
       instantiator.newInstance();
@@ -77,7 +78,7 @@ public class InstantiatorImplTest {
     InstantiatorImpl<String> instantiator =
         new InstantiatorImpl<String>(
             String.class.getConstructor(String.class),
-            new Converter[] { IdentityConverter.INSTANCE },
+            new Converter[] { C_STRING },
             new BitSet());
     try {
       instantiator.newInstance("first", "second");
@@ -92,7 +93,7 @@ public class InstantiatorImplTest {
     InstantiatorImpl<String> instantiator =
       new InstantiatorImpl<String>(
           String.class.getConstructor(String.class),
-          new Converter[] { IdentityConverter.INSTANCE },
+          new Converter[] { C_STRING },
           new BitSet());
     try {
       instantiator.newInstance((String) null);
@@ -131,7 +132,7 @@ public class InstantiatorImplTest {
     optionality.set(0);
     WrappedString instance = new InstantiatorImpl<WrappedString>(
         WrappedString.class.getConstructor(String.class),
-        new Converter[] { IdentityConverter.INSTANCE },
+        new Converter[] { C_STRING },
         optionality)
         .newInstance((String) null);
     assertNotNull(instance);
