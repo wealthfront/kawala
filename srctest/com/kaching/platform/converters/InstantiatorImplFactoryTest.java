@@ -18,6 +18,7 @@ import static com.kaching.platform.converters.NativeConverters.C_FLOAT;
 import static com.kaching.platform.converters.NativeConverters.C_INT;
 import static com.kaching.platform.converters.NativeConverters.C_LONG;
 import static com.kaching.platform.converters.NativeConverters.C_SHORT;
+import static com.kaching.platform.converters.NativeConverters.C_STRING;
 import static java.lang.String.format;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.Assert.assertEquals;
@@ -109,17 +110,9 @@ public class InstantiatorImplFactoryTest {
   }
 
   @Test
-  public void createConverterDefaultIfHasStringConstructorIfString() throws Exception {
-    Converter<?> converter =
-        factory.createConverter(String.class, null).getOrThrow();
-    assertNotNull(converter);
-    assertEquals(IdentityConverter.class, converter.getClass());
-    assertTrue(IdentityConverter.INSTANCE == converter);
-  }
-
-  @Test
   public void createConverterNatives() throws Exception {
     Object[] fixtures = new Object[] {
+        C_STRING, String.class,
         C_BOOLEAN, Boolean.TYPE,
         C_BYTE, Byte.TYPE,
         C_CHAR, Character.TYPE,

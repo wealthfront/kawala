@@ -18,6 +18,7 @@ import static com.kaching.platform.converters.NativeConverters.C_FLOAT;
 import static com.kaching.platform.converters.NativeConverters.C_INT;
 import static com.kaching.platform.converters.NativeConverters.C_LONG;
 import static com.kaching.platform.converters.NativeConverters.C_SHORT;
+import static com.kaching.platform.converters.NativeConverters.C_STRING;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -36,7 +37,7 @@ class InstantiatorImplFactory<T> {
   private final Class<T> klass;
   private final static ConcurrentMap<Type, Converter<?>> BASE_CONVERTERS =
       ImmutableMap.<Type, Converter<?>> builder()
-      .put(String.class, IdentityConverter.INSTANCE)
+      .put(String.class, C_STRING)
       .put(Boolean.TYPE, C_BOOLEAN)
       .put(Byte.TYPE, C_BYTE)
       .put(Character.TYPE, C_CHAR)
