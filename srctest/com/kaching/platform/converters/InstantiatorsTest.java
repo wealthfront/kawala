@@ -24,7 +24,6 @@ public class InstantiatorsTest {
     assertNotNull(Instantiators
         .createInstantiator(ConstructMe1.class)
         .newInstance());
-
   }
 
   @Test

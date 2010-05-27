@@ -22,14 +22,17 @@ class InstantiatorImpl<T> implements Instantiator<T> {
   private final Constructor<T> constructor;
   private final Converter<?>[] converters;
   private final BitSet optionality;
+  private final String[] defaultValues;
 
   InstantiatorImpl(
       Constructor<T> constructor,
       Converter<?>[] converters,
-      BitSet optionality) {
+      BitSet optionality,
+      String[] defaultValues) {
     this.constructor = constructor;
     this.converters = converters;
     this.optionality = optionality;
+    this.defaultValues = defaultValues;
   }
 
   @Override
@@ -53,18 +56,16 @@ class InstantiatorImpl<T> implements Instantiator<T> {
           Object parameter;
           if (value == null) {
             if (optionality.get(i)) {
-              parameter = null;
+              parameter = (defaultValues == null || defaultValues[i] == null) ?
+                  null :
+                  convert(converter, defaultValues[i]);
             } else {
               throw new IllegalArgumentException(format(
                   "parameter %s is not optional but null was provided",
                   i + 1));
             }
           } else {
-            parameter = converter.fromString(value);
-            if (parameter == null) {
-              throw new IllegalStateException(format(
-                  "converter %s produced a null value", converter.getClass()));
-            }
+            parameter = convert(converter, value);
           }
           parameters[i] = parameter;
         }
@@ -81,6 +82,15 @@ class InstantiatorImpl<T> implements Instantiator<T> {
       // do proper exception handling including de-wrapping exceptions
       throw new RuntimeException(e);
     }
+  }
+
+  private Object convert(Converter<?> converter, String value) {
+    Object parameter = converter.fromString(value);
+    if (parameter == null) {
+      throw new IllegalStateException(format(
+          "converter %s produced a null value", converter.getClass()));
+    }
+    return parameter;
   }
 
 }

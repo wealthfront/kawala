@@ -11,6 +11,7 @@
 package com.kaching.platform.converters;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.reflect.Modifier.ABSTRACT;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -33,11 +34,12 @@ class StringConstructorConverter<T> implements Converter<T> {
   StringConstructorConverter(Constructor<?> constructor) {
     Class<?>[] parameterTypes = constructor.getParameterTypes();
     checkArgument(
+        (constructor.getDeclaringClass().getModifiers() & ABSTRACT) == 0 &&
         parameterTypes.length == 1 &&
         parameterTypes[0].equals(String.class));
     this.constructor = constructor;
   }
-  
+
   @Override
   public String toString(T value) {
     return value.toString();
@@ -49,17 +51,23 @@ class StringConstructorConverter<T> implements Converter<T> {
     try {
       return (T) constructor.newInstance(representation);
     } catch (IllegalArgumentException e) {
-      // proper error handling
-      throw new RuntimeException(e);
+      throw new IllegalStateException(
+          "unreachable since we check the number of arguments the " +
+          "constructor takes when building this converter", e);
     } catch (InstantiationException e) {
-      // proper error handling
-      throw new RuntimeException(e);
+      throw new IllegalStateException(
+          "unreachable since we check that the class is not abstract", e);
     } catch (IllegalAccessException e) {
-      // proper error handling
       throw new RuntimeException(e);
     } catch (InvocationTargetException e) {
-      // proper error handling
-      throw new RuntimeException(e);
+      try {
+        throw e.getTargetException();
+      } catch (RuntimeException targetException) {
+        throw targetException;
+      } catch (Throwable targetException) {
+        // we must wrap it
+        throw new RuntimeException(e);
+      }
     }
   }
 

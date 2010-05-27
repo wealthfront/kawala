@@ -60,7 +60,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverterConvertedBy() throws Exception {
-    Converter<?> converter = factory.createConverter(HasConvertedBy.class, null).getOrThrow();
+    Converter<?> converter = factory.createConverter(HasConvertedBy.class).getOrThrow();
     assertNotNull(converter);
     assertEquals(HasConvertedByConverter.class, converter.getClass());
   }
@@ -78,7 +78,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverterConvertedByWrongBound() throws Exception {
-    factory.createConverter(HasConvertedByWrongBound.class, null);
+    factory.createConverter(HasConvertedByWrongBound.class);
     assertEquals(
         new Errors().incorrectBoundForConverter(
             HasConvertedByWrongBound.class,
@@ -104,9 +104,14 @@ public class InstantiatorImplFactoryTest {
   @Test
   public void createConverterDefaultIfHasStringConstructor() throws Exception {
     Converter<?> converter =
-        factory.createConverter(HasStringConstructor.class, null).getOrThrow();
+        factory.createConverter(HasStringConstructor.class).getOrThrow();
     assertNotNull(converter);
     assertEquals(StringConstructorConverter.class, converter.getClass());
+  }
+
+  static class HasStringConstructor {
+    HasStringConstructor(String representation) {
+    }
   }
 
   @Test
@@ -125,15 +130,53 @@ public class InstantiatorImplFactoryTest {
     for (int i = 0; i < fixtures.length; i += 2) {
       String message = format("type %s", fixtures[i + 1]);
       Option<? extends Converter<?>> converter =
-          factory.createConverter((Type) fixtures[i + 1], null);
+          factory.createConverter((Type) fixtures[i + 1]);
       assertTrue(message, converter.isDefined());
       assertEquals(message, fixtures[i], converter.getOrThrow());
     }
   }
 
-  static class HasStringConstructor {
-    HasStringConstructor(String representation) {
+  @Test
+  public void createInstantiatorWithIncorrectDefaultValue() throws Exception {
+    // TODO(pascal): Refactor. Very ugly pattern here because build() is too
+    // high level.
+    InstantiatorImplFactory<WrongDefaultValue> f = null;
+    try {
+      f = new InstantiatorImplFactory<WrongDefaultValue>(WrongDefaultValue.class);
+      f.build();
+      fail();
+    } catch (RuntimeException e) {
     }
+    assertEquals(
+        new Errors().incorrectDefaultValue(
+            "foobar",
+            new IllegalArgumentException()),
+        f.getErrors());
+  }
+
+  static class WrongDefaultValue {
+    WrongDefaultValue(@Optional("foobar") char c) {
+    }
+  }
+
+  @Test
+  public void createInstantiatorWithLiteralTypeNotHavingDefault() throws Exception {
+    // TODO(pascal): Refactor. Very ugly pattern here because build() is too
+    // high level.
+    InstantiatorImplFactory<OptionalLiteralParameterWithoutDefault> f = null;
+    try {
+      f = new InstantiatorImplFactory<OptionalLiteralParameterWithoutDefault>(OptionalLiteralParameterWithoutDefault.class);
+      f.build();
+      fail();
+    } catch (RuntimeException e) {
+    }
+    assertEquals(
+        new Errors().optionalLiteralParameterMustHaveDefault(0),
+        f.getErrors());
+  }
+
+  static class OptionalLiteralParameterWithoutDefault {
+    OptionalLiteralParameterWithoutDefault(@Optional short s) {}
   }
 
   @Test

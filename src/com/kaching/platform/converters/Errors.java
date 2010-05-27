@@ -73,6 +73,18 @@ class Errors {
         klass);
   }
 
+  Errors incorrectDefaultValue(String value, RuntimeException e) {
+    return addMessage(
+        "%s: For default value \"%s\"",
+        e.getClass().getName(), value);
+  }
+
+  Errors optionalLiteralParameterMustHaveDefault(int parameterNum) {
+    return addMessage(
+        "parameter %s: opetional literal parameters must have a default value",
+        parameterNum + 1);
+  }
+
   @Override
   public int hashCode() {
     return messages == null ? EMPTY_LIST.hashCode() : messages.hashCode();

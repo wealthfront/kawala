@@ -12,6 +12,7 @@ package com.kaching.platform.converters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Constructor;
 
@@ -28,18 +29,38 @@ public class StringConstructorConverterTest {
   public void checksConstructorIsTakesOneString2() {
     converter(DoesNotTakeSingleString2.class);
   }
-  
+
+  @Test(expected = IllegalArgumentException.class)
+  public void isAbstractClass() {
+    converter(IsAbstractClass.class);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void isEnum() {
+    converter(IsEnum.class);
+  }
+
   @Test
   public void convertsProperly() {
     StringConstructorConverter<TakesSingleString> converter = converter(TakesSingleString.class);
-    
+
     // from string
     TakesSingleString fromString = converter.fromString("hello world");
     assertNotNull(fromString);
     assertEquals("hello world", fromString.representation);
-    
+
     // to string
     assertEquals("hello world", converter.toString(fromString));
+  }
+
+  @Test
+  public void properlyBubblesException() {
+    try {
+      converter(TakesSingleStringAndThrows.class).fromString(null);
+      fail();
+    } catch (RuntimeException e) {
+      assertEquals(PrivateLocalRuntimException.class, e.getClass());
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -48,7 +69,7 @@ public class StringConstructorConverterTest {
     assertEquals(1, declaredConstructors.length);
     return (StringConstructorConverter<T>) new StringConstructorConverter<Object>(declaredConstructors[0]);
   }
-  
+
   static class TakesSingleString {
     private final String representation;
     TakesSingleString(String representation) {
@@ -59,13 +80,34 @@ public class StringConstructorConverterTest {
       return representation;
     }
   }
-  
+
+  static class TakesSingleStringAndThrows {
+    TakesSingleStringAndThrows(String representation) {
+      throw new PrivateLocalRuntimException();
+    }
+  }
+
+  private static class PrivateLocalRuntimException extends RuntimeException {
+    private static final long serialVersionUID = -2960889688405948131L;
+  }
+
   static class DoesNotTakeSingleString1 {
   }
-  
+
   static class DoesNotTakeSingleString2 {
     DoesNotTakeSingleString2(String a, String b) {
     }
   }
-  
+
+  abstract static class IsAbstractClass {
+    IsAbstractClass(String a) {
+    }
+  }
+
+  enum IsEnum {
+    ;
+    IsEnum(String a) {
+    }
+  }
+
 }

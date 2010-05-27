@@ -26,7 +26,7 @@ public class ErrorsTest {
   }
 
   @Test
-  public void errorScenario() {
+  public void incorrectBoundForConverter() {
     try {
       new Errors()
           .incorrectBoundForConverter(String.class, Converter.class, Integer.class)
@@ -38,6 +38,20 @@ public class ErrorsTest {
           "mentioned on class java.lang.String using @ConvertedBy, " +
           "does not produce instances of class java.lang.String. It produces " +
           "class java.lang.Integer.",
+          e.getMessage());
+    }
+  }
+
+  @Test
+  public void incorrectDefaultValue() {
+    try {
+      new Errors()
+          .incorrectDefaultValue("90z", new NumberFormatException("the message"))
+          .throwIfHasErrors();
+      fail();
+    } catch (RuntimeException e) {
+      assertEquals(
+          "1) java.lang.NumberFormatException: For default value \"90z\"",
           e.getMessage());
     }
   }
