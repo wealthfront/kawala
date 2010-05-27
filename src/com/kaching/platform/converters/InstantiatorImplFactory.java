@@ -63,17 +63,40 @@ class InstantiatorImplFactory<T> {
       Converter<?>[] converters =
           parametersCount == 0 ? null : new Converter<?>[parametersCount];
       BitSet optionality = new BitSet();
+      String[] defaultValues = null;
       for (int i = 0; i < parametersCount; i++) {
         Annotation[] annotations = parameterAnnotations[i];
-        for (Converter<?> converter : createConverter(
-            genericParameterTypes[i], annotations)) {
+        Type genericParameterType = genericParameterTypes[i];
+        for (final Converter<?> converter : createConverter(
+            genericParameterType)) {
           converters[i] = converter;
-          optionality.set(i, containsOptionalAnnotation(annotations));
+          for (Optional optional : getOptionalAnnotation(annotations)) {
+            String defaultValue = optional.value();
+            if (defaultValue.isEmpty()) {
+              // optional literal types are not allowed to omit default values
+              if (BASE_CONVERTERS.containsKey(genericParameterType) &&
+                  !String.class.equals(genericParameterType)) {
+                errors.optionalLiteralParameterMustHaveDefault(i);
+              }
+            } else {
+              try {
+                converter.fromString(defaultValue);
+                if (defaultValues == null) {
+                  defaultValues = new String[parametersCount];
+                }
+                defaultValues[i] = defaultValue;
+              } catch (RuntimeException e) {
+                errors.incorrectDefaultValue(defaultValue, e);
+              }
+            }
+            optionality.set(i);
+          }
         }
       }
       // 3. done
       errors.throwIfHasErrors();
-      return new InstantiatorImpl<T>(constructor, converters, optionality);
+      return new InstantiatorImpl<T>(
+          constructor, converters, optionality, defaultValues);
     }
 
     // This program point is only reachable in erroneous cases and the next
@@ -82,19 +105,18 @@ class InstantiatorImplFactory<T> {
     throw new IllegalStateException();
   }
 
-  private boolean containsOptionalAnnotation(Annotation[] annotations) {
+  private Option<Optional> getOptionalAnnotation(Annotation[] annotations) {
     for (Annotation annotation : annotations) {
       if (annotation instanceof Optional) {
-        return true;
+        return Option.some((Optional) annotation);
       }
     }
-    return false;
+    return Option.none();
   }
 
   @VisibleForTesting
   @SuppressWarnings("unchecked")
-  Option<? extends Converter<?>> createConverter(
-      Type targetType, Annotation[] annotations) {
+  Option<? extends Converter<?>> createConverter(Type targetType) {
     // 1. explicit binding
     // TODO(pascal): implement the first case
     if (targetType instanceof Class) {
