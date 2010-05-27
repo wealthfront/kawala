@@ -22,10 +22,10 @@ import java.lang.annotation.Target;
 @Target(TYPE)
 @Retention(RUNTIME)
 public @interface ConvertedBy {
-  
+
   /**
    * Indicates the default converter to use.
    */
   Class<? extends Converter<?>> value();
-  
+
 }
