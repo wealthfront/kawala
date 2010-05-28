@@ -61,7 +61,14 @@ public class ConstructorAnalysis {
         }
       }
     });
-    return state.assignements;
+    Map<String, JavaValue> assignements = state.assignements;
+    for (JavaValue value : assignements.values()) {
+      if (!value.getClass().equals(FormalParameter.class)) {
+        throw new IllegalConstructorException(
+            "cannot assign values other than formal parameters to fields");
+      }
+    }
+    return assignements;
   }
 
   /**
@@ -275,15 +282,15 @@ public class ConstructorAnalysis {
   static class ConstructorExecutionState {
 
     private final String owner;
-    private final List<LocalVariable> locals = newArrayList();
+    private final List<JavaValue> locals = newArrayList();
     private final Stack<JavaValue> stack = new Stack<JavaValue>();
     private final Map<String, JavaValue> assignements = newHashMap();
 
     ConstructorExecutionState(Class<?> klass, int argumentsNum) {
       owner = klass.getName().replace('.', '/');
-      locals.add(new LocalVariable("this"));
-      for (int i = 1; i <= argumentsNum; i++) {
-        locals.add(new LocalVariable(format("p%s", i - 1)));
+      locals.add(new ThisPointer());
+      for (int i = 0; i < argumentsNum; i++) {
+        locals.add(new FormalParameter(i));
       }
     }
 
@@ -317,14 +324,17 @@ public class ConstructorAnalysis {
   interface JavaValue {
   }
 
-  static class LocalVariable implements JavaValue {
-    private final String name;
-    public LocalVariable(String name) {
-      this.name = name;
+  static class ThisPointer implements JavaValue {
+  }
+
+  static class FormalParameter implements JavaValue {
+    private final int index;
+    public FormalParameter(int index) {
+      this.index = index;
     }
     @Override
     public String toString() {
-      return name;
+      return format("p%s", index);
     }
   }
 
