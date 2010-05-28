@@ -72,10 +72,24 @@ public class ConstructorAnalysisTest {
         DupAssignment.class, "duplicate assignment to field foo");
   }
 
+  static class KeepingSelfReference {
+    KeepingSelfReference reference;
+    KeepingSelfReference() {
+      this.reference = this;
+    }
+  }
+
+  @Test
+  public void keepingSelfReference() throws Exception {
+    assertAnalysisFails(
+        KeepingSelfReference.class,
+        "cannot assign values other than formal parameters to fields");
+  }
+
   private void assertAnalysisFails(Class<?> klass, String message) throws IOException {
     try {
       ConstructorAnalysis.analyse(klass, klass.getDeclaredConstructors()[0]);
-      fail();
+      fail("analysis should have failed");
     } catch (IllegalConstructorException e) {
       assertEquals(message, e.getMessage());
     }
