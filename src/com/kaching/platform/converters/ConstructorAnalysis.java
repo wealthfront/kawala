@@ -54,7 +54,8 @@ public class ConstructorAnalysis {
             hasVisitedConstructor[0] = true;
             return new ConstructorAnalyzer(state);
           } else {
-            throw new IllegalStateException();
+            throw new IllegalStateException(
+                "impossible to encounter twice a method with the same signature");
           }
         } else {
           return this;
@@ -100,7 +101,7 @@ public class ConstructorAnalysis {
 
     @Override
     public void visitAttribute(Attribute attr) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
@@ -130,12 +131,12 @@ public class ConstructorAnalysis {
 
     @Override
     public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
     public void visitIincInsn(int var, int increment) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
@@ -145,55 +146,44 @@ public class ConstructorAnalysis {
           log.trace("return");
           return;
 
-        case 0x03: // iconst_0
-        case 0x04: // iconst_1
-        case 0x05: // iconst_2
-        case 0x06: // iconst_3
-        case 0x07: // iconst_4
-        case 0x08: // iconst_5
-          int n = opcode - 0x3;
-          log.trace(format("iconst_%s", n));
-          state.stack.push(new JavaConstant(n));
-          return;
-
         default: unknown(opcode);
       }
     }
 
     @Override
     public void visitIntInsn(int opcode, int operand) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
     public void visitJumpInsn(int opcode, Label label) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
     public void visitLabel(Label label) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
     public void visitLdcInsn(Object cst) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
     public void visitLineNumber(int line, Label start) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
     public void visitLocalVariable(String name, String desc, String signature,
         Label start, Label end, int index) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
     public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
@@ -229,7 +219,7 @@ public class ConstructorAnalysis {
 
     @Override
     public void visitMultiANewArrayInsn(String desc, int dims) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
@@ -242,18 +232,18 @@ public class ConstructorAnalysis {
     @Override
     public void visitTableSwitchInsn(int min, int max, Label dflt,
         Label[] labels) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
     public void visitTryCatchBlock(Label start, Label end, Label handler,
         String type) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
     public void visitTypeInsn(int opcode, String desc) {
-      throw new UnsupportedOperationException();
+      throw illegalConstructor();
     }
 
     @Override
@@ -270,7 +260,11 @@ public class ConstructorAnalysis {
     }
 
     private void unknown(int opcode) {
-      throw new IllegalStateException(format("unknown opcode %s", opcode));
+      throw illegalConstructor();
+    }
+
+    private IllegalConstructorException illegalConstructor() {
+      return new IllegalConstructorException("illegal constructor");
     }
 
   }
@@ -335,17 +329,6 @@ public class ConstructorAnalysis {
     @Override
     public String toString() {
       return format("p%s", index);
-    }
-  }
-
-  static class JavaConstant implements JavaValue {
-    private final Object value;
-    public JavaConstant(Object value) {
-      this.value = value;
-    }
-    @Override
-    public String toString() {
-      return value.toString();
     }
   }
 

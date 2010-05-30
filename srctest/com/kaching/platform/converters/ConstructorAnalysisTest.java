@@ -86,6 +86,33 @@ public class ConstructorAnalysisTest {
         "cannot assign values other than formal parameters to fields");
   }
 
+  static class AssigningSomethingElseThanParamater {
+    int data;
+    AssigningSomethingElseThanParamater(int data) {
+      this.data = 4;
+    }
+  }
+
+  @Test
+  public void assigningSomethingElseThanParamater() throws Exception {
+    assertAnalysisFails(
+        AssigningSomethingElseThanParamater.class,
+        "illegal constructor");
+  }
+
+  static class ComplexCode {
+    ComplexCode() {
+      new Object();
+    }
+  }
+
+  @Test
+  public void complexCode() throws Exception {
+    assertAnalysisFails(
+        ComplexCode.class,
+        "illegal constructor");
+  }
+
   private void assertAnalysisFails(Class<?> klass, String message) throws IOException {
     try {
       ConstructorAnalysis.analyse(klass, klass.getDeclaredConstructors()[0]);
