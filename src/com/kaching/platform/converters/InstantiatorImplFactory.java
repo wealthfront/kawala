@@ -19,17 +19,23 @@ import static com.kaching.platform.converters.NativeConverters.C_INT;
 import static com.kaching.platform.converters.NativeConverters.C_LONG;
 import static com.kaching.platform.converters.NativeConverters.C_SHORT;
 import static com.kaching.platform.converters.NativeConverters.C_STRING;
+import static java.lang.String.format;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.BitSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.common.types.Unification;
+import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
 
 class InstantiatorImplFactory<T> {
 
@@ -48,8 +54,12 @@ class InstantiatorImplFactory<T> {
       .put(Short.TYPE, C_SHORT)
       .build();
 
-  InstantiatorImplFactory(Class<T> klass) {
+  private InstantiatorImplFactory(Class<T> klass) {
     this.klass = klass;
+  }
+
+  static <T> InstantiatorImplFactory<T> createFactory(Class<T> klass) {
+    return new InstantiatorImplFactory<T>(klass);
   }
 
   InstantiatorImpl<T> build() {
@@ -93,10 +103,18 @@ class InstantiatorImplFactory<T> {
           }
         }
       }
-      // 3. done
+      // 3. reverse mapping (fields to parameters)
+      Field[] fields = null;
+      try {
+        fields = retrieveFieldsFromAssignment(
+            parametersCount, ConstructorAnalysis.analyse(klass, constructor));
+      } catch (IOException e) {
+        throw new IllegalStateException("should be able to access the class");
+      }
+      // 4. done
       errors.throwIfHasErrors();
       return new InstantiatorImpl<T>(
-          constructor, converters, optionality, defaultValues);
+          constructor, converters, fields, optionality, defaultValues);
     }
 
     // This program point is only reachable in erroneous cases and the next
@@ -134,6 +152,33 @@ class InstantiatorImplFactory<T> {
       }
     }
     return Option.none();
+  }
+
+  @VisibleForTesting
+  Field[] retrieveFieldsFromAssignment(
+      int parametersCount, Map<String, FormalParameter> assignments) {
+    Field[] fields = new Field[parametersCount];
+    for (Entry<String, FormalParameter> entry : assignments.entrySet()) {
+      int parameterIndex = entry.getValue().getIndex();
+      if (parameterIndex < 0 || fields.length <= parameterIndex) {
+        throw new IllegalStateException(
+            format("formal parameter out of bounds (index %s)", parameterIndex));
+      }
+
+      Field field = null;
+      String fieldName = entry.getKey();
+      try {
+        // TODO(pascal): What about subclassing?
+        field = klass.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        fields[parameterIndex] = field;
+      } catch (SecurityException e) {
+        errors.unableToGetField(fieldName, e);
+      } catch (NoSuchFieldException e) {
+        errors.noSuchField(fieldName);
+      }
+    }
+    return fields;
   }
 
   private Option<? extends Converter<?>> createConverterUsingConvertedBy(

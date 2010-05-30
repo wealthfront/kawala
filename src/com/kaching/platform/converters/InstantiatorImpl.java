@@ -13,24 +13,32 @@ package com.kaching.platform.converters;
 import static java.lang.String.format;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.List;
+
+import com.google.common.collect.Lists;
 
 class InstantiatorImpl<T> implements Instantiator<T> {
 
   private final Constructor<T> constructor;
-  private final Converter<?>[] converters;
+  private final Field[] fields;
+  @SuppressWarnings("unchecked")
+  private final Converter[] converters;
   private final BitSet optionality;
   private final String[] defaultValues;
 
   InstantiatorImpl(
       Constructor<T> constructor,
       Converter<?>[] converters,
+      Field[] fields,
       BitSet optionality,
       String[] defaultValues) {
     this.constructor = constructor;
     this.converters = converters;
+    this.fields = fields;
     this.optionality = optionality;
     this.defaultValues = defaultValues;
   }
@@ -82,6 +90,23 @@ class InstantiatorImpl<T> implements Instantiator<T> {
       // do proper exception handling including de-wrapping exceptions
       throw new RuntimeException(e);
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<String> fromInstance(T instance) {
+    // TODO(pascal): Rewrite this naive implementation. The goal is to show
+    // the skeleton a full example of destantiating.
+    List<String> parameters = Lists.newArrayListWithCapacity(fields.length);
+    for (int i = 0; i < fields.length; i++) {
+      try {
+        parameters.add(converters[i].toString(fields[i].get(instance)));
+      } catch (IllegalArgumentException e) {
+        throw new RuntimeException(e);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return parameters;
   }
 
   private Object convert(Converter<?> converter, String value) {

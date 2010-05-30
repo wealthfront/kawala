@@ -12,8 +12,8 @@ import java.util.Map.Entry;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
+import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
 import com.kaching.platform.converters.ConstructorAnalysis.IllegalConstructorException;
-import com.kaching.platform.converters.ConstructorAnalysis.JavaValue;
 
 public class ConstructorAnalysisTest {
 
@@ -124,10 +124,10 @@ public class ConstructorAnalysisTest {
 
   private void assertAssignement(
       Class<?> klass, Map<?, ?> expected) throws IOException {
-    Map<String, JavaValue> assignements =
+    Map<String, FormalParameter> assignements =
         ConstructorAnalysis.analyse(klass, klass.getDeclaredConstructors()[0]);
     Map<String, String> actual = newHashMap();
-    for (Entry<String, JavaValue> entry : assignements.entrySet()) {
+    for (Entry<String, FormalParameter> entry : assignements.entrySet()) {
       actual.put(entry.getKey(), entry.getValue().toString());
     }
     assertEquals(expected, actual);

@@ -10,6 +10,8 @@
  */
 package com.kaching.platform.converters;
 
+import java.util.List;
+
 /**
  * Object used to instantiate and destantiate objects.
  */
@@ -24,5 +26,10 @@ public interface Instantiator<T> {
    * Creates a fresh instance of T using the provided values.
    */
   T newInstance(Iterable<String> values);
+
+  /**
+   * Destantiates an instance.
+   */
+  List<String> fromInstance(T instance);
 
 }
