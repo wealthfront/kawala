@@ -204,9 +204,7 @@ public class ConstructorAnalysis {
           if (!owner.equals(state.owner) &&
               name.equals("<init>") &&
               desc.equals("()V")) {
-            /* super()
-             * consumes object reference
-             */
+            // Call to super constructor consumes object reference.
             state.stack.pop();
             break;
           }
