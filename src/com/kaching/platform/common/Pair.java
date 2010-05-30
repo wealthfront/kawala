@@ -10,12 +10,13 @@
  */
 package com.kaching.platform.common;
 
+import com.google.common.base.Objects;
 
 /**
  * An immutable pair.
  */
 public class Pair<S, T> {
-  
+
   public final S left;
   public final T right;
 
@@ -30,24 +31,29 @@ public class Pair<S, T> {
 
   @Override
   public int hashCode() {
-    return left.hashCode() * right.hashCode();
+    return Objects.hashCode(left, right);
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
+  public boolean equals(Object obj) {
+    if (this == obj) {
       return true;
     }
-    if (!(o instanceof Pair<?, ?>)) {
+    if (obj == null) {
       return false;
     }
-    Pair<?, ?> other = (Pair<?, ?>) o;
-    return left.equals(other.left) && right.equals(other.right);
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+
+    Pair<?, ?> other = (Pair<?, ?>) obj;
+    return Objects.equal(left, other.left) &&
+           Objects.equal(right, other.right);
   }
 
   @Override
   public String toString() {
     return "(" + left + "," + right + ")";
   }
-  
+
 }
