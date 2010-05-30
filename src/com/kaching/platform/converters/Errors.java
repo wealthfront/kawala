@@ -73,6 +73,18 @@ class Errors {
         klass);
   }
 
+  Errors unableToGetField(String fieldName, SecurityException e) {
+    return addMessage(
+        "unable to get field %s due to security violation",
+        fieldName);
+  }
+
+  Errors noSuchField(String fieldName) {
+    return addMessage(
+        "no such field %s",
+        fieldName);
+  }
+
   Errors incorrectDefaultValue(String value, RuntimeException e) {
     return addMessage(
         "%s: For default value \"%s\"",

@@ -10,6 +10,7 @@
  */
 package com.kaching.platform.converters;
 
+import static com.kaching.platform.converters.InstantiatorImplFactory.createFactory;
 import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
 import static com.kaching.platform.converters.NativeConverters.C_BYTE;
 import static com.kaching.platform.converters.NativeConverters.C_CHAR;
@@ -29,15 +30,18 @@ import static org.junit.Assert.fail;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.name.Named;
 import com.kaching.platform.common.Option;
+import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
 
 public class InstantiatorImplFactoryTest {
 
@@ -45,12 +49,12 @@ public class InstantiatorImplFactoryTest {
 
   @Before
   public void before() {
-    factory = new InstantiatorImplFactory<Object>(null);
+    factory = InstantiatorImplFactory.createFactory(null);
   }
 
   @Test(expected = RuntimeException.class)
   public void buildShouldFailIfErrorsExist() {
-    new InstantiatorImplFactory<SomethingUsingHasConvertedByWrongBound>(SomethingUsingHasConvertedByWrongBound.class).build();
+    InstantiatorImplFactory.createFactory(SomethingUsingHasConvertedByWrongBound.class).build();
   }
 
   static class SomethingUsingHasConvertedByWrongBound {
@@ -110,7 +114,9 @@ public class InstantiatorImplFactoryTest {
   }
 
   static class HasStringConstructor {
+    final String representation;
     HasStringConstructor(String representation) {
+      this.representation = representation;
     }
   }
 
@@ -142,7 +148,7 @@ public class InstantiatorImplFactoryTest {
     // high level.
     InstantiatorImplFactory<WrongDefaultValue> f = null;
     try {
-      f = new InstantiatorImplFactory<WrongDefaultValue>(WrongDefaultValue.class);
+      f = InstantiatorImplFactory.createFactory(WrongDefaultValue.class);
       f.build();
       fail();
     } catch (RuntimeException e) {
@@ -165,7 +171,7 @@ public class InstantiatorImplFactoryTest {
     // high level.
     InstantiatorImplFactory<OptionalLiteralParameterWithoutDefault> f = null;
     try {
-      f = new InstantiatorImplFactory<OptionalLiteralParameterWithoutDefault>(OptionalLiteralParameterWithoutDefault.class);
+      f = InstantiatorImplFactory.createFactory(OptionalLiteralParameterWithoutDefault.class);
       f.build();
       fail();
     } catch (RuntimeException e) {
@@ -173,6 +179,38 @@ public class InstantiatorImplFactoryTest {
     assertEquals(
         new Errors().optionalLiteralParameterMustHaveDefault(0),
         f.getErrors());
+  }
+
+  @Test
+  public void retrieveFieldsFromAssignment1() {
+    Field[] fields = createFactory(HasStringConstructor.class)
+        .retrieveFieldsFromAssignment(
+            1,
+            ImmutableMap.of(
+                "representation", new FormalParameter(0)));
+    assertEquals(1, fields.length);
+    assertEquals("representation", fields[0].getName());
+    assertTrue(fields[0].isAccessible());
+  }
+
+  @Test
+  public void retrieveFieldsFromAssignment2() {
+    InstantiatorImplFactory<HasStringConstructor> f = createFactory(HasStringConstructor.class);
+    f.retrieveFieldsFromAssignment(
+        1,
+        ImmutableMap.of(
+            "thisfielddoesnotexist", new FormalParameter(0)));
+    assertEquals(
+        new Errors().noSuchField("thisfielddoesnotexist"),
+        f.getErrors());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void retrieveFieldsFromAssignment3() {
+    createFactory(HasStringConstructor.class).retrieveFieldsFromAssignment(
+        1,
+        ImmutableMap.of(
+            "representation", new FormalParameter(1))); // wrong index
   }
 
   static class OptionalLiteralParameterWithoutDefault {

@@ -35,7 +35,7 @@ public class ConstructorAnalysis {
    * Produces an assignment or field names to values or fails.
    * @throws IllegalConstructorException
    */
-  static Map<String, JavaValue> analyse(
+  static Map<String, FormalParameter> analyse(
       Class<?> klass, Constructor<?> constructor) throws IOException {
     final String constructorDescriptor =
         Type.getConstructorDescriptor(constructor);
@@ -62,14 +62,19 @@ public class ConstructorAnalysis {
         }
       }
     });
-    Map<String, JavaValue> assignements = state.assignements;
+    return validateAndCast(state.assignements);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, FormalParameter> validateAndCast(
+      final Map<String, JavaValue> assignements) {
     for (JavaValue value : assignements.values()) {
       if (!value.getClass().equals(FormalParameter.class)) {
         throw new IllegalConstructorException(
             "cannot assign values other than formal parameters to fields");
       }
     }
-    return assignements;
+    return (Map) assignements;
   }
 
   /**
@@ -323,12 +328,15 @@ public class ConstructorAnalysis {
 
   static class FormalParameter implements JavaValue {
     private final int index;
-    public FormalParameter(int index) {
+    FormalParameter(int index) {
       this.index = index;
     }
     @Override
     public String toString() {
       return format("p%s", index);
+    }
+    int getIndex() {
+      return index;
     }
   }
 

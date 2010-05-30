@@ -10,6 +10,8 @@
  */
 package com.kaching.platform.converters;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.kaching.platform.converters.InstantiatorImplFactory.createFactory;
 import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
 import static com.kaching.platform.converters.NativeConverters.C_BYTE;
 import static com.kaching.platform.converters.NativeConverters.C_CHAR;
@@ -25,7 +27,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.BitSet;
+import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class InstantiatorImplTest {
@@ -33,7 +37,7 @@ public class InstantiatorImplTest {
   @Test
   public void newInstanceForObject() throws Exception {
     assertNotNull(
-        new InstantiatorImpl<Object>(Object.class.getConstructor(), null, new BitSet(), null).newInstance());
+        new InstantiatorImpl<Object>(Object.class.getConstructor(), null, null, new BitSet(), null).newInstance());
   }
 
   @Test
@@ -43,6 +47,7 @@ public class InstantiatorImplTest {
         new InstantiatorImpl<String>(
             String.class.getConstructor(String.class),
             new Converter[] { C_STRING },
+            null,
             new BitSet(),
             null).newInstance("hello"));
   }
@@ -50,7 +55,7 @@ public class InstantiatorImplTest {
   @Test
   public void wrongNumberOfArguments1() throws Exception {
     InstantiatorImpl<String> instantiator =
-        new InstantiatorImpl<String>(String.class.getConstructor(String.class), null, new BitSet(), null);
+        new InstantiatorImpl<String>(String.class.getConstructor(String.class), null, null, new BitSet(), null);
     try {
       instantiator.newInstance();
       fail();
@@ -65,6 +70,7 @@ public class InstantiatorImplTest {
         new InstantiatorImpl<String>(
             String.class.getConstructor(String.class),
             new Converter[] { C_STRING },
+            null,
             new BitSet(),
             null);
     try {
@@ -81,6 +87,7 @@ public class InstantiatorImplTest {
         new InstantiatorImpl<String>(
             String.class.getConstructor(String.class),
             new Converter[] { C_STRING },
+            null,
             new BitSet(),
             null);
     try {
@@ -97,6 +104,7 @@ public class InstantiatorImplTest {
       new InstantiatorImpl<String>(
           String.class.getConstructor(String.class),
           new Converter[] { C_STRING },
+          null,
           new BitSet(),
           null);
     try {
@@ -113,6 +121,7 @@ public class InstantiatorImplTest {
       new InstantiatorImpl<String>(
           String.class.getConstructor(String.class),
           new Converter[] { new ConverterOnlyProducesNull() },
+          null,
           new BitSet(),
           null);
     try {
@@ -138,6 +147,7 @@ public class InstantiatorImplTest {
     WrappedString instance = new InstantiatorImpl<WrappedString>(
         WrappedString.class.getConstructor(String.class),
         new Converter[] { C_STRING },
+        null,
         optionality,
         null)
         .newInstance((String) null);
@@ -159,6 +169,7 @@ public class InstantiatorImplTest {
     WrappedLong instance = new InstantiatorImpl<WrappedLong>(
         WrappedLong.class.getConstructor(Long.TYPE),
         new Converter[] { C_LONG },
+        null,
         optionality,
         new String[] { "403" })
         .newInstance((String) null);
@@ -182,6 +193,7 @@ public class InstantiatorImplTest {
         new Converter[] {
           C_INT, C_DOUBLE, C_SHORT, C_CHAR,
           C_LONG, C_BOOLEAN, C_FLOAT, C_BYTE },
+        null,
         new BitSet(),
         null)
         .newInstance("1", "2.6", "3", "c", "4", "true", "5.5", "6");
@@ -216,6 +228,32 @@ public class InstantiatorImplTest {
       this.f = f;
       this.y = y;
     }
+  }
+
+  @Test
+  public void fromInstanceSimple() {
+    assertEquals(
+        newArrayList("56"),
+        createFactory(Simple.class).build()
+            .fromInstance(new Simple(56)));
+  }
+
+  static class Simple {
+    int value;
+    Simple(int value) {
+      this.value = value;
+    }
+  }
+
+  @Test
+  @Ignore
+  public void fromInstanceNatives() {
+    List<String> parameters = createFactory(Natives.class).build()
+        .fromInstance(new Natives(2, 3.4, (short) 5, '6', 7l, true, 8.0f, (byte) 9));
+    assertEquals(
+        newArrayList(
+            "2", "3.4", "4", "5", "6", "7", "true", "8", "9"),
+        parameters);
   }
 
 }

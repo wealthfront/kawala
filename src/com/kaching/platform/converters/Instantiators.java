@@ -17,9 +17,9 @@ public class Instantiators {
    * meant to be instantiated.
    */
   private Instantiators() {}
-  
+
   public static <T> Instantiator<T> createInstantiator(Class<T> klass) {
-    return new InstantiatorImplFactory<T>(klass).build();
+    return InstantiatorImplFactory.createFactory(klass).build();
   }
 
 }
