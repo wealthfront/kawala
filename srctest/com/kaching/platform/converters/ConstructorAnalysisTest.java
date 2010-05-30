@@ -106,11 +106,4 @@ public class ConstructorAnalysisTest {
     assertEquals(expected, actual);
   }
 
-  /*private <Q extends Query<?>> void assertError(
-      Class<Q> queryClass, String... errors) throws IOException {
-    ConstructorExecutionState state = analyse(queryClass);
-    assertEquals(newArrayList(errors), state.getErrors());
-  }*/
-
-
 }
