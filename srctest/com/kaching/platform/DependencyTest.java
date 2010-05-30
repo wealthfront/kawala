@@ -28,6 +28,8 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
           "com.google.common.*"
       }),
       @CheckPackage(name = "com.kaching.platform.converters", mayDependOn = {
+          "org.objectweb.asm.*",
+          "org.apache.commons.logging", // TODO(adam): remove
           "com.kaching.platform.common.*"
       }),
       @CheckPackage(name = "com.kaching.platform.common.values", mayDependOn = {

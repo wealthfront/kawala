@@ -9,6 +9,7 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -31,13 +32,13 @@ public class DependencyTestRunner extends AbstractDeclarativeTestRunner<Dependen
   public @interface Dependencies {
 
     public int minClasses();
-    
+
     public String[] forPackages();
 
     public CheckPackage[] ensure();
-    
+
     public String[] binDirectories() default "bin";
-    
+
     public String binDirectoryProperty() default "kawala.bin_directories";
 
   }
@@ -55,7 +56,7 @@ public class DependencyTestRunner extends AbstractDeclarativeTestRunner<Dependen
   public DependencyTestRunner(Class<?> testClass) {
     super(testClass, Dependencies.class);
   }
-  
+
   @Override
   @SuppressWarnings("unchecked")
   protected void runTest(Dependencies dependencies) throws IOException {
@@ -65,11 +66,13 @@ public class DependencyTestRunner extends AbstractDeclarativeTestRunner<Dependen
         binDirectoryProperty.split(":") :
         dependencies.binDirectories();
     for (String binDirectory : binDirectories) {
-      jDepend.addDirectory(binDirectory);
+      if (new File(binDirectory).isDirectory()) {
+        jDepend.addDirectory(binDirectory);
+      }
     }
     jDepend.analyzeInnerClasses(true);
     jDepend.analyze();
-    
+
     /* This assertion is meant as a sanity check. It makes sure that when
      * run, JDepend can correctly find the project's classes. Otherwise, the
      * test could pass simply because the path is incorrect or the build
@@ -80,7 +83,7 @@ public class DependencyTestRunner extends AbstractDeclarativeTestRunner<Dependen
             "project does not contain more than %s classes, only %s found",
             dependencies.minClasses(), jDepend.countClasses()),
         dependencies.minClasses() < jDepend.countClasses());
-    
+
     DependenciesBuilder builder = new DependenciesBuilder()
         .forPackages(dependencies.forPackages());
     for (CheckPackage checkPackage : dependencies.ensure()) {
@@ -89,7 +92,7 @@ public class DependencyTestRunner extends AbstractDeclarativeTestRunner<Dependen
     }
     builder.assertIsVerified(jDepend.getPackages());
   }
-  
+
   static class DependenciesBuilder {
 
     private Set<String> forPackages;
