@@ -58,6 +58,22 @@ public class ConstructorAnalysisTest {
             "foo", "p1"));
   }
 
+  @Test
+  public void assignmentsToNatives() throws Exception {
+    assertAssignement(
+        Natives.class,
+        ImmutableMap.<String, String> builder()
+            .put("i", "p0")
+            .put("d", "p1")
+            .put("s", "p2")
+            .put("c", "p3")
+            .put("l", "p4")
+            .put("b", "p5")
+            .put("f", "p6")
+            .put("y", "p7")
+            .build());
+  }
+
   static class DupAssignment {
     int foo;
     DupAssignment(int bar, int foo) {
