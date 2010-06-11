@@ -42,7 +42,7 @@ public class ConstructorAnalysis {
     final ConstructorExecutionState state =
         new ConstructorExecutionState(
             klass,
-            constructor.getParameterTypes().length);
+            constructor.getParameterTypes());
     final boolean[] hasVisitedConstructor = new boolean[] { false };
     analyse(klass, new EmptyVisitor() {
       @Override
@@ -253,6 +253,9 @@ public class ConstructorAnalysis {
     public void visitVarInsn(int opcode, int var) {
       switch (opcode) {
         case 0x15: // iload
+        case 0x16: // lload
+        case 0x17: // fload
+        case 0x18: // dload
         case 0x19: // aload
           log.trace(format("_load %s", var));
           state.stack.push(state.locals.get(var));
@@ -283,11 +286,17 @@ public class ConstructorAnalysis {
     private final Stack<JavaValue> stack = new Stack<JavaValue>();
     private final Map<String, JavaValue> assignements = newHashMap();
 
-    ConstructorExecutionState(Class<?> klass, int argumentsNum) {
+    ConstructorExecutionState(Class<?> klass, Class<?>[] parameterTypes) {
       owner = klass.getName().replace('.', '/');
       locals.add(new ThisPointer());
-      for (int i = 0; i < argumentsNum; i++) {
-        locals.add(new FormalParameter(i));
+      for (int i = 0; i < parameterTypes.length; i++) {
+        Class<?> parameterType = parameterTypes[i];
+        FormalParameter formalParameter = new FormalParameter(i);
+        locals.add(formalParameter);
+        if (parameterType.equals(Long.TYPE) ||
+            parameterType.equals(Double.TYPE)) {
+          locals.add(formalParameter);
+        }
       }
     }
 

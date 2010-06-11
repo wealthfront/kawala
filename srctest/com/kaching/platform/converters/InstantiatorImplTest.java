@@ -29,7 +29,6 @@ import static org.junit.Assert.fail;
 import java.util.BitSet;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class InstantiatorImplTest {
@@ -208,28 +207,6 @@ public class InstantiatorImplTest {
     assertEquals(6, instance.y);
   }
 
-  static class Natives {
-      private final int i;
-      private final double d;
-      private final short s;
-      private final char c;
-      private final long l;
-      private final boolean b;
-      private final float f;
-      private final byte y;
-    public Natives(
-        int i, double d, short s, char c, long l, boolean b, float f, byte y) {
-      this.i = i;
-      this.d = d;
-      this.s = s;
-      this.c = c;
-      this.l = l;
-      this.b = b;
-      this.f = f;
-      this.y = y;
-    }
-  }
-
   @Test
   public void fromInstanceSimple() {
     assertEquals(
@@ -246,13 +223,12 @@ public class InstantiatorImplTest {
   }
 
   @Test
-  @Ignore
   public void fromInstanceNatives() {
     List<String> parameters = createFactory(Natives.class).build()
         .fromInstance(new Natives(2, 3.4, (short) 5, '6', 7l, true, 8.0f, (byte) 9));
     assertEquals(
         newArrayList(
-            "2", "3.4", "4", "5", "6", "7", "true", "8", "9"),
+            "2", "3.4", "5", "6", "7", "true", "8.0", "9"),
         parameters);
   }
 
