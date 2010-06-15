@@ -10,6 +10,7 @@
  */
 package com.kaching.platform.common.types;
 
+import static java.util.Arrays.asList;
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
@@ -166,6 +167,71 @@ public class UnificationTest {
           e.getMessage());
     }
   }
+
+  @Test
+  public void classExtendingClass1() throws Exception {
+    assertEquals(
+        String.class,
+        Unification.getActualTypeArgument(
+          Sub1.class, Sup1.class, 0));
+  }
+
+  static class Sup1<T> {}
+  static class Sub1 extends Sup1<String> {}
+
+  @Test
+  public void classExtendingClass2() throws Exception {
+    assertEquals(
+        String.class,
+        Unification.getActualTypeArgument(
+          SubSub2.class, Sup2.class, 0));
+  }
+
+  @Test
+  public void classExtendingClass2WithNoParametrization() throws Exception {
+    try {
+      Unification.getActualTypeArgument(
+          SubNoParam2.class, Sup2.class, 0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertEquals(
+          "class com.kaching.platform.common.types.UnificationTest$SubNoParam2 " +
+          "does extend parametrically class com.kaching.platform.common.types.UnificationTest$Sup2",
+          e.getMessage());
+    }
+  }
+
+  static class SupSup2 {}
+  static class Sup2<T> extends SupSup2 {}
+  static class Sub2 extends Sup2<String> {}
+  static class SubNoParam2 extends Sup2 {}
+  static class SubSub2 extends Sub2 {}
+
+  @Test
+  public void implementsMultipleInterfaces() throws Exception {
+    for (int i = 0; i < 3; i++) {
+      assertEquals(
+          asList(String.class, Double.class, Integer.class).get(i),
+          Unification.getActualTypeArgument(
+              MultipleInterfaces.class, ManyTypeParams.class, i));
+    }
+  }
+
+  static class MultipleInterfaces
+      implements TopLevel<Type>, ManyTypeParams<String, Double, Integer> {}
+
+  @Test
+  public void implementsMultipleInterfacesSomeWithNoParametrization() throws Exception {
+    for (int i = 0; i < 3; i++) {
+      assertEquals(
+          asList(String.class, Double.class, Integer.class).get(i),
+          Unification.getActualTypeArgument(
+              MultipleInterfacesSomeWithNoParametrization.class, ManyTypeParams.class, i));
+    }
+  }
+
+  static class MultipleInterfacesSomeWithNoParametrization
+      implements TopLevel, ManyTypeParams<String, Double, Integer> {}
 
   private Type queryReturnType(Class<?> query) {
     return Unification.getActualTypeArgument(query, TopLevel.class, 0);

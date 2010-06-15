@@ -55,31 +55,49 @@ public class Unification {
     Type[] genericInterfaces = subClass.getGenericInterfaces();
     for (int i = 0; i < min(interfaces.length, genericInterfaces.length); i++) {
       if (interfaces[i].equals(superClass)) {
-        linearHierarchy = newArrayList(
+        return newArrayList(
             new ClassWithType(
-                interfaces[i], (ParameterizedType) genericInterfaces[i]));
-      } else {
+                interfaces[i], castToParameterizedType(subClass, genericInterfaces[i])),
+            new ClassWithType(subClass, type));
+      } else if (genericInterfaces[i] instanceof ParameterizedType) {
         linearHierarchy = getLinearHierarchy(
             interfaces[i], superClass, (ParameterizedType) genericInterfaces[i]);
-      }
-      if (linearHierarchy != null) {
-        linearHierarchy.add(new ClassWithType(subClass, type));
-        return linearHierarchy;
+        if (linearHierarchy != null) {
+          linearHierarchy.add(new ClassWithType(subClass, type));
+          return linearHierarchy;
+        }
       }
     }
 
     // superclass
     Class<?> superclass = subClass.getSuperclass();
+    if (superclass == null) {
+      return null;
+    }
     Type genericSuperclass = subClass.getGenericSuperclass();
     if (superclass.equals(Object.class)) {
       return null;
     } else {
-      linearHierarchy = getLinearHierarchy(superclass, superClass,
-          genericSuperclass instanceof ParameterizedType ?
-              (ParameterizedType) genericSuperclass : null);
-      linearHierarchy.add(new ClassWithType(subClass, type));
-      return linearHierarchy;
+      if (superclass.equals(superClass)) {
+        return newArrayList(
+            new ClassWithType(superclass, castToParameterizedType(subClass, genericSuperclass)),
+            new ClassWithType(subClass, type));
+      } else {
+        linearHierarchy = getLinearHierarchy(superclass, superClass,
+            genericSuperclass instanceof ParameterizedType ?
+                (ParameterizedType) genericSuperclass : null);
+        linearHierarchy.add(new ClassWithType(subClass, type));
+        return linearHierarchy;
+      }
     }
+  }
+
+  private static ParameterizedType castToParameterizedType(Class<?> subClass, Type type) {
+    if (!(type instanceof ParameterizedType)) {
+      throw new IllegalArgumentException(format(
+          "%s does extend parametrically %s", subClass, type));
+    }
+    return (ParameterizedType) type;
   }
 
   private static class ClassWithType {
