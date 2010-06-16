@@ -182,6 +182,30 @@ public class InstantiatorImplFactoryTest {
   }
 
   @Test
+  public void createInstantiatorWithIllegalConstructor() throws Exception {
+    // TODO(pascal): Refactor. Very ugly pattern here because build() is too
+    // high level.
+    InstantiatorImplFactory<HasIllegalConstructor> f = null;
+    try {
+      f = InstantiatorImplFactory.createFactory(HasIllegalConstructor.class);
+      f.build();
+      fail();
+    } catch (RuntimeException e) {
+    }
+    assertEquals(
+        new Errors().illegalConstructor(HasIllegalConstructor.class),
+        f.getErrors());
+  }
+
+  static class HasIllegalConstructor {
+    HasIllegalConstructor() {
+      for (int i = 0; i < 10; i++) {
+        System.out.println(i);
+      }
+    }
+  }
+
+  @Test
   public void retrieveFieldsFromAssignment1() {
     Field[] fields = createFactory(HasStringConstructor.class)
         .retrieveFieldsFromAssignment(

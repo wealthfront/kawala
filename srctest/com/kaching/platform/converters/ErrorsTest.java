@@ -27,32 +27,34 @@ public class ErrorsTest {
 
   @Test
   public void incorrectBoundForConverter() {
-    try {
-      new Errors()
-          .incorrectBoundForConverter(String.class, Converter.class, Integer.class)
-          .throwIfHasErrors();
-      fail();
-    } catch (RuntimeException e) {
-      assertEquals(
-          "1) the converter interface com.kaching.platform.converters.Converter, " +
-          "mentioned on class java.lang.String using @ConvertedBy, " +
-          "does not produce instances of class java.lang.String. It produces " +
-          "class java.lang.Integer.",
-          e.getMessage());
-    }
+    check(
+        "the converter interface com.kaching.platform.converters.Converter, " +
+        "mentioned on class java.lang.String using @ConvertedBy, " +
+        "does not produce instances of class java.lang.String. It produces " +
+        "class java.lang.Integer.",
+        new Errors().incorrectBoundForConverter(String.class, Converter.class, Integer.class));
   }
 
   @Test
   public void incorrectDefaultValue() {
+    check(
+        "java.lang.NumberFormatException: For default value \"90z\"",
+        new Errors().incorrectDefaultValue("90z", new NumberFormatException("the message")));
+  }
+
+  @Test
+  public void illegalConstructor() {
+    check(
+        "class java.lang.String has an illegal constructor",
+        new Errors().illegalConstructor(String.class));
+  }
+
+  private void check(String expected, Errors errors) {
     try {
-      new Errors()
-          .incorrectDefaultValue("90z", new NumberFormatException("the message"))
-          .throwIfHasErrors();
+      errors.throwIfHasErrors();
       fail();
     } catch (RuntimeException e) {
-      assertEquals(
-          "1) java.lang.NumberFormatException: For default value \"90z\"",
-          e.getMessage());
+      assertEquals("1) " + expected, e.getMessage());
     }
   }
 

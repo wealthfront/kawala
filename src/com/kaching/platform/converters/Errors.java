@@ -97,6 +97,12 @@ class Errors {
         parameterNum + 1);
   }
 
+  Errors illegalConstructor(Class<?> klass) {
+    return addMessage(
+        "%s has an illegal constructor",
+        klass);
+  }
+
   @Override
   public int hashCode() {
     return messages == null ? EMPTY_LIST.hashCode() : messages.hashCode();
