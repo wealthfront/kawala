@@ -101,6 +101,7 @@ governing permissions and limitations under the License.
 
   <!-- TODO: real versioning -->
   <property name="kawala-version" value="0.1" />
+
   <target name="jar" description="builds jars" depends="smoke">
     <jar destfile="target/kawala-${kawala-version}.jar">
       <fileset dir="target/bin"/>
@@ -111,6 +112,51 @@ governing permissions and limitations under the License.
     <jar-sub-project name="guice" base="target/bin"/>
     <jar-sub-project name="hibernate" base="target/bin"/>
     <jar-sub-project name="testing" base="target/bin-testing"/>
+  </target>
+
+  <property name="ant-eclipse.dir" value="ant-eclipse"/>
+
+  <condition property="ant-eclipse.jar.exists">
+    <available file="${ant-eclipse.dir}/lib/ant-eclipse-1.0-jvm1.2.jar"/>
+  </condition>
+
+  <target name="ant-eclipse-download" unless="ant-eclipse.jar.exists">
+    <mkdir dir="${ant-eclipse.dir}"/>
+    <get src="http://downloads.sourceforge.net/project/ant-eclipse/ant-eclipse/1.0/ant-eclipse-1.0.bin.tar.bz2"
+         dest="${ant-eclipse.dir}/ant-eclipse-1.0.bin.tar.bz2" usetimestamp="false" />
+    <bunzip2 src="${ant-eclipse.dir}/ant-eclipse-1.0.bin.tar.bz2"/>
+    <untar src="${ant-eclipse.dir}/ant-eclipse-1.0.bin.tar"
+           dest="${ant-eclipse.dir}">
+      <patternset>
+        <include name="lib/ant-eclipse-1.0-jvm1.2.jar"/>
+      </patternset>
+    </untar>
+    <delete file="${ant-eclipse.dir}/ant-eclipse-1.0.bin.tar" />
+    <delete file="${ant-eclipse.dir}/ant-eclipse-1.0.bin.tar.bz2" />
+  </target>
+
+  <target name="eclipse"
+          depends="ant-eclipse-download,init"
+          description="Create eclipse project files">
+    <taskdef name="eclipse"
+             classname="prantl.ant.eclipse.EclipseTask"
+             classpath="${ant-eclipse.dir}/lib/ant-eclipse-1.0-jvm1.2.jar" />
+    <eclipse updatealways="true">
+      <settings>
+        <jdtcore compilercompliance="6.0" />
+        <resources encoding="UTF-8" />
+      </settings>
+      <project name="${ant.project.name}" />
+      <classpath>
+        <source path="src"
+                output="bin" />
+        <source path="srctest"
+                output="bin-test" />
+        <source path="srctesting"
+                output="bin-testing" />
+        <library pathref="classpath-kawala" exported="true" />
+      </classpath>
+    </eclipse>
   </target>
   
   <property name="ivy.install.version" value="2.1.0" />
@@ -147,12 +193,12 @@ governing permissions and limitations under the License.
  
   <target name="ivy-classpaths">
     <ivy:resolve conf="kawala" type="jar"/>
-    <ivy:cachepath pathid="classpath-kawala-common" conf="common"/>
-    <ivy:cachepath pathid="classpath-kawala-converters" conf="converters"/>
-    <ivy:cachepath pathid="classpath-kawala-guice" conf="guice"/>
-    <ivy:cachepath pathid="classpath-kawala-hibernate" conf="hibernate"/>
-    <ivy:cachepath pathid="classpath-kawala-testing" conf="testing"/>
-    <ivy:cachepath pathid="classpath-kawala" conf="kawala"/>
+    <ivy:cachepath pathid="classpath-kawala-common" conf="common" type="jar"/>
+    <ivy:cachepath pathid="classpath-kawala-converters" conf="converters" type="jar"/>
+    <ivy:cachepath pathid="classpath-kawala-guice" conf="guice" type="jar"/>
+    <ivy:cachepath pathid="classpath-kawala-hibernate" conf="hibernate" type="jar"/>
+    <ivy:cachepath pathid="classpath-kawala-testing" conf="testing" type="jar"/>
+    <ivy:cachepath pathid="classpath-kawala" conf="kawala" type="jar"/>
   </target>
  
 </project>

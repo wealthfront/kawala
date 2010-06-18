@@ -1,0 +1,7 @@
+ant-eclipse/
+bin-test/
+bin-testing/
+bin/
+target/
+.project
+.classpath
