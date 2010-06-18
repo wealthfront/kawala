@@ -42,13 +42,6 @@ governing permissions and limitations under the License.
     <mkdir dir="target/reports" />
   </target>
 
-  <!-- google guava is not configured correctly in the maven repo, so create a special classpath -->
-  <path id="classpath-guava">
-    <fileset dir="lib/main">
-      <include name="**/google-guava-r3.jar" />
-    </fileset>
-  </path>
-
   <target name="compile" depends="init">
     <compile srcdir="src" destdir="target/bin">
       <additional-classpath>
@@ -61,7 +54,6 @@ governing permissions and limitations under the License.
     <compile srcdir="srctesting/com/kaching/platform/testing"
         destdir="target/bin-testing">
       <additional-classpath>
-        <classpath refid="classpath-guava" />
         <classpath refid="classpath-kawala-testing" />
         <classpath path="target/bin" />
       </additional-classpath>
@@ -84,7 +76,6 @@ governing permissions and limitations under the License.
       <jvmarg value="-Xms128m"/>
       <jvmarg value="-Xmx1700m"/>
       <classpath refid="classpath-kawala" />
-      <classpath refid="classpath-guava" />
       <classpath path="target/bin" />
       <classpath path="target/bin-testing" />
       <classpath path="target/bin-test" />
@@ -130,6 +121,9 @@ governing permissions and limitations under the License.
   <property name="ivy.jar.dir" value="${ivy.home}/lib" />
   <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
 
+  <taskdef resource="org/apache/ivy/ant/antlib.xml"
+           uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+
   <target name="ivy-download" unless="offline">
     <mkdir dir="${ivy.jar.dir}"/>
     <!-- download Ivy from web site so that it can be used even without any special installation -->
@@ -145,8 +139,6 @@ governing permissions and limitations under the License.
     <path id="ivy.lib.path">
       <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
     </path>
-    <taskdef resource="org/apache/ivy/ant/antlib.xml"
-             uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
   </target>
  
   <target name="ivy-clean" description="clean ivy dependencies">
@@ -162,6 +154,5 @@ governing permissions and limitations under the License.
     <ivy:cachepath pathid="classpath-kawala-testing" conf="testing"/>
     <ivy:cachepath pathid="classpath-kawala" conf="kawala"/>
   </target>
-  
  
 </project>
