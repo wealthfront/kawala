@@ -6,7 +6,6 @@ Then build kawala:
 
   $ ant
 
-To integrate with Eclipse please: 
+To generate Eclipse .project and .classpath files: 
 
-  * Install the IvyDE plugin from http://ant.apache.org/ivy/ivyde.
-  * Right-click on ivy.xml and choose "Add Ivy Library..." which will configure the classpath.
+  * ant eclipse
