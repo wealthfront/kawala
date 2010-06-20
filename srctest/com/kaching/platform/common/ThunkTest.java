@@ -12,16 +12,16 @@ package com.kaching.platform.common;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.junit.Test;
 
-import com.kaching.platform.common.Thunk;
-
 public class ThunkTest {
-  
+
   @Test
   public void usingThunks() {
     final boolean[] called = new boolean[] { false };
-    
+
     Thunk<String> t = new Thunk<String>() {
       @Override
       protected String compute() {
@@ -32,36 +32,58 @@ public class ThunkTest {
         return "Hello";
       }
     };
-    
+
     assertEquals("Hello", t.get());
     assertEquals("Hello", t.get());
   }
-  
+
+  static class ControlledThunk extends Thunk<String> {
+    private int[] callCounter;
+
+    ControlledThunk(int[] callCounter) {
+      this.callCounter = callCounter;
+    }
+
+	@Override
+    protected String compute() {
+      callCounter[0]++;
+      synchronized(this) {
+      try {
+    	wait();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      }
+      return "Hello";
+    }
+  }
+
   @Test
   public void thunkUsedConcurrently() throws Exception {
     final int[] called = new int[] { 0 };
-    
-    final Thunk<String> t = new Thunk<String>() {
-      @Override
-      protected String compute() {
-        called[0]++;
-        try {
-          Thread.sleep(500);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-        return "Hello";
-      }
-    };
-    
-    Thread thread1 = new Thread() { @Override public void run() { t.get(); }};
-    Thread thread2 = new Thread() { @Override public void run() { t.get(); }};
+    final CountDownLatch latch = new CountDownLatch(2);
+
+    final ControlledThunk t = new ControlledThunk(called);
+
+    Thread thread1 = new Thread() {
+    	@Override public void run() { latch.countDown(); t.get(); }};
+    Thread thread2 = new Thread() {
+    	@Override public void run() { latch.countDown(); t.get(); }};
     thread1.start();
     thread2.start();
+    latch.await();
+
+    synchronized(t) {
+      t.notify();
+    }
+    synchronized(t) {
+      t.notify();
+    }
 
     thread1.join();
+    assertEquals(1, called[0]);
+
     thread2.join();
-    
     assertEquals(1, called[0]);
   }
 
