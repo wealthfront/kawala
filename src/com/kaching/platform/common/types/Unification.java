@@ -77,18 +77,18 @@ public class Unification {
     Type genericSuperclass = subClass.getGenericSuperclass();
     if (superclass.equals(Object.class)) {
       return null;
-    } else {
-      if (superclass.equals(superClass)) {
-        return newArrayList(
+    } else if (superclass.equals(superClass)) {
+      return newArrayList(
             new ClassWithType(superclass, castToParameterizedType(subClass, genericSuperclass)),
             new ClassWithType(subClass, type));
-      } else {
-        linearHierarchy = getLinearHierarchy(superclass, superClass,
+    } else {
+      linearHierarchy = getLinearHierarchy(superclass, superClass,
             genericSuperclass instanceof ParameterizedType ?
                 (ParameterizedType) genericSuperclass : null);
+      if (linearHierarchy !=null) {
         linearHierarchy.add(new ClassWithType(subClass, type));
-        return linearHierarchy;
       }
+      return linearHierarchy;
     }
   }
 
