@@ -24,8 +24,10 @@ import static com.kaching.platform.converters.NativeConverters.C_STRING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Constructor;
 import java.util.BitSet;
 import java.util.List;
 
@@ -230,6 +232,14 @@ public class InstantiatorImplTest {
         newArrayList(
             "2", "3.4", "5", "6", "7", "true", "8.0", "9"),
         parameters);
+  }
+
+  @Test
+  public void getConstructor() throws Exception {
+    Constructor<Object> constructor = Object.class.getConstructor();
+    InstantiatorImpl<Object> instantiator = new InstantiatorImpl<Object>(
+        constructor, null, null, new BitSet(), null);
+    assertTrue(constructor == instantiator.getConstructor());
   }
 
 }
