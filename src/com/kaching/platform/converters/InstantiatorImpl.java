@@ -123,4 +123,9 @@ class InstantiatorImpl<T> implements Instantiator<T> {
     return constructor;
   }
 
+  @Override
+  public String toString() {
+    return "instantiator " + constructor.toString().replaceFirst("(public|protected|private) ", "");
+  }
+
 }

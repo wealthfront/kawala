@@ -242,4 +242,18 @@ public class InstantiatorImplTest {
     assertTrue(constructor == instantiator.getConstructor());
   }
 
+  @Test
+  public void toString1() throws Exception {
+    InstantiatorImpl<Object> instantiator = new InstantiatorImpl<Object>(
+        Object.class.getConstructor(), null, null, new BitSet(), null);
+    assertEquals("instantiator java.lang.Object()", instantiator.toString());
+  }
+
+  @Test
+  public void toString2() throws Exception {
+    InstantiatorImpl<String> instantiator = new InstantiatorImpl<String>(
+        String.class.getConstructor(byte[].class), null, null, new BitSet(), null);
+    assertEquals("instantiator java.lang.String(byte[])", instantiator.toString());
+  }
+
 }
