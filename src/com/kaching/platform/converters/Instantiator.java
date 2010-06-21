@@ -10,6 +10,7 @@
  */
 package com.kaching.platform.converters;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 
 /**
@@ -31,5 +32,10 @@ public interface Instantiator<T> {
    * Destantiates an instance.
    */
   List<String> fromInstance(T instance);
+
+  /**
+   * Gets the underlying constructor used to instantiate and destantiate.
+   */
+  Constructor<T> getConstructor();
 
 }

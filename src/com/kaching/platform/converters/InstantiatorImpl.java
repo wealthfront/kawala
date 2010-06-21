@@ -118,4 +118,9 @@ class InstantiatorImpl<T> implements Instantiator<T> {
     return parameter;
   }
 
+  @Override
+  public Constructor<T> getConstructor() {
+    return constructor;
+  }
+
 }
