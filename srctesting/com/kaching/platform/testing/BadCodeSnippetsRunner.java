@@ -55,8 +55,6 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
 
     public Snippet[] snippets();
 
-    public VerificationMode verificatioMode() default BOTH;
-
   }
 
   @Retention(RUNTIME)
@@ -66,6 +64,8 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
     public String value();
 
     public String[] exceptions() default {};
+
+    public VerificationMode verificatioMode() default BOTH;
 
   }
 
@@ -100,52 +100,58 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
 
   private void checkBadCodeSnippet(
       Check check, String fileExtension) throws IOException {
-    Map<Pattern, Set<File>> patternsToUses = new MapMaker().makeComputingMap(
-        new Function<Pattern, Set<File>>() {
+    Map<Snippet, Set<File>> snippetsToUses = new MapMaker().makeComputingMap(
+        new Function<Snippet, Set<File>>() {
           @Override
-          public Set<File> apply(Pattern key) {
+          public Set<File> apply(Snippet key) {
             return newHashSet();
           }});
+    Map<Snippet, Pattern> compiledPatterns = new MapMaker().makeComputingMap(
+        new Function<Snippet, Pattern>() {
+          @Override
+          public Pattern apply(Snippet key) {
+            return Pattern.compile(key.value());
+          }});
 
-    Map<Pattern, Set<File>> patternsToExceptions = patternsToExceptions(check.snippets());
-    Set<Pattern> patterns = patternsToExceptions.keySet();
+    Map<Snippet, Set<File>> snippetsToExceptions = snippetsToExceptions(check.snippets());
+    Set<Snippet> snippets = snippetsToExceptions.keySet();
     for (String path : check.paths()) {
-      collectUses(fileExtension, new File(path), patterns, patternsToUses);
+      collectUses(fileExtension, new File(path), snippets, snippetsToUses, compiledPatterns);
     }
 
     CombinedAssertionFailedError error =
         new CombinedAssertionFailedError("bad code uses");
-    for (Pattern pattern : patterns) {
-      Set<File> exceptions = patternsToExceptions.get(pattern);
-      Set<File> uses = patternsToUses.get(pattern);
+    for (Snippet snippet : snippets) {
+      Set<File> exceptions = snippetsToExceptions.get(snippet);
+      Set<File> uses = snippetsToUses.get(snippet);
       List<File> spuriousExceptions = newArrayList(exceptions);
       spuriousExceptions.removeAll(uses);
-      if (check.verificatioMode().reportMissing && !spuriousExceptions.isEmpty()) {
+      if (snippet.verificatioMode().reportMissing && !spuriousExceptions.isEmpty()) {
         error.addError(format(
             "%s: marked as exception to snippet but didn't occur:\n    %s",
-            pattern, Joiner.on("\n   ").join(spuriousExceptions)));
+            snippet, Joiner.on("\n   ").join(spuriousExceptions)));
         continue;
       }
       uses.removeAll(exceptions);
-      if (check.verificatioMode().reportMatches && !uses.isEmpty()) {
+      if (snippet.verificatioMode().reportMatches && !uses.isEmpty()) {
         error.addError(format(
             "%s: found %s bad snippets in:\n    %s",
-            pattern, uses.size(), Joiner.on("\n   ").join(uses)));
+            snippet, uses.size(), Joiner.on("\n   ").join(uses)));
       }
     }
 
     error.throwIfHasErrors();
   }
 
-  private Map<Pattern, Set<File>> patternsToExceptions(Snippet[] snippets) {
-    Map<Pattern, Set<File>> patternsToExceptions = newHashMap();
+  private Map<Snippet, Set<File>> snippetsToExceptions(Snippet[] snippets) {
+    Map<Snippet, Set<File>> patternsToExceptions = newHashMap();
     for (Snippet snippet : snippets) {
       try {
         Set<File> files = newHashSet();
         for (int i = 0; i < snippet.exceptions().length; i++) {
           files.add(new File(snippet.exceptions()[i]));
         }
-        patternsToExceptions.put(Pattern.compile(snippet.value()), files);
+        patternsToExceptions.put(snippet, files);
       } catch (PatternSyntaxException e) {
         throw new AssertionError(e.getMessage());
       }
@@ -154,20 +160,21 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
   }
 
   private void collectUses(
-      String fileExtension, File f, Iterable<Pattern> patterns, Map<Pattern, Set<File>> uses)
+      String fileExtension, File f, Iterable<Snippet> patterns,
+      Map<Snippet, Set<File>> uses, Map<Snippet, Pattern> compiledPatterns)
       throws IOException {
     if (f.isFile()) {
       if (f.getName().endsWith("." + fileExtension)) {
         String code = Files.toString(f, UTF_8);
-        for (Pattern p : patterns) {
-          if (p.matcher(code).find()) {
+        for (Snippet p : patterns) {
+          if (compiledPatterns.get(p).matcher(code).find()) {
             uses.get(p).add(f);
           }
         }
       }
     } else if (f.isDirectory()) {
       for (File c : f.listFiles()) {
-        collectUses(fileExtension, c, patterns, uses);
+        collectUses(fileExtension, c, patterns, uses, compiledPatterns);
       }
     }
   }
