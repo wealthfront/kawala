@@ -4,6 +4,7 @@ import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
+import static com.kaching.platform.testing.BadCodeSnippetsRunner.VerificationMode.BOTH;
 import static java.lang.String.format;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -37,7 +38,7 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
      * test.
      */
     public Check[] value();
-    
+
     /**
      * Specifies the file extension to check for bad code snippet. The default
      * is {@code java}.
@@ -54,6 +55,8 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
 
     public Snippet[] snippets();
 
+    public VerificationMode verificatioMode() default BOTH;
+
   }
 
   @Retention(RUNTIME)
@@ -63,6 +66,21 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
     public String value();
 
     public String[] exceptions() default {};
+
+  }
+
+  public enum VerificationMode {
+    ONLY_MATCHES(false, true),
+    ONLY_MISSING_MATCHES(true, false),
+    BOTH(true, true);
+
+    private final boolean reportMissing;
+    private final boolean reportMatches;
+
+    private VerificationMode(boolean missing, boolean matches) {
+      this.reportMissing = missing;
+      this.reportMatches = matches;
+    }
 
   }
 
@@ -102,14 +120,14 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
       Set<File> uses = patternsToUses.get(pattern);
       List<File> spuriousExceptions = newArrayList(exceptions);
       spuriousExceptions.removeAll(uses);
-      if (!spuriousExceptions.isEmpty()) {
+      if (check.verificatioMode().reportMissing && !spuriousExceptions.isEmpty()) {
         error.addError(format(
             "%s: marked as exception to snippet but didn't occur:\n    %s",
             pattern, Joiner.on("\n   ").join(spuriousExceptions)));
         continue;
       }
       uses.removeAll(exceptions);
-      if (!uses.isEmpty()) {
+      if (check.verificatioMode().reportMatches && !uses.isEmpty()) {
         error.addError(format(
             "%s: found %s bad snippets in:\n    %s",
             pattern, uses.size(), Joiner.on("\n   ").join(uses)));
