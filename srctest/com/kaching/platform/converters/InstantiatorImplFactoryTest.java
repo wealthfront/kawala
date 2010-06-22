@@ -237,6 +237,22 @@ public class InstantiatorImplFactoryTest {
             "representation", new FormalParameter(1))); // wrong index
   }
 
+  @Test
+  public void retrieveFieldsFromAssignment4FieldIsInSuperclass() {
+    Field[] fields = createFactory(FieldIsInSuperSuperclass.class)
+        .retrieveFieldsFromAssignment(
+            1,
+            ImmutableMap.of(
+                "theFieldYouAreLookingFor", new FormalParameter(0)));
+    assertEquals(1, fields.length);
+    assertEquals("theFieldYouAreLookingFor", fields[0].getName());
+    assertTrue(fields[0].isAccessible());
+  }
+
+  static class FieldIsHere { String theFieldYouAreLookingFor; }
+  static class FieldIsInSuperclass extends FieldIsHere {}
+  static class FieldIsInSuperSuperclass extends FieldIsInSuperclass {}
+
   static class OptionalLiteralParameterWithoutDefault {
     OptionalLiteralParameterWithoutDefault(@Optional short s) {}
   }

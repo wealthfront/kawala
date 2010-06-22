@@ -160,7 +160,7 @@ class InstantiatorImplFactory<T> {
   Field[] retrieveFieldsFromAssignment(
       int parametersCount, Map<String, FormalParameter> assignments) {
     Field[] fields = new Field[parametersCount];
-    for (Entry<String, FormalParameter> entry : assignments.entrySet()) {
+    outer: for (Entry<String, FormalParameter> entry : assignments.entrySet()) {
       int parameterIndex = entry.getValue().getIndex();
       if (parameterIndex < 0 || fields.length <= parameterIndex) {
         throw new IllegalStateException(
@@ -169,15 +169,24 @@ class InstantiatorImplFactory<T> {
 
       Field field = null;
       String fieldName = entry.getKey();
-      try {
-        // TODO(pascal): What about subclassing?
-        field = klass.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        fields[parameterIndex] = field;
-      } catch (SecurityException e) {
-        errors.unableToGetField(fieldName, e);
-      } catch (NoSuchFieldException e) {
-        errors.noSuchField(fieldName);
+      Class<?> classSearched = klass;
+      while (true) {
+        try {
+          field = classSearched.getDeclaredField(fieldName);
+          field.setAccessible(true);
+          fields[parameterIndex] = field;
+          continue outer;
+        } catch (SecurityException e) {
+          errors.unableToGetField(fieldName, e);
+          continue outer;
+        } catch (NoSuchFieldException e) {
+          if (classSearched.equals(Object.class)) {
+            errors.noSuchField(fieldName);
+            continue outer;
+          } else {
+            classSearched = classSearched.getSuperclass();
+          }
+        }
       }
     }
     return fields;
