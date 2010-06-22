@@ -129,14 +129,14 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
       if (snippet.verificationMode().reportMissing && !spuriousExceptions.isEmpty()) {
         error.addError(format(
             "%s: marked as exception to snippet but didn't occur:\n    %s",
-            snippet, Joiner.on("\n   ").join(spuriousExceptions)));
+            snippet.value(), Joiner.on("\n   ").join(spuriousExceptions)));
         continue;
       }
       uses.removeAll(exceptions);
       if (snippet.verificationMode().reportMatches && !uses.isEmpty()) {
         error.addError(format(
             "%s: found %s bad snippets in:\n    %s",
-            snippet, uses.size(), Joiner.on("\n   ").join(uses)));
+            snippet.value(), uses.size(), Joiner.on("\n   ").join(uses)));
       }
     }
 
