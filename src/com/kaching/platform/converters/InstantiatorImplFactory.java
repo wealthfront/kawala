@@ -64,7 +64,7 @@ class InstantiatorImplFactory<T> {
 
   InstantiatorImpl<T> build() {
     // 1. find constructor
-    for (Constructor<T> constructor : getConstructor(klass)) {
+    for (Constructor<T> constructor : getConstructor()) {
       constructor.setAccessible(true);
       // 2. for each parameter, find converter
       Type[] genericParameterTypes = constructor.getGenericParameterTypes();
@@ -232,10 +232,10 @@ class InstantiatorImplFactory<T> {
   }
 
   @VisibleForTesting
-  Option<Constructor<T>> getConstructor(Class<?> clazz) {
+  Option<Constructor<T>> getConstructor() {
     @SuppressWarnings("unchecked")
     Constructor<T>[] constructors =
-        (Constructor<T>[]) clazz.getDeclaredConstructors();
+        (Constructor<T>[]) klass.getDeclaredConstructors();
     if (constructors.length > 1) {
       Constructor<T> convertableConstructor = null;
       for (Constructor<T> constructor : constructors) {
@@ -243,7 +243,7 @@ class InstantiatorImplFactory<T> {
           if (convertableConstructor == null) {
             convertableConstructor = constructor;
           } else {
-            errors.moreThanOnceConstructorWithInstantiate(clazz);
+            errors.moreThanOnceConstructorWithInstantiate(klass);
             return Option.none();
           }
         }
@@ -252,12 +252,12 @@ class InstantiatorImplFactory<T> {
         return Option.some(convertableConstructor);
       } else {
         // should accumulate errors here
-        throw new IllegalArgumentException(clazz.toString() +
+        throw new IllegalArgumentException(klass.toString() +
             " has more than one constructors");
       }
     } else if (constructors.length == 0) {
       // should accumulate errors here
-      throw new IllegalArgumentException("No constructor found in " + clazz);
+      throw new IllegalArgumentException("No constructor found in " + klass);
     } else {
       return Option.some(constructors[0]);
     }

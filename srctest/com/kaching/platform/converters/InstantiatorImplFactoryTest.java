@@ -34,7 +34,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
@@ -44,13 +43,6 @@ import com.kaching.platform.common.Option;
 import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
 
 public class InstantiatorImplFactoryTest {
-
-  private InstantiatorImplFactory<?> factory;
-
-  @Before
-  public void before() {
-    factory = InstantiatorImplFactory.createFactory(null);
-  }
 
   @Test(expected = RuntimeException.class)
   public void buildShouldFailIfErrorsExist() {
@@ -64,7 +56,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverterConvertedBy() throws Exception {
-    Converter<?> converter = factory.createConverter(HasConvertedBy.class).getOrThrow();
+    Converter<?> converter = createFactory(null).createConverter(HasConvertedBy.class).getOrThrow();
     assertNotNull(converter);
     assertEquals(HasConvertedByConverter.class, converter.getClass());
   }
@@ -82,6 +74,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverterConvertedByWrongBound() throws Exception {
+    InstantiatorImplFactory<Object> factory = createFactory(null);
     factory.createConverter(HasConvertedByWrongBound.class);
     assertEquals(
         new Errors().incorrectBoundForConverter(
@@ -108,7 +101,7 @@ public class InstantiatorImplFactoryTest {
   @Test
   public void createConverterDefaultIfHasStringConstructor() throws Exception {
     Converter<?> converter =
-        factory.createConverter(HasStringConstructor.class).getOrThrow();
+      createFactory(null).createConverter(HasStringConstructor.class).getOrThrow();
     assertNotNull(converter);
     assertEquals(StringConstructorConverter.class, converter.getClass());
   }
@@ -136,7 +129,7 @@ public class InstantiatorImplFactoryTest {
     for (int i = 0; i < fixtures.length; i += 2) {
       String message = format("type %s", fixtures[i + 1]);
       Option<? extends Converter<?>> converter =
-          factory.createConverter((Type) fixtures[i + 1]);
+        createFactory(null).createConverter((Type) fixtures[i + 1]);
       assertTrue(message, converter.isDefined());
       assertEquals(message, fixtures[i], converter.getOrThrow());
     }
@@ -259,28 +252,28 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void getPublicConstructor() throws Exception {
-    factory.getConstructor(A.class);
+    createFactory(A.class).getConstructor();
   }
 
   @Test
   public void getProtectedConstructor() throws Exception {
-    factory.getConstructor(B.class);
+    createFactory(B.class).getConstructor();
   }
 
   @Test
   public void getDefaultVisibleConstructor() throws Exception {
-    factory.getConstructor(C.class);
+    createFactory(C.class).getConstructor();
   }
 
   @Test
   public void getPrivateConstructor() throws Exception {
-    factory.getConstructor(D.class);
+    createFactory(D.class).getConstructor();
   }
 
   @Test
   public void getNonExistingConstructor() throws Exception {
     try {
-      factory.getConstructor(E.class);
+      createFactory(E.class).getConstructor();
       fail();
     } catch (IllegalArgumentException e) {
       // expected
@@ -290,7 +283,7 @@ public class InstantiatorImplFactoryTest {
   @Test
   public void getNonUniqueConstructor() throws Exception {
     try {
-      factory.getConstructor(F.class);
+      createFactory(F.class).getConstructor();
       fail();
     } catch (IllegalArgumentException e) {
       // expected
@@ -299,22 +292,23 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void getConstructorFromSuperclass() throws Exception {
-    factory.getConstructor(G.class);
+    createFactory(G.class).getConstructor();
   }
 
   @Test
   public void getConstructorFromSuperclassWithMultipleConstructors() {
-    factory.getConstructor(H.class);
+    createFactory(H.class).getConstructor();
   }
 
   @Test
   public void getNonUniqueConstructorWithAnnotation1() throws Exception {
-    assertNotNull(factory.getConstructor(P.class));
+    assertNotNull(createFactory(P.class).getConstructor());
   }
 
   @Test
   public void getNonUniqueConstructorWithAnnotation2() throws Exception {
-    factory.getConstructor(Q.class);
+    InstantiatorImplFactory<Q> factory = createFactory(Q.class);
+    factory.getConstructor();
     assertEquals(
         new Errors().moreThanOnceConstructorWithInstantiate(Q.class),
         factory.getErrors());
