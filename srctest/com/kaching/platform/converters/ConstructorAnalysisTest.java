@@ -319,7 +319,6 @@ public class ConstructorAnalysisTest {
   }
 
   @Test
-  @Ignore
   public void invokeInterface() throws Exception {
     assertAnalysisFails(
         InvokeInterface.class,

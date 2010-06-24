@@ -335,6 +335,9 @@ public class ConstructorAnalysis {
           ObjectReference reference = (ObjectReference) state.stack.pop();
           reference.updateReference(
               new MethodCall(reference.value, name, arguments));
+          if (desc.charAt(index + 1) != 'V') {
+            state.stack.push(reference);
+          }
           return;
 
         case 0xB8: // invokestatic
