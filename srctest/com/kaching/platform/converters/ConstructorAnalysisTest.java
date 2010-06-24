@@ -3,6 +3,7 @@ package com.kaching.platform.converters;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.math.BigDecimal.ZERO;
+import static java.math.MathContext.DECIMAL32;
 import static java.util.Collections.emptyMap;
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
@@ -148,6 +149,48 @@ public class ConstructorAnalysisTest {
         Collections.emptyMap());
   }
 
+  static class ObjectInstantiation3 {
+    Object foo;
+    ObjectInstantiation3() {
+      this.foo = new String("hello world!");
+    }
+  }
+
+  @Test
+  public void objectInstantiation3() throws Exception {
+    assertAssignement(
+        ObjectInstantiation3.class,
+        Collections.emptyMap());
+  }
+
+  static class ObjectInstantiation4 {
+    Object foo;
+    ObjectInstantiation4() {
+      this.foo = new BigDecimal(4.5, DECIMAL32);
+    }
+  }
+
+  @Test
+  public void objectInstantiation4() throws Exception {
+    assertAssignement(
+        ObjectInstantiation4.class,
+        Collections.emptyMap());
+  }
+
+  static class ObjectInstantiation5 {
+    Object foo;
+    ObjectInstantiation5(String value) {
+      this.foo = new String(value);
+    }
+  }
+
+  @Test
+  public void objectInstantiation5() throws Exception {
+    assertAnalysisFails(
+        ObjectInstantiation5.class,
+        "cannot assign non-idempotent expression new java.lang.String.<init>(p0) to field");
+  }
+
   static class CheckArgument1 {
     final BigDecimal value;
     CheckArgument1(BigDecimal value) {
@@ -209,6 +252,62 @@ public class ConstructorAnalysisTest {
     assertAnalysisFails(
         DoingMathOperation3.class,
         "cannot assign non-idempotent expression p0 % com.kaching.platform.converters.ConstructorAnalysisTest$ConstantHolder#CONSTANT to field");
+  }
+
+  static class CalledSuperclass {
+    CalledSuperclass() {}
+    CalledSuperclass(int foo) {}
+  }
+  static class CallingSuperConstructorNoArgument extends CalledSuperclass {
+  }
+  static class CallingSuperConstructorWithArguments extends CalledSuperclass {
+    CallingSuperConstructorWithArguments(int foo) {
+      super(foo);
+    }
+  }
+
+  @Test
+  public void callingSuperConstructorNoArgument() throws Exception {
+    assertAssignement(
+        CallingSuperConstructorNoArgument.class,
+        Collections.emptyMap());
+  }
+
+  @Test
+  public void callingSuperConstructorWithArguments() throws Exception {
+    assertAnalysisFails(
+        CallingSuperConstructorWithArguments.class,
+        "cannot call super constructor with argument(s)");
+  }
+
+  static class DelegatingToAnotherConstructor1 {
+    DelegatingToAnotherConstructor1(int foo) {
+      this();
+    }
+    DelegatingToAnotherConstructor1() {
+    }
+  }
+
+  @Test
+  public void delegatingToAnotherConstructor1() throws Exception {
+    assertAnalysisFails(
+        DelegatingToAnotherConstructor1.class,
+        "cannot delegate to another constructor");
+  }
+
+  static class DelegatingToAnotherConstructor2 {
+    DelegatingToAnotherConstructor2() {
+      this(4);
+    }
+    DelegatingToAnotherConstructor2(int foo) {
+    }
+  }
+
+  @Test
+  public void delegatingToAnotherConstructor2() throws Exception {
+    assertAnalysisFails(
+        DelegatingToAnotherConstructor2.class,
+        "cannot delegate to another constructor");
   }
 
   private void assertAnalysisFails(Class<?> klass, String message) throws IOException {
