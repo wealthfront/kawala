@@ -309,22 +309,35 @@ public class ConstructorAnalysis {
     public void visitMethodInsn(
         int opcode, String owner, String name, String desc) {
       switch (opcode) {
+        case 0xB6: // invokevirtual
+          log.trace(format("invokevirtual %s %s %s", owner, name, desc));
+          return;
+
         case 0xB7: // invokespecial
           log.trace(format("invokespecial %s %s %s", owner, name, desc));
-          if (!owner.equals(state.owner) &&
-              name.equals("<init>") &&
-              desc.equals("()V")) {
-            // Call to super constructor consumes object reference.
-            state.stack.pop();
-            break;
-          }
-          if (owner.equals(state.owner) &&
-              name.equals("<init>") &&
-              desc.equals("()V")) {
+          if (owner.equals(state.superclass) && name.equals("<init>")) { // super(...);
+            if (!desc.equals("()V")) {
+              throw new IllegalConstructorException(
+                  "cannot call super constructor with argument(s)");
+            }
+          } else if (owner.equals(state.owner) && name.equals("<init>")) { // this(...);
             throw new IllegalConstructorException(
-                "cannot call delegate constructor");
+                "cannot delegate to another constructor");
           }
-          throw new IllegalStateException();
+          // consuming arguments
+          List<JavaValue> arguments = newArrayList();
+          int index = 1;
+          while (desc.charAt(index) != ')') {
+            arguments.add(state.stack.pop());
+            // TODO(pascal): what about arrays which start with [
+            index = desc.charAt(index) == 'L' ?
+                desc.indexOf(';', index) + 1 :
+                index + 1;
+          }
+          ObjectReference reference = (ObjectReference) state.stack.pop();
+          reference.updateReference(
+              new MethodCall(reference.value, name, arguments));
+          return;
 
         default: unknown(opcode);
       }
@@ -358,7 +371,7 @@ public class ConstructorAnalysis {
     public void visitTypeInsn(int opcode, String desc) {
       switch (opcode) {
         case 0xBB: // new
-          state.stack.push(new NewObject(desc));
+          state.stack.push(new ObjectReference(new NewObject(desc)));
           return;
 
         case 0xBD: // anewarray
@@ -401,13 +414,15 @@ public class ConstructorAnalysis {
   static class ConstructorExecutionState {
 
     private final String owner;
+    private final String superclass;
     private final List<JavaValue> locals = newArrayList();
     private final Stack<JavaValue> stack = new Stack<JavaValue>();
     private final Map<String, JavaValue> assignements = newHashMap();
 
     ConstructorExecutionState(Class<?> klass, Class<?>[] parameterTypes) {
       owner = klass.getName().replace('.', '/');
-      locals.add(new ThisPointer());
+      superclass = klass.getSuperclass().getName().replace('.', '/');
+      locals.add(new ObjectReference(new ThisPointer()));
       for (int i = 0; i < parameterTypes.length; i++) {
         Class<?> parameterType = parameterTypes[i];
         FormalParameter formalParameter = new FormalParameter(i);
@@ -514,6 +529,24 @@ public class ConstructorAnalysis {
     }
   }
 
+  static class ObjectReference implements JavaValue {
+    private JavaValue value;
+    ObjectReference(JavaValue value) {
+      this.value = value;
+    }
+    @Override
+    public boolean containsFormalParameter() {
+      return value.containsFormalParameter();
+    }
+    @Override
+    public String toString() {
+      return value.toString();
+    }
+    void updateReference(JavaValue value) {
+      this.value = value;
+    }
+  }
+
   static class NewObject extends AbstractConstantValue {
     private final String desc;
     NewObject(String desc) {
@@ -521,7 +554,34 @@ public class ConstructorAnalysis {
     }
     @Override
     public String toString() {
-      return format("new %s", desc);
+      return format("new %s", desc.replaceAll("/", "."));
+    }
+  }
+
+  static class MethodCall implements JavaValue {
+    private final JavaValue object;
+    private final List<JavaValue> arguments;
+    private final String name;
+    MethodCall(JavaValue object, String name, List<JavaValue> arguments) {
+      this.object = object;
+      this.name = name;
+      this.arguments = arguments;
+    }
+    @Override
+    public boolean containsFormalParameter() {
+      if (object.containsFormalParameter()) {
+        return true;
+      }
+      for (JavaValue parameter : arguments) {
+        if (parameter.containsFormalParameter()) {
+          return true;
+        }
+      }
+      return false;
+    }
+    @Override
+    public String toString() {
+      return format("%s.%s(%s)", object, name.replaceAll("/", "."), Joiner.on(",").join(arguments));
     }
   }
 
