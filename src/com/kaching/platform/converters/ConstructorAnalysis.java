@@ -87,7 +87,7 @@ public class ConstructorAnalysis {
       if (!value.getClass().equals(FormalParameter.class)) {
         if (value.containsFormalParameter()) {
         throw new IllegalConstructorException(format(
-            "cannot assign non-idempotent expression %s to field", value.toString().replaceAll("%", "%%")));
+            "can not assign non-idempotent expression %s to field", value.toString().replaceAll("%", "%%")));
         } else {
           iterator.remove();
         }
@@ -310,19 +310,17 @@ public class ConstructorAnalysis {
         int opcode, String owner, String name, String desc) {
       switch (opcode) {
         case 0xB6: // invokevirtual
-          log.trace(format("invokevirtual %s %s %s", owner, name, desc));
-          return;
-
         case 0xB7: // invokespecial
-          log.trace(format("invokespecial %s %s %s", owner, name, desc));
+        case 0xB9: // invokeinterface
+          log.trace(format("invoke___ %s %s %s", owner, name, desc));
           if (owner.equals(state.superclass) && name.equals("<init>")) { // super(...);
             if (!desc.equals("()V")) {
               throw new IllegalConstructorException(
-                  "cannot call super constructor with argument(s)");
+                  "can not call super constructor with argument(s)");
             }
           } else if (owner.equals(state.owner) && name.equals("<init>")) { // this(...);
             throw new IllegalConstructorException(
-                "cannot delegate to another constructor");
+                "can not delegate to another constructor");
           }
           // consuming arguments
           List<JavaValue> arguments = newArrayList();
@@ -339,6 +337,7 @@ public class ConstructorAnalysis {
               new MethodCall(reference.value, name, arguments));
           return;
 
+        case 0xB8: // invokestatic
         default: unknown(opcode);
       }
     }
@@ -425,7 +424,10 @@ public class ConstructorAnalysis {
       locals.add(new ObjectReference(new ThisPointer()));
       for (int i = 0; i < parameterTypes.length; i++) {
         Class<?> parameterType = parameterTypes[i];
-        FormalParameter formalParameter = new FormalParameter(i);
+        JavaValue formalParameter = new FormalParameter(i);
+        if (!parameterType.isPrimitive()) {
+          formalParameter = new ObjectReference(formalParameter);
+        }
         locals.add(formalParameter);
         if (parameterType.equals(Long.TYPE) ||
             parameterType.equals(Double.TYPE)) {
@@ -641,7 +643,7 @@ public class ConstructorAnalysis {
     try {
       in = klass.getResourceAsStream("/" + klass.getName().replace('.', '/') + ".class");
       if (in == null) {
-        throw new IllegalArgumentException(format("cannot find bytecode for %s", klass));
+        throw new IllegalArgumentException(format("can not find bytecode for %s", klass));
       }
       ClassReader reader = new ClassReader(in);
       reader.accept(visitor, SKIP_FRAMES | SKIP_DEBUG);

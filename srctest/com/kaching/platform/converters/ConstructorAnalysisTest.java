@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.junit.Ignore;
@@ -188,7 +189,7 @@ public class ConstructorAnalysisTest {
   public void objectInstantiation5() throws Exception {
     assertAnalysisFails(
         ObjectInstantiation5.class,
-        "cannot assign non-idempotent expression new java.lang.String.<init>(p0) to field");
+        "can not assign non-idempotent expression new java.lang.String.<init>(p0) to field");
   }
 
   static class CheckArgument1 {
@@ -219,7 +220,7 @@ public class ConstructorAnalysisTest {
   public void doingMathOperation1() throws Exception {
     assertAnalysisFails(
         DoingMathOperation1.class,
-        "cannot assign non-idempotent expression p0 + 9 to field");
+        "can not assign non-idempotent expression p0 + 9 to field");
   }
 
   static class DoingMathOperation2 {
@@ -233,7 +234,7 @@ public class ConstructorAnalysisTest {
   public void doingMathOperation2() throws Exception {
     assertAnalysisFails(
         DoingMathOperation2.class,
-        "cannot assign non-idempotent expression p0 * 5 to field");
+        "can not assign non-idempotent expression p0 * 5 to field");
   }
 
   static class ConstantHolder {
@@ -251,7 +252,7 @@ public class ConstructorAnalysisTest {
   public void doingMathOperation3() throws Exception {
     assertAnalysisFails(
         DoingMathOperation3.class,
-        "cannot assign non-idempotent expression p0 % com.kaching.platform.converters.ConstructorAnalysisTest$ConstantHolder#CONSTANT to field");
+        "can not assign non-idempotent expression p0 % com.kaching.platform.converters.ConstructorAnalysisTest$ConstantHolder#CONSTANT to field");
   }
 
   static class CalledSuperclass {
@@ -277,7 +278,7 @@ public class ConstructorAnalysisTest {
   public void callingSuperConstructorWithArguments() throws Exception {
     assertAnalysisFails(
         CallingSuperConstructorWithArguments.class,
-        "cannot call super constructor with argument(s)");
+        "can not call super constructor with argument(s)");
   }
 
   static class DelegatingToAnotherConstructor1 {
@@ -292,7 +293,7 @@ public class ConstructorAnalysisTest {
   public void delegatingToAnotherConstructor1() throws Exception {
     assertAnalysisFails(
         DelegatingToAnotherConstructor1.class,
-        "cannot delegate to another constructor");
+        "can not delegate to another constructor");
   }
 
   static class DelegatingToAnotherConstructor2 {
@@ -307,7 +308,22 @@ public class ConstructorAnalysisTest {
   public void delegatingToAnotherConstructor2() throws Exception {
     assertAnalysisFails(
         DelegatingToAnotherConstructor2.class,
-        "cannot delegate to another constructor");
+        "can not delegate to another constructor");
+  }
+
+  static class InvokeInterface {
+    int size;
+    InvokeInterface(Set<Integer> set) {
+      this.size = set.size();
+    }
+  }
+
+  @Test
+  @Ignore
+  public void invokeInterface() throws Exception {
+    assertAnalysisFails(
+        InvokeInterface.class,
+        "can not assign non-idempotent expression p0.size() to field");
   }
 
   private void assertAnalysisFails(Class<?> klass, String message) throws IOException {
