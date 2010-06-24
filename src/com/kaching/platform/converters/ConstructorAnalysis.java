@@ -3,6 +3,17 @@ package com.kaching.platform.converters;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.ADD;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.AND;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.DIV;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.MUL;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.OR;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.REM;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.SHL;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.SHR;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.SUB;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.USHR;
+import static com.kaching.platform.converters.ConstructorAnalysis.Operation.XOR;
 import static java.lang.String.format;
 import static org.apache.commons.logging.LogFactory.getLog;
 import static org.objectweb.asm.ClassReader.SKIP_DEBUG;
@@ -11,9 +22,11 @@ import static org.objectweb.asm.ClassReader.SKIP_FRAMES;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.objectweb.asm.AnnotationVisitor;
@@ -68,10 +81,16 @@ public class ConstructorAnalysis {
   @SuppressWarnings("unchecked")
   private static Map<String, FormalParameter> validateAndCast(
       final Map<String, JavaValue> assignements) {
-    for (JavaValue value : assignements.values()) {
+    Iterator<Entry<String, JavaValue>> iterator = assignements.entrySet().iterator();
+    while (iterator.hasNext()) {
+      JavaValue value = iterator.next().getValue();
       if (!value.getClass().equals(FormalParameter.class)) {
-        throw new IllegalConstructorException(
-            "cannot assign values other than formal parameters to fields");
+        if (value.containsFormalParameter()) {
+        throw new IllegalConstructorException(format(
+            "cannot assign non-idempotent expression %s to field", value.toString().replaceAll("%", "%%")));
+        } else {
+          iterator.remove();
+        }
       }
     }
     return (Map) assignements;
@@ -123,6 +142,10 @@ public class ConstructorAnalysis {
     public void visitFieldInsn(int opcode, String owner, String name,
         String desc) {
       switch (opcode) {
+        case 0xB2: // getstatic
+          state.stack.push(new StaticValue(owner, name, desc));
+          return;
+
         case 0xB5: // putfield
           log.trace(format("putfield %s %s %s", owner, name, desc));
           JavaValue value = state.stack.pop();
@@ -151,13 +174,100 @@ public class ConstructorAnalysis {
           log.trace("return");
           return;
 
+        case 0x03: // iconst_0
+        case 0x04: // iconst_1
+        case 0x05: // iconst_2
+        case 0x06: // iconst_3
+        case 0x07: // iconst_4
+        case 0x08: // iconst_5
+          state.stack.push(new IntLiteral(opcode - 0x03));
+          return;
+
+        case 0x59: // dup
+          state.stack.push(state.stack.peek());
+          return;
+
+        case 0x60: // iadd
+        case 0x61: // ladd
+        case 0x62: // fadd
+        case 0x63: // dadd
+          operation(ADD);
+          return;
+
+        case 0x64: // isub
+        case 0x65: // lsub
+        case 0x66: // fsub
+        case 0x67: // dsub
+          operation(SUB);
+          return;
+
+        case 0x68: // imul
+        case 0x69: // lmul
+        case 0x6A: // fmul
+        case 0x6B: // dmul
+          operation(MUL);
+          return;
+
+        case 0x6C: // idiv
+        case 0x6D: // ldiv
+        case 0x6E: // fdiv
+        case 0x6F: // ddiv
+          operation(DIV);
+          return;
+
+        case 0x70: // irem
+        case 0x71: // lrem
+        case 0x72: // frem
+        case 0x73: // drem
+          operation(REM);
+          return;
+
+        case 0x78: // ishl
+        case 0x79: // lshl
+          operation(SHL);
+          return;
+
+        case 0x7A: // ishr
+        case 0x7B: // lshr
+          operation(SHR);
+          return;
+
+        case 0x7C: // iushr
+        case 0x7D: // lushr
+          operation(USHR);
+          return;
+
+        case 0x7E: // iand
+        case 0x7F: // land
+          operation(AND);
+          return;
+
+        case 0x80: // ior
+        case 0x81: // lor
+          operation(OR);
+          return;
+
+        case 0x82: // ixor
+        case 0x83: // lxor
+          operation(XOR);
+          return;
+
         default: unknown(opcode);
       }
     }
 
+    private void operation(Operation operation) {
+      JavaValue value2 = state.stack.pop();
+      JavaValue value1 = state.stack.pop();
+      state.stack.push(new MathOperation(operation, value1, value2));
+    }
+
     @Override
     public void visitIntInsn(int opcode, int operand) {
-      throw illegalConstructor();
+      switch (opcode) {
+        case 0x10: state.stack.push(new IntLiteral(operand)); return; // bipush
+        default: unknown(opcode);
+      }
     }
 
     @Override
@@ -172,7 +282,7 @@ public class ConstructorAnalysis {
 
     @Override
     public void visitLdcInsn(Object cst) {
-      throw illegalConstructor();
+      state.stack.push(new ConstantValue(cst));
     }
 
     @Override
@@ -246,7 +356,16 @@ public class ConstructorAnalysis {
 
     @Override
     public void visitTypeInsn(int opcode, String desc) {
-      throw illegalConstructor();
+      switch (opcode) {
+        case 0xBB: // new
+          state.stack.push(new NewObject(desc));
+          return;
+
+        case 0xBD: // anewarray
+        case 0xC0: // checkcast
+        case 0xC1: // instanceof
+        default: unknown(opcode);
+      }
     }
 
     @Override
@@ -327,10 +446,32 @@ public class ConstructorAnalysis {
 
   }
 
+  /**
+   * A Java value used for abstract interpretation.
+   */
   interface JavaValue {
+
+    /**
+     * Returns {@code true} if this Java value is computed from a formal
+     * parameter, {@code false} otherwise. This method answers the question
+     * free(value) intersect formal parameters set != empty set.
+     */
+    boolean containsFormalParameter();
+
   }
 
-  static class ThisPointer implements JavaValue {
+  static abstract class AbstractConstantValue implements JavaValue {
+    @Override
+    public boolean containsFormalParameter() {
+      return false;
+    }
+  }
+
+  static class ThisPointer extends AbstractConstantValue {
+    @Override
+    public String toString() {
+      return "this";
+    }
   }
 
   static class FormalParameter implements JavaValue {
@@ -344,6 +485,94 @@ public class ConstructorAnalysis {
     }
     int getIndex() {
       return index;
+    }
+    @Override
+    public boolean containsFormalParameter() {
+      return true;
+    }
+  }
+
+  static class ConstantValue extends AbstractConstantValue {
+    private final Object cst;
+    ConstantValue(Object cst) {
+      this.cst = cst;
+    }
+    @Override
+    public String toString() {
+      return cst.toString();
+    }
+  }
+
+  static class IntLiteral extends AbstractConstantValue {
+    private final int value;
+    IntLiteral(int value) {
+      this.value = value;
+    }
+    @Override
+    public String toString() {
+      return Integer.toString(value);
+    }
+  }
+
+  static class NewObject extends AbstractConstantValue {
+    private final String desc;
+    NewObject(String desc) {
+      this.desc = desc;
+    }
+    @Override
+    public String toString() {
+      return format("new %s", desc);
+    }
+  }
+
+  static class StaticValue extends AbstractConstantValue {
+    private final String owner;
+    private final String name;
+    StaticValue(String owner, String name, String desc) {
+      this.owner = owner;
+      this.name = name;
+      // TODO(pascal): do we need desc?
+    }
+    @Override
+    public String toString() {
+      return format("%s#%s", owner.replaceAll("/", "."), name);
+    }
+  }
+
+  static class MathOperation implements JavaValue {
+    private final Operation operation;
+    private final JavaValue value1;
+    private final JavaValue value2;
+    MathOperation(Operation operation, JavaValue value1, JavaValue value2) {
+      this.operation = operation;
+      this.value1 = value1;
+      this.value2 = value2;
+    }
+    @Override
+    public boolean containsFormalParameter() {
+      return value1.containsFormalParameter() || value2.containsFormalParameter();
+    }
+    @Override
+    public String toString() {
+      return String.format("%s %s %s", value1, operation.representation, value2);
+    }
+  }
+
+  enum Operation {
+    ADD("+"),
+    SUB("-"),
+    MUL("*"),
+    DIV("/"),
+    REM("%"),
+    SHL("<<"),
+    SHR(">>"),
+    USHR(">>>"),
+    AND("&"),
+    OR("|"),
+    XOR("^");
+    private final String representation;
+    private Operation(String representation) {
+      this.representation = representation;
     }
   }
 

@@ -1,14 +1,19 @@
 package com.kaching.platform.converters;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
+import static java.math.BigDecimal.ZERO;
 import static java.util.Collections.emptyMap;
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
@@ -97,9 +102,9 @@ public class ConstructorAnalysisTest {
 
   @Test
   public void keepingSelfReference() throws Exception {
-    assertAnalysisFails(
+    assertAssignement(
         KeepingSelfReference.class,
-        "cannot assign values other than formal parameters to fields");
+        Collections.emptyMap());
   }
 
   static class AssigningSomethingElseThanParamater {
@@ -111,22 +116,99 @@ public class ConstructorAnalysisTest {
 
   @Test
   public void assigningSomethingElseThanParamater() throws Exception {
-    assertAnalysisFails(
+    assertAssignement(
         AssigningSomethingElseThanParamater.class,
-        "illegal constructor");
+        Collections.emptyMap());
   }
 
-  static class ComplexCode {
-    ComplexCode() {
+  static class ObjectInstantiation1 {
+    ObjectInstantiation1() {
       new Object();
     }
   }
 
   @Test
-  public void complexCode() throws Exception {
+  public void objectInstantiation1() throws Exception {
+    assertAssignement(
+        ObjectInstantiation1.class,
+        Collections.emptyMap());
+  }
+
+  static class ObjectInstantiation2 {
+    Object foo;
+    ObjectInstantiation2() {
+      this.foo = new Object();
+    }
+  }
+
+  @Test
+  public void objectInstantiation2() throws Exception {
+    assertAssignement(
+        ObjectInstantiation2.class,
+        Collections.emptyMap());
+  }
+
+  static class CheckArgument1 {
+    final BigDecimal value;
+    CheckArgument1(BigDecimal value) {
+      checkArgument(ZERO.compareTo(value) <= 0);
+      this.value = value;
+    }
+  }
+
+  @Test
+  @Ignore
+  public void checkArgument1() throws Exception {
+    assertAssignement(
+        CheckArgument1.class,
+        ImmutableMap.of(
+            "value", "p0"));
+  }
+
+  static class DoingMathOperation1 {
+    int foo;
+    DoingMathOperation1(int foo) {
+      this.foo = foo + 9;
+    }
+  }
+
+  @Test
+  public void doingMathOperation1() throws Exception {
     assertAnalysisFails(
-        ComplexCode.class,
-        "illegal constructor");
+        DoingMathOperation1.class,
+        "cannot assign non-idempotent expression p0 + 9 to field");
+  }
+
+  static class DoingMathOperation2 {
+    long foo;
+    DoingMathOperation2(long foo) {
+      this.foo = foo * 5;
+    }
+  }
+
+  @Test
+  public void doingMathOperation2() throws Exception {
+    assertAnalysisFails(
+        DoingMathOperation2.class,
+        "cannot assign non-idempotent expression p0 * 5 to field");
+  }
+
+  static class ConstantHolder {
+    static int CONSTANT = 4;
+  }
+
+  static class DoingMathOperation3 {
+    int foo;
+    DoingMathOperation3(int foo) {
+      this.foo = foo % ConstantHolder.CONSTANT;
+    }
+  }
+
+  @Test
+  public void doingMathOperation3() throws Exception {
+    assertAnalysisFails(
+        DoingMathOperation3.class,
+        "cannot assign non-idempotent expression p0 % com.kaching.platform.converters.ConstructorAnalysisTest$ConstantHolder#CONSTANT to field");
   }
 
   private void assertAnalysisFails(Class<?> klass, String message) throws IOException {
