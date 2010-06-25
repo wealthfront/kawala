@@ -432,7 +432,7 @@ public class ConstructorAnalysis {
     }
 
     private IllegalConstructorException illegalConstructor() {
-      return new IllegalConstructorException("illegal constructor");
+      return new IllegalConstructorException();
     }
 
   }
@@ -487,6 +487,9 @@ public class ConstructorAnalysis {
   static class IllegalConstructorException extends RuntimeException {
 
     private static final long serialVersionUID = -7666362130696013958L;
+
+    IllegalConstructorException() {
+    }
 
     IllegalConstructorException(String format, Object... args) {
       super(format(format, args));

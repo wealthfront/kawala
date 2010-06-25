@@ -43,10 +43,17 @@ public class ErrorsTest {
   }
 
   @Test
-  public void illegalConstructor() {
+  public void illegalConstructor1() {
+    check(
+        "class java.lang.String has an illegal constructor: hello",
+        new Errors().illegalConstructor(String.class, "hello"));
+  }
+
+  @Test
+  public void illegalConstructor2() {
     check(
         "class java.lang.String has an illegal constructor",
-        new Errors().illegalConstructor(String.class));
+        new Errors().illegalConstructor(String.class, null));
   }
 
   private void check(String expected, Errors errors) {
