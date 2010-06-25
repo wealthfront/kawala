@@ -97,10 +97,10 @@ class Errors {
         parameterNum + 1);
   }
 
-  Errors illegalConstructor(Class<?> klass) {
+  Errors illegalConstructor(Class<?> klass, String message) {
     return addMessage(
-        "%s has an illegal constructor",
-        klass);
+        "%s has an illegal constructor%s",
+        klass, message == null ? "" : ": " + message);
   }
 
   @Override

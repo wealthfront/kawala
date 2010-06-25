@@ -186,7 +186,7 @@ public class InstantiatorImplFactoryTest {
     } catch (RuntimeException e) {
     }
     assertEquals(
-        new Errors().illegalConstructor(HasIllegalConstructor.class),
+        new Errors().illegalConstructor(HasIllegalConstructor.class, null),
         f.getErrors());
   }
 

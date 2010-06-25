@@ -111,7 +111,7 @@ class InstantiatorImplFactory<T> {
       } catch (IOException e) {
         throw new IllegalStateException("should be able to access the class");
       } catch (ConstructorAnalysis.IllegalConstructorException e) {
-        errors.illegalConstructor(klass);
+        errors.illegalConstructor(klass, e.getMessage());
       }
       // 4. done
       errors.throwIfHasErrors();
