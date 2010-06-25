@@ -128,4 +128,15 @@ public class OptionTest {
             Option.some(Integer.valueOf(400))));
   }
 
+  @Test
+  @SuppressWarnings("unchecked")
+  public void of() {
+    EquivalenceTester.check(
+        newArrayList(
+            Option.none(),
+            Option.of(null)),
+        newArrayList(
+            Option.some("foo"),
+            Option.of("foo")));
+  }
 }
