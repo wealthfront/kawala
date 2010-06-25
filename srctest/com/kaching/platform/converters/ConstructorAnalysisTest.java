@@ -1,6 +1,7 @@
 package com.kaching.platform.converters;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.math.BigDecimal.ZERO;
 import static java.math.MathContext.DECIMAL32;
@@ -11,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -323,6 +325,65 @@ public class ConstructorAnalysisTest {
     assertAnalysisFails(
         InvokeInterface.class,
         "can not assign non-idempotent expression p0.size() to field");
+  }
+
+  abstract static class CalledByInvokeVirtual {
+    abstract int callme();
+  }
+  static class InvokeVirtual {
+    int size;
+    InvokeVirtual(CalledByInvokeVirtual value) {
+      this.size = value.callme();
+    }
+  }
+
+  @Test
+  public void invokeVirtual() throws Exception {
+    assertAnalysisFails(
+        InvokeVirtual.class,
+        "can not assign non-idempotent expression p0.callme() to field");
+  }
+
+  static class InvokeStatic1 {
+    final Map<String, String> map1 = newHashMap();
+    final Map<String, String> map2;
+    InvokeStatic1() {
+      this.map2 = newHashMap();
+    }
+  }
+
+  @Test
+  public void invokeStatic1() throws Exception {
+    assertAssignement(
+        InvokeStatic1.class,
+        Collections.emptyMap());
+  }
+
+  static class InvokeStatic2 {
+    InvokeStatic2(int size) {
+      newArrayListWithCapacity(size);
+    }
+  }
+
+  @Test
+  public void invokeStatic2() throws Exception {
+    assertAssignement(
+        InvokeStatic2.class,
+        Collections.emptyMap());
+  }
+
+  static class InvokeStatic3 {
+    List<Object> list;
+    InvokeStatic3(int size) {
+      this.list = newArrayListWithCapacity(size);
+    }
+  }
+
+  @Test
+  public void invokeStatic3() throws Exception {
+    assertAnalysisFails(
+        InvokeStatic3.class,
+        "can not assign non-idempotent expression com.google.common.collect.Lists.newArrayListWithCapacity(p0) to field");
   }
 
   private void assertAnalysisFails(Class<?> klass, String message) throws IOException {

@@ -183,6 +183,13 @@ public class ConstructorAnalysis {
           state.stack.push(new IntLiteral(opcode - 0x03));
           return;
 
+        case 0x58: // pop2
+          state.stack.pop();
+          /* fall-through to pop twice */
+        case 0x57: // pop
+          state.stack.pop();
+          return;
+
         case 0x59: // dup
           state.stack.push(state.stack.peek());
           return;
@@ -312,6 +319,7 @@ public class ConstructorAnalysis {
         case 0xB6: // invokevirtual
         case 0xB7: // invokespecial
         case 0xB9: // invokeinterface
+        case 0xB8: // invokestatic
           log.trace(format("invoke___ %s %s %s", owner, name, desc));
           if (owner.equals(state.superclass) && name.equals("<init>")) { // super(...);
             if (!desc.equals("()V")) {
@@ -332,15 +340,20 @@ public class ConstructorAnalysis {
                 desc.indexOf(';', index) + 1 :
                 index + 1;
           }
-          ObjectReference reference = (ObjectReference) state.stack.pop();
-          reference.updateReference(
-              new MethodCall(reference.value, name, arguments));
+          JavaValue returnValue;
+          if (opcode == 0xB8) {
+            returnValue = new StaticCall(owner, name, arguments);
+          } else {
+            ObjectReference reference = (ObjectReference) state.stack.pop();
+            reference.updateReference(
+                new MethodCall(reference.value, name, arguments));
+            returnValue = reference;
+          }
           if (desc.charAt(index + 1) != 'V') {
-            state.stack.push(reference);
+            state.stack.push(returnValue);
           }
           return;
 
-        case 0xB8: // invokestatic
         default: unknown(opcode);
       }
     }
@@ -587,6 +600,30 @@ public class ConstructorAnalysis {
     @Override
     public String toString() {
       return format("%s.%s(%s)", object, name.replaceAll("/", "."), Joiner.on(",").join(arguments));
+    }
+  }
+
+  static class StaticCall implements JavaValue {
+    private final String owner;
+    private final String name;
+    private final List<JavaValue> arguments;
+    StaticCall(String owner, String name, List<JavaValue> arguments) {
+      this.owner = owner;
+      this.name = name;
+      this.arguments = arguments;
+    }
+    @Override
+    public boolean containsFormalParameter() {
+      for (JavaValue parameter : arguments) {
+        if (parameter.containsFormalParameter()) {
+          return true;
+        }
+      }
+      return false;
+    }
+    @Override
+    public String toString() {
+      return format("%s.%s(%s)", owner.replaceAll("/", "."), name.replaceAll("/", "."), Joiner.on(",").join(arguments));
     }
   }
 
