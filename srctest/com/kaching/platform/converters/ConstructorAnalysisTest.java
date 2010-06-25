@@ -50,9 +50,9 @@ public class ConstructorAnalysisTest {
   }
 
   static class TwoAssignments {
-    final int foo;
+    final String foo;
     final int bar;
-    TwoAssignments(int bar, int foo) {
+    TwoAssignments(int bar, String foo) {
       this.bar = bar;
       this.foo = foo;
     }
