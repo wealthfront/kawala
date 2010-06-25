@@ -22,7 +22,6 @@ import static org.objectweb.asm.ClassReader.SKIP_FRAMES;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -39,6 +38,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
 
 import com.google.common.base.Joiner;
+import com.kaching.platform.common.Option;
 
 public class ConstructorAnalysis {
 
@@ -78,22 +78,37 @@ public class ConstructorAnalysis {
     return validateAndCast(state.assignements);
   }
 
-  @SuppressWarnings("unchecked")
   private static Map<String, FormalParameter> validateAndCast(
       final Map<String, JavaValue> assignements) {
-    Iterator<Entry<String, JavaValue>> iterator = assignements.entrySet().iterator();
-    while (iterator.hasNext()) {
-      JavaValue value = iterator.next().getValue();
-      if (!value.getClass().equals(FormalParameter.class)) {
+    Map<String, FormalParameter> parameterAssignements = newHashMap();
+    for (Entry<String, JavaValue> entry : assignements.entrySet()) {
+      JavaValue value = entry.getValue();
+      Option<FormalParameter> formalParameter = extractFormalParameter(value);
+      if (formalParameter.isEmpty()) {
         if (value.containsFormalParameter()) {
-        throw new IllegalConstructorException(format(
-            "can not assign non-idempotent expression %s to field", value.toString().replaceAll("%", "%%")));
-        } else {
-          iterator.remove();
+          throw new IllegalConstructorException(format(
+              "can not assign non-idempotent expression %s to field", value.toString().replaceAll("%", "%%")));
         }
+      } else {
+        parameterAssignements.put(entry.getKey(), formalParameter.getOrThrow());
       }
     }
-    return (Map) assignements;
+    return parameterAssignements;
+  }
+
+  /* 1. FormalParameter
+   * 2. ObjectReference -> FormalParameter
+   * 3. not a formal parameter, we return none
+   */
+  private static Option<FormalParameter> extractFormalParameter(JavaValue value) {
+    if (value instanceof FormalParameter) {
+      return Option.some((FormalParameter) value);
+    } else if (value instanceof ObjectReference &&
+        ((ObjectReference) value).value instanceof FormalParameter) {
+      return Option.some((FormalParameter) ((ObjectReference) value).value);
+    } else {
+      return Option.none();
+    }
   }
 
   /**
