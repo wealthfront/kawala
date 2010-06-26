@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.BindingAnnotation;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
@@ -168,6 +169,18 @@ public class InstantiatorImplFactoryTest {
       for (int i = 0; i < 10; i++) {
         System.out.println(i);
       }
+    }
+  }
+
+  @Test
+  public void doesNotKnowHowToConvert() throws Exception {
+    checkErrorCase(
+        DoesNotKnowHowToConvert.class,
+        new Errors().noConverterForType(new TypeLiteral<List<String>>() {}.getType()));
+  }
+
+  static class DoesNotKnowHowToConvert {
+    DoesNotKnowHowToConvert(List<String> names) {
     }
   }
 

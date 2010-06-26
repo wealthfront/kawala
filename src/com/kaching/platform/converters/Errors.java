@@ -29,7 +29,10 @@ class Errors {
     if (messages == null) {
       messages = newArrayList();
     }
-    messages.add(format(message, values));
+    String formattedMessage = format(message, values);
+    if (!messages.contains(formattedMessage)) {
+      messages.add(formattedMessage);
+    }
     return this;
   }
 
@@ -37,6 +40,10 @@ class Errors {
     if (messages != null) {
       throw new RuntimeException(toString());
     }
+  }
+
+  int size() {
+    return messages == null ? 0 : messages.size();
   }
 
   @SuppressWarnings("unchecked")
@@ -83,6 +90,12 @@ class Errors {
     return addMessage(
         "no such field %s",
         fieldName);
+  }
+
+  Errors noConverterForType(Type type) {
+    return addMessage(
+        "no converter for %s",
+        type);
   }
 
   Errors incorrectDefaultValue(String value, RuntimeException e) {

@@ -137,6 +137,7 @@ class InstantiatorImplFactory<T> {
   @VisibleForTesting
   @SuppressWarnings("unchecked")
   Option<? extends Converter<?>> createConverter(Type targetType) {
+    int sizeBefore = errors.size();
     // 1. explicit binding
     // TODO(pascal): implement the first case
     if (targetType instanceof Class) {
@@ -152,6 +153,9 @@ class InstantiatorImplFactory<T> {
       for (Converter<?> converter : createConverterUsingStringConstructor(targetClass)) {
         return Option.some(converter);
       }
+    }
+    if (sizeBefore == errors.size()) {
+      errors.noConverterForType(targetType);
     }
     return Option.none();
   }
