@@ -383,7 +383,44 @@ public class ConstructorAnalysisTest {
   public void invokeStatic3() throws Exception {
     assertAnalysisFails(
         InvokeStatic3.class,
-        "can not assign non-idempotent expression com.google.common.collect.Lists.newArrayListWithCapacity(p0) to field");
+    "can not assign non-idempotent expression com.google.common.collect.Lists.newArrayListWithCapacity(p0) to field");
+  }
+
+  static class WriteToMyField { int myfield; }
+  static class PutInDifferentField {
+    PutInDifferentField(WriteToMyField value) {
+      value.myfield = value.myfield + 5;
+    }
+  }
+
+  @Test
+  public void putInDifferentField() throws Exception {
+    assertAssignement(
+        PutInDifferentField.class,
+        Collections.emptyMap());
+  }
+
+  static class ContainerToTrickLibraryUsingAliasing { List<String> ref; }
+  static class AliasingResolutionIsNotSupported {
+    List<String> non_idempotent;
+    AliasingResolutionIsNotSupported(
+        ContainerToTrickLibraryUsingAliasing trick,
+        List<String> names) {
+      trick.ref = names;
+      trick.ref.add(Integer.toString(trick.ref.size()));
+      this.non_idempotent = names;
+    }
+  }
+
+  @Test
+  public void aliasingResolutionIsNotSupported() throws Exception {
+    /* Due to the lack of support for aliasing, one can successfully trick the
+     * analysis. This is not an important case to protect for.
+     */
+    assertAssignement(
+        AliasingResolutionIsNotSupported.class,
+        ImmutableMap.of(
+            "non_idempotent", "p1"));
   }
 
   private void assertAnalysisFails(Class<?> klass, String message) throws IOException {
