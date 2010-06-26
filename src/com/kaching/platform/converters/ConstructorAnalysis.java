@@ -156,16 +156,43 @@ public class ConstructorAnalysis {
     @Override
     public void visitFieldInsn(int opcode, String owner, String name,
         String desc) {
+      ObjectReference reference;
       switch (opcode) {
         case 0xB2: // getstatic
           state.stack.push(new StaticValue(owner, name, desc));
           return;
 
+        case 0xB4: // getfield
+          reference = (ObjectReference) state.stack.pop();
+          if (desc.charAt(0) == 'L') {
+            state.stack.push(new ObjectReference(new GetField(reference.value, name)));
+          } else {
+            state.stack.push(new GetField(reference.value, name));
+          }
+          return;
+
         case 0xB5: // putfield
           log.trace(format("putfield %s %s %s", owner, name, desc));
           JavaValue value = state.stack.pop();
-          state.stack.pop();
-          state.assign(name, value);
+          reference = (ObjectReference) state.stack.pop();
+          if (reference.value instanceof MethodCall &&
+              ((MethodCall) reference.value).object instanceof ThisPointer) {
+            state.assign(name, value);
+          } else {
+            /* We do not care about tracking other object's modification. We
+            /* assume that API users are not trying to trick us with aliasing:
+             *
+             *   static class MyHolder { Object ref; }
+             *
+             *   MyConstructor(MyHolder trick, List<String> names) {
+             *     trick.ref = names;
+             *     trick.ref.add(Integer.toString(trick.size()));
+             *     this.notidempotent = names;
+             *   }
+             *
+             * If users are that crazy, let 'em!
+             */
+          }
           return;
 
         default: unknown(opcode);
@@ -359,7 +386,11 @@ public class ConstructorAnalysis {
           if (opcode == 0xB8) {
             returnValue = new StaticCall(owner, name, arguments);
           } else {
-            ObjectReference reference = (ObjectReference) state.stack.pop();
+            JavaValue pop = state.stack.pop();
+            if (!(pop instanceof ObjectReference)) {
+              System.out.println(pop);
+            }
+            ObjectReference reference = (ObjectReference) pop;
             reference.updateReference(
                 new MethodCall(reference.value, name, arguments));
             returnValue = reference;
@@ -642,6 +673,23 @@ public class ConstructorAnalysis {
     @Override
     public String toString() {
       return format("%s.%s(%s)", owner.replaceAll("/", "."), name.replaceAll("/", "."), Joiner.on(",").join(arguments));
+    }
+  }
+
+  static class GetField implements JavaValue {
+    private final JavaValue object;
+    private final String name;
+    GetField(JavaValue object, String name) {
+      this.object = object;
+      this.name = name;
+    }
+    @Override
+    public boolean containsFormalParameter() {
+      return object.containsFormalParameter();
+    }
+    @Override
+    public String toString() {
+      return format("%s.%s", object, name);
     }
   }
 
