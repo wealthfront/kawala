@@ -137,20 +137,11 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createInstantiatorWithIncorrectDefaultValue() throws Exception {
-    // TODO(pascal): Refactor. Very ugly pattern here because build() is too
-    // high level.
-    InstantiatorImplFactory<WrongDefaultValue> f = null;
-    try {
-      f = InstantiatorImplFactory.createFactory(WrongDefaultValue.class);
-      f.build();
-      fail();
-    } catch (RuntimeException e) {
-    }
-    assertEquals(
+    checkErrorCase(
+        WrongDefaultValue.class,
         new Errors().incorrectDefaultValue(
             "foobar",
-            new IllegalArgumentException()),
-        f.getErrors());
+            new IllegalArgumentException()));
   }
 
   static class WrongDefaultValue {
@@ -160,34 +151,16 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createInstantiatorWithLiteralTypeNotHavingDefault() throws Exception {
-    // TODO(pascal): Refactor. Very ugly pattern here because build() is too
-    // high level.
-    InstantiatorImplFactory<OptionalLiteralParameterWithoutDefault> f = null;
-    try {
-      f = InstantiatorImplFactory.createFactory(OptionalLiteralParameterWithoutDefault.class);
-      f.build();
-      fail();
-    } catch (RuntimeException e) {
-    }
-    assertEquals(
-        new Errors().optionalLiteralParameterMustHaveDefault(0),
-        f.getErrors());
+    checkErrorCase(
+        OptionalLiteralParameterWithoutDefault.class,
+        new Errors().optionalLiteralParameterMustHaveDefault(0));
   }
 
   @Test
   public void createInstantiatorWithIllegalConstructor() throws Exception {
-    // TODO(pascal): Refactor. Very ugly pattern here because build() is too
-    // high level.
-    InstantiatorImplFactory<HasIllegalConstructor> f = null;
-    try {
-      f = InstantiatorImplFactory.createFactory(HasIllegalConstructor.class);
-      f.build();
-      fail();
-    } catch (RuntimeException e) {
-    }
-    assertEquals(
-        new Errors().illegalConstructor(HasIllegalConstructor.class, null),
-        f.getErrors());
+    checkErrorCase(
+        HasIllegalConstructor.class,
+        new Errors().illegalConstructor(HasIllegalConstructor.class, null));
   }
 
   static class HasIllegalConstructor {
@@ -196,6 +169,21 @@ public class InstantiatorImplFactoryTest {
         System.out.println(i);
       }
     }
+  }
+
+  private <T> void checkErrorCase(Class<T> klass, Errors errors) {
+    // TODO(pascal): Refactor. Very ugly pattern here because build() is too
+    // high level.
+    InstantiatorImplFactory<T> f = null;
+    try {
+      f = InstantiatorImplFactory.createFactory(klass);
+      f.build();
+      fail();
+    } catch (RuntimeException e) {
+    }
+    assertEquals(
+        errors,
+        f.getErrors());
   }
 
   @Test
