@@ -14,8 +14,11 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.List;
+
 import org.junit.Test;
 
+import com.google.inject.TypeLiteral;
 import com.kaching.platform.testing.EquivalenceTester;
 
 public class ErrorsTest {
@@ -54,6 +57,20 @@ public class ErrorsTest {
     check(
         "class java.lang.String has an illegal constructor",
         new Errors().illegalConstructor(String.class, null));
+  }
+
+  @Test
+  public void noConverterForType() {
+    check(
+        "no converter for java.util.List<java.lang.String>",
+        new Errors().noConverterForType(new TypeLiteral<List<String>>() {}.getType()));
+  }
+
+  @Test
+  public void addinTwiceTheSameMessageDoesNotDuplicateTheError() {
+    check(
+        "no such field a",
+        new Errors().noSuchField("a").noSuchField("a"));
   }
 
   private void check(String expected, Errors errors) {
