@@ -386,11 +386,7 @@ public class ConstructorAnalysis {
           if (opcode == 0xB8) {
             returnValue = new StaticCall(owner, name, arguments);
           } else {
-            JavaValue pop = state.stack.pop();
-            if (!(pop instanceof ObjectReference)) {
-              System.out.println(pop);
-            }
-            ObjectReference reference = (ObjectReference) pop;
+            ObjectReference reference = (ObjectReference) state.stack.pop();
             reference.updateReference(
                 new MethodCall(reference.value, name, arguments));
             returnValue = reference;
