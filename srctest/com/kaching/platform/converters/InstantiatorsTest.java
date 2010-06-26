@@ -131,7 +131,7 @@ public class InstantiatorsTest {
     private final Integer number;
     ConstructMe5OptionalityWithDefaultValue(
         @Optional("90") Integer number) {
-          this.number = number;
+      this.number = number;
     }
   }
 
