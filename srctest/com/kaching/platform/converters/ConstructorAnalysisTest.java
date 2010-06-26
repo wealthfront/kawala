@@ -423,6 +423,20 @@ public class ConstructorAnalysisTest {
             "non_idempotent", "p1"));
   }
 
+  static class CallingMethodOnStaticObject {
+    static Object ref = new Object();
+    CallingMethodOnStaticObject() {
+      CallingMethodOnStaticObject.ref.hashCode();
+    }
+  }
+
+  @Test
+  public void callingMethodOnStaticObject() throws Exception {
+    assertAssignement(
+        CallingMethodOnStaticObject.class,
+        Collections.emptyMap());
+  }
+
   private void assertAnalysisFails(Class<?> klass, String message) throws IOException {
     try {
       ConstructorAnalysis.analyse(klass, klass.getDeclaredConstructors()[0]);

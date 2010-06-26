@@ -22,9 +22,9 @@ import static org.objectweb.asm.ClassReader.SKIP_FRAMES;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
@@ -159,22 +159,18 @@ public class ConstructorAnalysis {
       ObjectReference reference;
       switch (opcode) {
         case 0xB2: // getstatic
-          state.stack.push(new StaticValue(owner, name, desc));
+          state.stackPush(desc, new StaticValue(owner, name, desc));
           return;
 
         case 0xB4: // getfield
-          reference = (ObjectReference) state.stack.pop();
-          if (desc.charAt(0) == 'L') {
-            state.stack.push(new ObjectReference(new GetField(reference.value, name)));
-          } else {
-            state.stack.push(new GetField(reference.value, name));
-          }
+          reference = (ObjectReference) state.stackPop();
+          state.stackPush(desc, new GetField(reference.value, name));
           return;
 
         case 0xB5: // putfield
           log.trace(format("putfield %s %s %s", owner, name, desc));
-          JavaValue value = state.stack.pop();
-          reference = (ObjectReference) state.stack.pop();
+          JavaValue value = state.stackPop();
+          reference = (ObjectReference) state.stackPop();
           if (reference.value instanceof MethodCall &&
               ((MethodCall) reference.value).object instanceof ThisPointer) {
             state.assign(name, value);
@@ -222,18 +218,18 @@ public class ConstructorAnalysis {
         case 0x06: // iconst_3
         case 0x07: // iconst_4
         case 0x08: // iconst_5
-          state.stack.push(new IntLiteral(opcode - 0x03));
+          state.stackPushLiteral(new IntLiteral(opcode - 0x03));
           return;
 
         case 0x58: // pop2
-          state.stack.pop();
+          state.stackPop();
           /* fall-through to pop twice */
         case 0x57: // pop
-          state.stack.pop();
+          state.stackPop();
           return;
 
         case 0x59: // dup
-          state.stack.push(state.stack.peek());
+          state.stackPushLiteral(state.stackPeek());
           return;
 
         case 0x60: // iadd
@@ -306,15 +302,15 @@ public class ConstructorAnalysis {
     }
 
     private void operation(Operation operation) {
-      JavaValue value2 = state.stack.pop();
-      JavaValue value1 = state.stack.pop();
-      state.stack.push(new MathOperation(operation, value1, value2));
+      JavaValue value2 = state.stackPop();
+      JavaValue value1 = state.stackPop();
+      state.stackPushLiteral(new MathOperation(operation, value1, value2));
     }
 
     @Override
     public void visitIntInsn(int opcode, int operand) {
       switch (opcode) {
-        case 0x10: state.stack.push(new IntLiteral(operand)); return; // bipush
+        case 0x10: state.stackPushLiteral(new IntLiteral(operand)); return; // bipush
         default: unknown(opcode);
       }
     }
@@ -331,7 +327,7 @@ public class ConstructorAnalysis {
 
     @Override
     public void visitLdcInsn(Object cst) {
-      state.stack.push(new ConstantValue(cst));
+      state.stackPushLiteral(new ConstantValue(cst));
     }
 
     @Override
@@ -376,7 +372,7 @@ public class ConstructorAnalysis {
           List<JavaValue> arguments = newArrayList();
           int index = 1;
           while (desc.charAt(index) != ')') {
-            arguments.add(state.stack.pop());
+            arguments.add(state.stackPop());
             // TODO(pascal): what about arrays which start with [
             index = desc.charAt(index) == 'L' ?
                 desc.indexOf(';', index) + 1 :
@@ -386,13 +382,13 @@ public class ConstructorAnalysis {
           if (opcode == 0xB8) {
             returnValue = new StaticCall(owner, name, arguments);
           } else {
-            ObjectReference reference = (ObjectReference) state.stack.pop();
+            ObjectReference reference = (ObjectReference) state.stackPop();
             reference.updateReference(
                 new MethodCall(reference.value, name, arguments));
             returnValue = reference;
           }
           if (desc.charAt(index + 1) != 'V') {
-            state.stack.push(returnValue);
+            state.stackPushLiteral(returnValue);
           }
           return;
 
@@ -428,7 +424,7 @@ public class ConstructorAnalysis {
     public void visitTypeInsn(int opcode, String desc) {
       switch (opcode) {
         case 0xBB: // new
-          state.stack.push(new ObjectReference(new NewObject(desc)));
+          state.stackPushLiteral(new ObjectReference(new NewObject(desc)));
           return;
 
         case 0xBD: // anewarray
@@ -447,7 +443,7 @@ public class ConstructorAnalysis {
         case 0x18: // dload
         case 0x19: // aload
           log.trace(format("_load %s", var));
-          state.stack.push(state.locals.get(var));
+          state.stackPushLiteral(state.locals.get(var));
           return;
 
         default: unknown(opcode);
@@ -473,7 +469,7 @@ public class ConstructorAnalysis {
     private final String owner;
     private final String superclass;
     private final List<JavaValue> locals = newArrayList();
-    private final Stack<JavaValue> stack = new Stack<JavaValue>();
+    private final LinkedList<JavaValue> stack = new LinkedList<JavaValue>();
     private final Map<String, JavaValue> assignements = newHashMap();
 
     ConstructorExecutionState(Class<?> klass, Class<?>[] parameterTypes) {
@@ -507,6 +503,30 @@ public class ConstructorAnalysis {
       return Joiner.on("\n").join(
           format("locals: %s", locals), format("stack : %s", stack),
           format("assign: %s", assignements));
+    }
+
+    boolean isStackEmpty() {
+      return stack.isEmpty();
+    }
+
+    void stackPushLiteral(JavaValue value) {
+      stack.push(value);
+    }
+
+    void stackPush(String desc, JavaValue value) {
+      if (desc.charAt(0) == 'L') {
+        stack.push(new ObjectReference(value));
+      } else {
+        stack.push(value);
+      }
+    }
+
+    JavaValue stackPop() {
+      return stack.poll();
+    }
+
+    JavaValue stackPeek() {
+      return stack.peek();
     }
 
   }
