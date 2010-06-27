@@ -102,6 +102,31 @@ public class InstantiatorsTest {
     assertEquals(90, instance.number);
   }
 
+  static class ArgumentAreNotSavedToFields {
+    private final int is;
+    private final int isToo;
+    ArgumentAreNotSavedToFields(int is, int isNot, int isToo) {
+      this.is = is;
+      this.isToo = isToo;
+    }
+  }
+
+  @Test
+  public void argumentAreNotSavedToFields() {
+    Instantiator<ArgumentAreNotSavedToFields> instantiator = Instantiators
+        .createInstantiator(ArgumentAreNotSavedToFields.class);
+
+    ArgumentAreNotSavedToFields instance = instantiator
+        .newInstance("1", "2", "3");
+    assertNotNull(instance);
+    assertEquals(1, instance.is);
+    assertEquals(3, instance.isToo);
+
+    assertEquals(
+        asList("1", null, "3"),
+        instantiator.fromInstance(instance));
+  }
+
   static class WrappedString {
     private final String content;
     WrappedString(String content) {

@@ -99,7 +99,10 @@ class InstantiatorImpl<T> implements Instantiator<T> {
     List<String> parameters = Lists.newArrayListWithCapacity(fields.length);
     for (int i = 0; i < fields.length; i++) {
       try {
-        parameters.add(converters[i].toString(fields[i].get(instance)));
+        Field field = fields[i];
+        parameters.add(field == null ?
+            null :
+            converters[i].toString(field.get(instance)));
       } catch (IllegalArgumentException e) {
         throw new RuntimeException(e);
       } catch (IllegalAccessException e) {
