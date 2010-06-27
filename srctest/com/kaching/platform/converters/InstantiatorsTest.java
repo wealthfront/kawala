@@ -20,11 +20,20 @@ import org.junit.Test;
 
 public class InstantiatorsTest {
 
+  static class ConstructMe1 {}
+
   @Test
   public void constructMe1() {
     assertNotNull(Instantiators
         .createInstantiator(ConstructMe1.class)
         .newInstance());
+  }
+
+  static class ConstructMe2 {
+    private final String name;
+    ConstructMe2(String name) {
+      this.name = name;
+    }
   }
 
   @Test
@@ -34,6 +43,15 @@ public class InstantiatorsTest {
         .newInstance("Jack Bauer");
     assertNotNull(instance);
     assertEquals("Jack Bauer", instance.name);
+  }
+
+  static class ConstructMe3 {
+    private final WrappedString name;
+    private final ConvertedPair pair;
+    ConstructMe3(WrappedString name, ConvertedPair pair) {
+      this.name = name;
+      this.pair = pair;
+    }
   }
 
   @Test
@@ -51,6 +69,13 @@ public class InstantiatorsTest {
         instantiator.fromInstance(instance));
   }
 
+  static class ConstructMe4Optionality {
+    private final String name;
+    ConstructMe4Optionality(@Optional String name) {
+      this.name = name;
+    }
+  }
+
   @Test
   public void constructMe4() {
     ConstructMe4Optionality instance = Instantiators
@@ -60,6 +85,14 @@ public class InstantiatorsTest {
     assertNull(instance.name);
   }
 
+  static class ConstructMe5OptionalityWithDefaultValue {
+    private final Integer number;
+    ConstructMe5OptionalityWithDefaultValue(
+        @Optional("90") Integer number) {
+      this.number = number;
+    }
+  }
+
   @Test
   public void constructMe5() {
     ConstructMe5OptionalityWithDefaultValue instance = Instantiators
@@ -67,26 +100,6 @@ public class InstantiatorsTest {
         .newInstance((String) null);
     assertNotNull(instance);
     assertEquals(90, instance.number);
-  }
-
-  static class ConstructMe1 {
-    ConstructMe1() {}
-  }
-
-  static class ConstructMe2 {
-    private final String name;
-    ConstructMe2(String name) {
-      this.name = name;
-    }
-  }
-
-  static class ConstructMe3 {
-    private final WrappedString name;
-    private final ConvertedPair pair;
-    ConstructMe3(WrappedString name, ConvertedPair pair) {
-      this.name = name;
-      this.pair = pair;
-    }
   }
 
   static class WrappedString {
@@ -123,21 +136,6 @@ public class InstantiatorsTest {
       return new ConvertedPair(parts[0], parts[1]);
     }
 
-  }
-
-  static class ConstructMe4Optionality {
-    private final String name;
-    ConstructMe4Optionality(@Optional String name) {
-      this.name = name;
-    }
-  }
-
-  static class ConstructMe5OptionalityWithDefaultValue {
-    private final Integer number;
-    ConstructMe5OptionalityWithDefaultValue(
-        @Optional("90") Integer number) {
-      this.number = number;
-    }
   }
 
 }
