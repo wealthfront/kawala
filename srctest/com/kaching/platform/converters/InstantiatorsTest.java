@@ -11,6 +11,7 @@
 package com.kaching.platform.converters;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -37,13 +38,17 @@ public class InstantiatorsTest {
 
   @Test
   public void constructMe3() {
-    ConstructMe3 instance = Instantiators
-        .createInstantiator(ConstructMe3.class)
+    Instantiator<ConstructMe3> instantiator = Instantiators
+        .createInstantiator(ConstructMe3.class);
+    ConstructMe3 instance = instantiator
         .newInstance("Jack Bauer", "First:Last");
     assertNotNull(instance);
     assertEquals("Jack Bauer", instance.name.content);
     assertEquals("First", instance.pair.first);
     assertEquals("Last", instance.pair.last);
+    assertEquals(
+        asList("Jack Bauer", "First:Last"),
+        instantiator.fromInstance(instance));
   }
 
   @Test
