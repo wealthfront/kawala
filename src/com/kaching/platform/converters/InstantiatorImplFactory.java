@@ -202,18 +202,8 @@ class InstantiatorImplFactory<T> {
     for (Annotation typeAnnotation : typeAnnotations) {
       if (typeAnnotation instanceof ConvertedBy) {
         Class<? extends Converter<?>> converterClass = ((ConvertedBy) typeAnnotation).value();
-        try {
-          Type producedType =
-              Unification.getActualTypeArgument(converterClass, Converter.class, 0);
-          if (targetClass.equals(producedType)) {
-            return Option.some(converterClass.newInstance());
-          } else {
-            errors.incorrectBoundForConverter(targetClass, converterClass, producedType);
-          }
-        } catch (InstantiationException e) {
-          errors.unableToInstantiate(converterClass, e);
-        } catch (IllegalAccessException e) {
-          errors.unableToInstantiate(converterClass, e);
+        for (Converter<?> converter : instantiateConverter(converterClass, targetClass)) {
+          return Option.some(converter);
         }
       }
     }
@@ -233,6 +223,25 @@ class InstantiatorImplFactory<T> {
       return Option.none();
     }
     return Option.some(new StringConstructorConverter<Object>(stringConstructor));
+  }
+
+  // TODO(pascal) We should Guice this up.
+  private Option<? extends Converter<?>> instantiateConverter(
+      Class<? extends Converter<?>> converterClass, Type targetType) {
+    try {
+      Type producedType =
+          Unification.getActualTypeArgument(converterClass, Converter.class, 0);
+      if (targetType.equals(producedType)) {
+        return Option.some(converterClass.newInstance());
+      } else {
+        errors.incorrectBoundForConverter(targetType, converterClass, producedType);
+      }
+    } catch (InstantiationException e) {
+      errors.unableToInstantiate(converterClass, e);
+    } catch (IllegalAccessException e) {
+      errors.unableToInstantiate(converterClass, e);
+    }
+    return Option.none();
   }
 
   @VisibleForTesting

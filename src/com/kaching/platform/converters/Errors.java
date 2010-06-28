@@ -48,13 +48,13 @@ class Errors {
 
   @SuppressWarnings("unchecked")
   Errors incorrectBoundForConverter(
-      Class<?> targetClass,
+      Type targetType,
       Class<? extends Converter> converterClass,
       Type producedType) {
     return addMessage(
         "the converter %2$s, mentioned on %1$s using @%4$s, does not produce " +
         "instances of %1$s. It produces %3$s.",
-        targetClass,
+        targetType,
         converterClass,
         producedType,
         ConvertedBy.class.getSimpleName());
