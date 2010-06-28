@@ -33,14 +33,13 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.TypeLiteral;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.common.types.Unification;
 import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
 
 class InstantiatorImplFactory<T> {
 
-  private final Errors errors = new Errors();
-  private final Class<T> klass;
   private final static ConcurrentMap<Type, Converter<?>> BASE_CONVERTERS =
       ImmutableMap.<Type, Converter<?>> builder()
       .put(String.class, C_STRING)
@@ -54,12 +53,29 @@ class InstantiatorImplFactory<T> {
       .put(Short.TYPE, C_SHORT)
       .build();
 
+  private final Errors errors = new Errors();
+  private final Class<T> klass;
+  private Map<TypeLiteral<?>, Converter<?>> instances;
+  private Map<TypeLiteral<?>, Class<? extends Converter<?>>> bindings;
+
   private InstantiatorImplFactory(Class<T> klass) {
     this.klass = klass;
   }
 
   static <T> InstantiatorImplFactory<T> createFactory(Class<T> klass) {
     return new InstantiatorImplFactory<T>(klass);
+  }
+
+  InstantiatorImplFactory<T> addConverterInstances(
+      Map<TypeLiteral<?>, Converter<?>> instances) {
+    this.instances = instances;
+    return this;
+  }
+
+  InstantiatorImplFactory<T> addConverterBindings(
+      Map<TypeLiteral<?>, Class<? extends Converter<?>>> bindings) {
+    this.bindings = bindings;
+    return this;
   }
 
   InstantiatorImpl<T> build() {
@@ -139,7 +155,23 @@ class InstantiatorImplFactory<T> {
   Option<? extends Converter<?>> createConverter(Type targetType) {
     int sizeBefore = errors.size();
     // 1. explicit binding
-    // TODO(pascal): implement the first case
+    if (instances != null) {
+      for (Entry<TypeLiteral<?>, Converter<?>> entry : instances.entrySet()) {
+        if (targetType.equals(entry.getKey().getType())) {
+          return Option.some(entry.getValue());
+        }
+      }
+    }
+    if (bindings != null) {
+      for (Entry<TypeLiteral<?>, Class<? extends Converter<?>>> entry : bindings.entrySet()) {
+        if (targetType.equals(entry.getKey().getType())) {
+          for (Converter<?> converter : instantiateConverter(entry.getValue(), targetType)) {
+            return Option.some(converter);
+          }
+        }
+      }
+    }
+
     if (targetType instanceof Class) {
       Class targetClass = (Class) targetType;
       // 2. @ConvertedBy

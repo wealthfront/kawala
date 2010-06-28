@@ -10,6 +10,9 @@
  */
 package com.kaching.platform.converters;
 
+import java.util.Map;
+
+import com.google.inject.TypeLiteral;
 
 public class Instantiators {
 
@@ -18,8 +21,99 @@ public class Instantiators {
    */
   private Instantiators() {}
 
-  public static <T> Instantiator<T> createInstantiator(Class<T> klass) {
-    return InstantiatorImplFactory.createFactory(klass).build();
+  /**
+   * Creates an instantiator for {@code klass}.
+   */
+  public static <T> Instantiator<T> createInstantiator(
+      Class<T> klass) {
+    return InstantiatorImplFactory
+        .createFactory(klass)
+        .build();
+  }
+
+  /**
+   * Creates an instantiator for {@code klass} using the specified converters.
+   */
+  public static <T> Instantiator<T> createInstantiator(
+      Class<T> klass,
+      ConverterInstances instances) {
+    return InstantiatorImplFactory
+        .createFactory(klass)
+        .addConverterInstances(instances.get())
+        .build();
+  }
+
+  /**
+   * Creates an instantiator for {@code klass} using the specified bindings
+   * to converters.
+   */
+  public static <T> Instantiator<T> createInstantiator(
+      Class<T> klass,
+      ConverterBindings bindings) {
+    return InstantiatorImplFactory
+        .createFactory(klass)
+        .addConverterBindings(bindings.get())
+        .build();
+  }
+
+  /**
+   * Creates a {@link ConverterInstances} wrapper for the {@code instances} map.
+   */
+  public static ConverterInstances instances(
+      Map<? extends TypeLiteral<?>, ? extends Converter<?>> instances) {
+    return new ConverterInstances(instances);
+  }
+
+  /**
+   * Creates a {@link ConverterBindings} wrapper for the {@code bindings} map.
+   */
+  public static ConverterBindings bindings(
+      Map<? extends TypeLiteral<?>, ? extends Class<? extends Converter<?>>> bindings) {
+    return new ConverterBindings(bindings);
+  }
+
+  static abstract class MapWrapper<V> {
+
+    private final Map<? extends TypeLiteral<?>, ? extends V> map;
+
+    protected MapWrapper(Map<? extends TypeLiteral<?>, ? extends V> map) {
+      this.map = map;
+    }
+
+    @SuppressWarnings("unchecked")
+    Map<TypeLiteral<?>, V> get() {
+      // Caller does not care about covariance of the key and value.
+      return (Map<TypeLiteral<?>, V>) map;
+    }
+
+  }
+
+  /**
+   * Wrapper to pass a {@code Map<TypeLiteral<?>, Converter<?>>}. We must use
+   * wrappers since the API passes multiple maps whose erasure is the same
+   * and thus illegal per the Java language spec.
+   */
+  public static class ConverterBindings extends MapWrapper<Class<? extends Converter<?>>> {
+
+    private ConverterBindings(
+        Map<? extends TypeLiteral<?>, ? extends Class<? extends Converter<?>>> map) {
+      super(map);
+    }
+
+  }
+
+  /**
+   * Wrapper to pass a {@code Map<TypeLiteral<?>, Converter<?>>}. We must use
+   * wrappers since the API passes multiple maps whose erasure is the same
+   * and thus illegal per the Java language spec.
+   */
+  public static class ConverterInstances extends MapWrapper<Converter<?>> {
+
+    private ConverterInstances(
+        Map<? extends TypeLiteral<?>, ? extends Converter<?>> map) {
+      super(map);
+    }
+
   }
 
 }
