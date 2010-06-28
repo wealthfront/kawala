@@ -10,13 +10,24 @@
  */
 package com.kaching.platform.converters;
 
+import static com.kaching.platform.converters.Instantiators.bindings;
+import static com.kaching.platform.converters.Instantiators.createInstantiator;
+import static com.kaching.platform.converters.Instantiators.instances;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.inject.TypeLiteral;
 
 public class InstantiatorsTest {
 
@@ -127,6 +138,50 @@ public class InstantiatorsTest {
         instantiator.fromInstance(instance));
   }
 
+  static class ObjectWithListOfInt {
+    final List<Integer> numbers;
+    ObjectWithListOfInt(List<Integer> numbers) {
+      this.numbers = numbers;
+    }
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void objectWithListOfIntNoSpecificBindingWillFail() {
+    Instantiators.createInstantiator(ObjectWithListOfInt.class);
+  }
+
+  @Test
+  public void objectWithListOfIntUsingInstances() {
+    Instantiator<ObjectWithListOfInt> instantiator = createInstantiator(
+        ObjectWithListOfInt.class,
+        instances(ImmutableMap.of(
+            new TypeLiteral<List<Integer>>() {},
+            new ListOfIntConverter())));
+
+    checkObjectWithListOfInt(instantiator);
+  }
+
+  @Test
+  public void objectWithListOfIntUsingBindings() {
+    Instantiator<ObjectWithListOfInt> instantiator = createInstantiator(
+        ObjectWithListOfInt.class,
+        bindings(ImmutableMap.of(
+            new TypeLiteral<List<Integer>>() {},
+            ListOfIntConverter.class)));
+
+    checkObjectWithListOfInt(instantiator);
+  }
+
+  private void checkObjectWithListOfInt(
+      Instantiator<ObjectWithListOfInt> instantiator) {
+    ObjectWithListOfInt instance = instantiator.newInstance("1,2,3");
+    assertEquals(asList(1, 2, 3), instance.numbers);
+
+    assertEquals(
+        asList("1,2,3"),
+        instantiator.fromInstance(instance));
+  }
+
   static class WrappedString {
     private final String content;
     WrappedString(String content) {
@@ -159,6 +214,24 @@ public class InstantiatorsTest {
     public ConvertedPair fromString(String representation) {
       String[] parts = representation.split(":");
       return new ConvertedPair(parts[0], parts[1]);
+    }
+
+  }
+
+  static class ListOfIntConverter implements Converter<List<Integer>> {
+
+    @Override
+    public String toString(List<Integer> value) {
+      return Joiner.on(",").join(value);
+    }
+
+    @Override
+    public List<Integer> fromString(String representation) {
+      ArrayList<Integer> fromString = Lists.newArrayList();
+      for (String single : representation.split(",")) {
+        fromString.add(Integer.parseInt(single));
+      }
+      return fromString;
     }
 
   }
