@@ -182,6 +182,56 @@ public class InstantiatorsTest {
         instantiator.fromInstance(instance));
   }
 
+  static class ObjectWithListOfIntAndListOfBoolean {
+    final List<Integer> numbers;
+    final List<Boolean> booleans;
+    ObjectWithListOfIntAndListOfBoolean(
+        List<Integer> numbers, List<Boolean> booleans) {
+      this.numbers = numbers;
+      this.booleans = booleans;
+    }
+  }
+
+  @Test
+  public void objectWithListOfIntAndListOfBooleanViaBindings() {
+    Instantiator<ObjectWithListOfIntAndListOfBoolean> instantiator = createInstantiator(
+        ObjectWithListOfIntAndListOfBoolean.class,
+        bindings(ImmutableMap.of(
+            new TypeLiteral<List<Integer>>() {},
+            ListOfIntConverter.class)),
+        bindings(ImmutableMap.of(
+            new TypeLiteral<List<Boolean>>() {},
+            ListOfBooleanConverter.class)));
+
+    checkObjectWithListOfIntAndListOfBoolean(instantiator);
+  }
+
+  @Test
+  public void objectWithListOfIntAndListOfBooleanViaInstances() {
+    Instantiator<ObjectWithListOfIntAndListOfBoolean> instantiator = createInstantiator(
+        ObjectWithListOfIntAndListOfBoolean.class,
+        instances(ImmutableMap.of(
+            new TypeLiteral<List<Integer>>() {},
+            new ListOfIntConverter())),
+        instances(ImmutableMap.of(
+            new TypeLiteral<List<Boolean>>() {},
+            new ListOfBooleanConverter())));
+
+    checkObjectWithListOfIntAndListOfBoolean(instantiator);
+  }
+
+  private void checkObjectWithListOfIntAndListOfBoolean(
+      Instantiator<ObjectWithListOfIntAndListOfBoolean> instantiator) {
+    ObjectWithListOfIntAndListOfBoolean instance = instantiator.newInstance(
+        "1,2,3", "true,false,true");
+    assertEquals(asList(1, 2, 3), instance.numbers);
+    assertEquals(asList(true, false, true), instance.booleans);
+
+    assertEquals(
+        asList("1,2,3", "true,false,true"),
+        instantiator.fromInstance(instance));
+  }
+
   static class WrappedString {
     private final String content;
     WrappedString(String content) {
@@ -218,22 +268,39 @@ public class InstantiatorsTest {
 
   }
 
-  static class ListOfIntConverter implements Converter<List<Integer>> {
+  abstract static class CsvValuesListConverter<T> implements Converter<List<T>> {
+
+    private final Converter<T> elementConverter;
+
+    CsvValuesListConverter(Converter<T> elementConverter) {
+      this.elementConverter = elementConverter;
+    }
 
     @Override
-    public String toString(List<Integer> value) {
+    public String toString(List<T> value) {
+      // NOTE using element.toString instead of elementConverter.toString(element)
+      // which is equivalent in the context of this text but certainly not for
+      // production code.
       return Joiner.on(",").join(value);
     }
 
     @Override
-    public List<Integer> fromString(String representation) {
-      ArrayList<Integer> fromString = Lists.newArrayList();
+    public List<T> fromString(String representation) {
+      ArrayList<T> fromString = Lists.newArrayList();
       for (String single : representation.split(",")) {
-        fromString.add(Integer.parseInt(single));
+        fromString.add(elementConverter.fromString(single));
       }
       return fromString;
     }
 
+  }
+
+  static class ListOfIntConverter extends CsvValuesListConverter<Integer> {
+    ListOfIntConverter() { super(NativeConverters.C_INT); }
+  }
+
+  static class ListOfBooleanConverter extends CsvValuesListConverter<Boolean> {
+    ListOfBooleanConverter() { super(NativeConverters.C_BOOLEAN); }
   }
 
 }

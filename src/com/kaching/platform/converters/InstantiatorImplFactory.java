@@ -10,6 +10,7 @@
  */
 package com.kaching.platform.converters;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
 import static com.kaching.platform.converters.NativeConverters.C_BYTE;
 import static com.kaching.platform.converters.NativeConverters.C_CHAR;
@@ -68,13 +69,19 @@ class InstantiatorImplFactory<T> {
 
   InstantiatorImplFactory<T> addConverterInstances(
       Map<TypeLiteral<?>, Converter<?>> instances) {
-    this.instances = instances;
+    if (this.instances == null) {
+      this.instances = newHashMap();
+    }
+    this.instances.putAll(instances);
     return this;
   }
 
   InstantiatorImplFactory<T> addConverterBindings(
       Map<TypeLiteral<?>, Class<? extends Converter<?>>> bindings) {
-    this.bindings = bindings;
+    if (this.bindings == null) {
+      this.bindings = newHashMap();
+    }
+    this.bindings.putAll(bindings);
     return this;
   }
 

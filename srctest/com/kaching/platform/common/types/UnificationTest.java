@@ -21,6 +21,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.google.inject.TypeLiteral;
+import com.kaching.platform.converters.Converter;
 
 @SuppressWarnings("unchecked")
 public class UnificationTest {
@@ -232,6 +233,20 @@ public class UnificationTest {
 
   static class MultipleInterfacesSomeWithNoParametrization
       implements TopLevel, ManyTypeParams<String, Double, Integer> {}
+
+  @Test
+  public void listOfIntConverter() throws Exception {
+    assertEquals(
+        new TypeLiteral<List<Integer>>() {}.getType(),
+        Unification.getActualTypeArgument(
+            ListOfIntConverter.class, Converter.class, 0));
+  }
+
+  abstract static class CsvValuesListConverter<L> implements Converter<List<L>> {}
+  static class ListOfIntConverter extends CsvValuesListConverter<Integer> {
+    @Override public String toString(List<Integer> value) { return null; }
+    @Override public List<Integer> fromString(String representation) { return null; }
+  }
 
   private Type queryReturnType(Class<?> query) {
     return Unification.getActualTypeArgument(query, TopLevel.class, 0);

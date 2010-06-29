@@ -1,13 +1,16 @@
 package com.kaching.platform.common.types;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static java.lang.Math.min;
 import static java.lang.String.format;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Unification for Java made easy. See
@@ -15,7 +18,6 @@ import java.util.List;
  */
 public class Unification {
 
-  @SuppressWarnings("unchecked")
   public static Type getActualTypeArgument(
       Class<?> subClass, Class<?> superClass, int typeParameterIndex) {
     if (superClass.getTypeParameters().length <= typeParameterIndex) {
@@ -23,27 +25,32 @@ public class Unification {
           "%s does not have a type parameter of index %s",
           superClass, typeParameterIndex));
     }
-    Type typeArgument = superClass.getTypeParameters()[typeParameterIndex];
+
+    /* Assume the hierarchy is
+     *
+     *   A extends B<Integer>
+     *   B<T1> extends C<List<T1>>
+     *   C<T2>
+     *
+     * and we are resolving for T2.
+     */
+
+    // 1. Compute the linear hierarchy.
+    // e.g. the inverted list [C, B, A] containing ClassWithType
     List<ClassWithType> linearHierarchy = getLinearHierarchy(subClass, superClass, null);
     if (linearHierarchy == null) {
       throw new IllegalArgumentException(format(
           "%s does not have %s as super class", subClass, superClass));
     }
-    unify: for (ClassWithType tuple : linearHierarchy) {
-      TypeVariable<?>[] typeParameters = tuple.clazz.getTypeParameters();
-      for (int i = 0; i < typeParameters.length; i++) {
-        if (typeArgument.equals(typeParameters[i])) {
-          typeArgument = tuple.type.getActualTypeArguments()[i];
-          if (!(typeArgument instanceof TypeVariable)) {
-            return typeArgument;
-          }
-          continue unify;
-        }
-      }
-    }
 
-    throw new IllegalArgumentException(
-        format("%s does not implement %s", subClass, superClass));
+    // 2. We now group by pairs actual type arguments and type variables.
+    // e.g. [(Integer, T1), (List<T1>, T2)]
+    LinkedList<GenericTypeInstantiation> chain = groupInGenericTypeInstantiations(
+        superClass.getTypeParameters()[typeParameterIndex],
+        linearHierarchy);
+
+    // 3. Unify, i.e. solve for the rightmost type variable.
+    return unify(chain);
   }
 
   private static List<ClassWithType> getLinearHierarchy(
@@ -100,12 +107,93 @@ public class Unification {
     return (ParameterizedType) type;
   }
 
+  private static LinkedList<GenericTypeInstantiation> groupInGenericTypeInstantiations(
+      TypeVariable<?> targetTypeVariable, List<ClassWithType> linearHierarchy) {
+    LinkedList<GenericTypeInstantiation> chain = new LinkedList<GenericTypeInstantiation>();
+    int max = linearHierarchy.size() - 1;
+    resolve: for (int i = 0; i < max; /* done in loop */) {
+      ClassWithType classWithType = linearHierarchy.get(i);
+      TypeVariable<?>[] typeParameters = classWithType.clazz.getTypeParameters();
+      for (int index = 0; index < typeParameters.length; index++) {
+        if (targetTypeVariable.equals(typeParameters[index])) {
+          chain.addFirst(new GenericTypeInstantiation(
+              classWithType.type.getActualTypeArguments()[index],
+              typeParameters[index]));
+
+          // next
+          i++;
+          TypeVariable<?>[] potentialTargetTypeParameters = linearHierarchy.get(i).clazz.getTypeParameters();
+          if (potentialTargetTypeParameters.length <= index) {
+            return chain;
+          }
+          targetTypeVariable = potentialTargetTypeParameters[index];
+          continue resolve;
+        }
+      }
+      throw new IllegalStateException();
+    }
+    throw new IllegalStateException();
+  }
+
+  private static Type unify(LinkedList<GenericTypeInstantiation> chain) {
+    Type unifiedType = chain.getLast().typeVariable;
+    Map<TypeVariable<?>, Type> replacements = newHashMap();
+    for (int i = chain.size() - 1; 0 <= i; i--) {
+      GenericTypeInstantiation gti = chain.get(i);
+      replacements.put(gti.typeVariable, gti.actualType);
+      unifiedType = applyReplacements(replacements, unifiedType);
+    }
+    return unifiedType;
+  }
+
+  private static Type applyReplacements(
+      Map<TypeVariable<?>, Type> replacements, Type unifiedType) {
+    if (unifiedType instanceof TypeVariable<?>) {
+      return replacements.get(unifiedType);
+    } else if (unifiedType instanceof Class<?>) {
+      return unifiedType;
+    } else if (unifiedType instanceof ParameterizedType) {
+      ParameterizedType parameterizedType = (ParameterizedType) unifiedType;
+      return new ParameterizedTypeImpl(
+          applyReplacements(replacements, parameterizedType.getRawType()),
+          applyReplacements(replacements, parameterizedType.getActualTypeArguments()));
+    }
+    throw new IllegalStateException("other kinds of types not handled yet");
+  }
+
+  private static Type[] applyReplacements(
+      Map<TypeVariable<?>, Type> replacements, Type[] types) {
+    Type[] replacedTypes = new Type[types.length];
+    for (int i = 0; i < types.length; i++) {
+      replacedTypes[i] = applyReplacements(replacements, types[i]);
+    }
+    return replacedTypes;
+  }
+
+  private static class GenericTypeInstantiation {
+    private final Type actualType;
+    private final TypeVariable<?> typeVariable;
+    private GenericTypeInstantiation(
+        Type actualType, TypeVariable<?> typeVariable) {
+      this.actualType = actualType;
+      this.typeVariable = typeVariable;
+    }
+    @Override
+    public String toString() {
+      return format("(%s,%s)", actualType, typeVariable);
+    }
+  }
+
   private static class ClassWithType {
     private Class<?> clazz;
     private ParameterizedType type;
     private ClassWithType(Class<?> clazz, ParameterizedType type) {
       this.clazz = clazz;
       this.type = type;
+    }
+    @Override
+    public String toString() {
+      return type == null ? "-" : type.toString();
     }
   }
 
