@@ -1,5 +1,5 @@
 /**
- * Copyright 2009 KaChing Group Inc. Licensed under the Apache License,
+\ * Copyright 2009 KaChing Group Inc. Licensed under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
  * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law
@@ -24,36 +24,15 @@ public class Instantiators {
   /**
    * Creates an instantiator for {@code klass}.
    */
+  @SuppressWarnings("unchecked")
   public static <T> Instantiator<T> createInstantiator(
-      Class<T> klass) {
-    return InstantiatorImplFactory
-        .createFactory(klass)
-        .build();
-  }
-
-  /**
-   * Creates an instantiator for {@code klass} using the specified converters.
-   */
-  public static <T> Instantiator<T> createInstantiator(
-      Class<T> klass,
-      ConverterInstances instances) {
-    return InstantiatorImplFactory
-        .createFactory(klass)
-        .addConverterInstances(instances.get())
-        .build();
-  }
-
-  /**
-   * Creates an instantiator for {@code klass} using the specified bindings
-   * to converters.
-   */
-  public static <T> Instantiator<T> createInstantiator(
-      Class<T> klass,
-      ConverterBindings bindings) {
-    return InstantiatorImplFactory
-        .createFactory(klass)
-        .addConverterBindings(bindings.get())
-        .build();
+      Class<T> klass, Converters... converters) {
+    InstantiatorImplFactory<T> factory = InstantiatorImplFactory
+            .createFactory(klass);
+    for (Converters c : converters) {
+      c.addMeInto(factory);
+    }
+    return factory.build();
   }
 
   /**
@@ -72,11 +51,11 @@ public class Instantiators {
     return new ConverterBindings(bindings);
   }
 
-  static abstract class MapWrapper<V> {
+  public static abstract class Converters<V> {
 
     private final Map<? extends TypeLiteral<?>, ? extends V> map;
 
-    protected MapWrapper(Map<? extends TypeLiteral<?>, ? extends V> map) {
+    protected Converters(Map<? extends TypeLiteral<?>, ? extends V> map) {
       this.map = map;
     }
 
@@ -86,6 +65,8 @@ public class Instantiators {
       return (Map<TypeLiteral<?>, V>) map;
     }
 
+    abstract void addMeInto(InstantiatorImplFactory<?> factory);
+
   }
 
   /**
@@ -93,11 +74,16 @@ public class Instantiators {
    * wrappers since the API passes multiple maps whose erasure is the same
    * and thus illegal per the Java language spec.
    */
-  public static class ConverterBindings extends MapWrapper<Class<? extends Converter<?>>> {
+  public static class ConverterBindings extends Converters<Class<? extends Converter<?>>> {
 
     private ConverterBindings(
         Map<? extends TypeLiteral<?>, ? extends Class<? extends Converter<?>>> map) {
       super(map);
+    }
+
+    @Override
+    void addMeInto(InstantiatorImplFactory<?> factory) {
+      factory.addConverterBindings(get());
     }
 
   }
@@ -107,11 +93,16 @@ public class Instantiators {
    * wrappers since the API passes multiple maps whose erasure is the same
    * and thus illegal per the Java language spec.
    */
-  public static class ConverterInstances extends MapWrapper<Converter<?>> {
+  public static class ConverterInstances extends Converters<Converter<?>> {
 
     private ConverterInstances(
         Map<? extends TypeLiteral<?>, ? extends Converter<?>> map) {
       super(map);
+    }
+
+    @Override
+    void addMeInto(InstantiatorImplFactory<?> factory) {
+      factory.addConverterInstances(get());
     }
 
   }

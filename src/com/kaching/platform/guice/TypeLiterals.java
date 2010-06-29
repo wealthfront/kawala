@@ -10,10 +10,10 @@
  */
 package com.kaching.platform.guice;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import com.google.inject.TypeLiteral;
+import com.kaching.platform.common.types.ParameterizedTypeImpl;
 
 
 /**
@@ -49,30 +49,6 @@ public class TypeLiterals {
       types[i] = literals[i].getType();
     }
     return get(type, types);
-  }
-
-  private static class ParameterizedTypeImpl implements ParameterizedType {
-
-    private final Type type;
-    private final Type[] parameters;
-
-    private ParameterizedTypeImpl(Type type, Type[] parameters) {
-      this.type = type;
-      this.parameters = parameters;
-    }
-
-    public Type[] getActualTypeArguments() {
-      return parameters;
-    }
-
-    public Type getOwnerType() {
-      return null;
-    }
-
-    public Type getRawType() {
-      return type;
-    }
-
   }
 
 }

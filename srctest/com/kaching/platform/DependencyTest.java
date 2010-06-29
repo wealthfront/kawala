@@ -30,13 +30,15 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
       @CheckPackage(name = "com.kaching.platform.converters", mayDependOn = {
           "org.objectweb.asm.*",
           "org.apache.commons.logging", // TODO(adam): remove
+          "com.google.inject.*",
           "com.kaching.platform.common.*"
       }),
       @CheckPackage(name = "com.kaching.platform.common.values", mayDependOn = {
           "com.kaching.platform.common"
       }),
       @CheckPackage(name = "com.kaching.platform.guice", mayDependOn = {
-          "com.google.inject.*"
+          "com.google.inject.*",
+          "com.kaching.platform.common.types"
       }),
       @CheckPackage(name = "com.kaching.platform.hibernate.types", mayDependOn = {
           "org.hibernate.*",
