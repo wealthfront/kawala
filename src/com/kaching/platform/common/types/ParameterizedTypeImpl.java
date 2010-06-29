@@ -16,6 +16,7 @@ import java.lang.reflect.Type;
 /**
  * Implementation of a {@link ParameterizedType}.
  */
+// TODO(pascal): replace by Guice's implementation com.google.inject.internal.MoreTypes.ParameterizedTypeImpl
 public class ParameterizedTypeImpl implements ParameterizedType {
 
   private final Type rawType;
