@@ -11,6 +11,8 @@
 package com.kaching.platform.converters;
 
 import static com.kaching.platform.converters.InstantiatorImplFactory.createFactory;
+import static com.kaching.platform.converters.Instantiators.bindings;
+import static com.kaching.platform.converters.Instantiators.instances;
 import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
 import static com.kaching.platform.converters.NativeConverters.C_BYTE;
 import static com.kaching.platform.converters.NativeConverters.C_CHAR;
@@ -42,6 +44,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
+import com.kaching.platform.converters.Instantiators.Converters;
 
 public class InstantiatorImplFactoryTest {
 
@@ -184,12 +187,49 @@ public class InstantiatorImplFactoryTest {
     }
   }
 
-  private <T> void checkErrorCase(Class<T> klass, Errors errors) {
+  @Test
+  public void duplicateConverterBinding1() throws Exception {
+    checkErrorCase(
+        String.class,
+        new Errors().duplicateConverterBindingForType(new TypeLiteral<String>() {}.getType()),
+        instances(ImmutableMap.of(
+            new TypeLiteral<String>() {}, NativeConverters.C_STRING)),
+        instances(ImmutableMap.of(
+            new TypeLiteral<String>() {}, NativeConverters.C_STRING)));
+  }
+
+  @Test
+  public void duplicateConverterBinding2() throws Exception {
+    checkErrorCase(
+        String.class,
+        new Errors().duplicateConverterBindingForType(new TypeLiteral<String>() {}.getType()),
+        bindings(ImmutableMap.of(
+            new TypeLiteral<String>() {}, NativeConverters.C_STRING.getClass())),
+        bindings(ImmutableMap.of(
+            new TypeLiteral<String>() {}, NativeConverters.C_STRING.getClass())));
+  }
+
+  @Test
+  public void duplicateConverterBinding3() throws Exception {
+    checkErrorCase(
+        String.class,
+        new Errors().duplicateConverterBindingForType(new TypeLiteral<String>() {}.getType()),
+        bindings(ImmutableMap.of(
+            new TypeLiteral<String>() {}, NativeConverters.C_STRING.getClass())),
+        instances(ImmutableMap.of(
+            new TypeLiteral<String>() {}, NativeConverters.C_STRING)));
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> void checkErrorCase(Class<T> klass, Errors errors, Converters... converters) {
     // TODO(pascal): Refactor. Very ugly pattern here because build() is too
     // high level.
     InstantiatorImplFactory<T> f = null;
     try {
       f = InstantiatorImplFactory.createFactory(klass);
+      for (Converters c : converters) {
+        c.addMeInto(f);
+      }
       f.build();
       fail();
     } catch (RuntimeException e) {
