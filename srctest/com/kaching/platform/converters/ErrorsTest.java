@@ -73,6 +73,29 @@ public class ErrorsTest {
         new Errors().noSuchField("a").noSuchField("a"));
   }
 
+  @Test
+  public void cannotSpecifyDefaultValueAndConstant() throws Exception {
+    check(
+        "cannot specify both a default constant and a default value " +
+        "@Optional(constant=FOO, value=4)",
+        new Errors().cannotSpecifyDefaultValueAndConstant(inspectMeCannotSpecifyDefaultValueAndConstant(8)));
+  }
+
+  Optional inspectMeCannotSpecifyDefaultValueAndConstant(
+      @Optional(value = "4", constant = "FOO") int i)
+      throws Exception {
+    return (Optional) this.getClass()
+        .getDeclaredMethod("inspectMeCannotSpecifyDefaultValueAndConstant", int.class)
+        .getParameterAnnotations()[0][0];
+  }
+
+  @Test
+  public void unableToResolveLocalConstant() throws Exception {
+    check(
+        "unable to resolve constant com.kaching.platform.converters.Errors#MY_CONSTANT",
+        new Errors().unableToResolveConstant(Errors.class, "MY_CONSTANT"));
+  }
+
   private void check(String expected, Errors errors) {
     try {
       errors.throwIfHasErrors();

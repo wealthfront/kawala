@@ -220,6 +220,69 @@ public class InstantiatorImplFactoryTest {
             new TypeLiteral<String>() {}, NativeConverters.C_STRING)));
   }
 
+  static class DefaultValueAndDefaultConstant {
+    DefaultValueAndDefaultConstant(@Optional(value = "4", constant = "F") int a) {
+    }
+  }
+
+  @Test
+  public void defaultValueAndDefaultConstant() throws Exception {
+    checkErrorCase(
+        DefaultValueAndDefaultConstant.class,
+        new Errors().cannotSpecifyDefaultValueAndConstant(
+            (Optional) DefaultValueAndDefaultConstant.class.getDeclaredConstructor(int.class).getParameterAnnotations()[0][0]));
+  }
+
+  static class UnresolvableLocalConstant {
+    UnresolvableLocalConstant(@Optional(constant = "F") int a) {
+    }
+  }
+
+  @Test
+  public void unresolvableLocalConstant() throws Exception {
+    checkErrorCase(
+        UnresolvableLocalConstant.class,
+        new Errors().unableToResolveConstant(UnresolvableLocalConstant.class, "F"));
+  }
+
+  static class UnresolvableFullyQualifiedConstant {
+    UnresolvableFullyQualifiedConstant(@Optional(constant = "A#F") int a) {
+    }
+  }
+
+  @Test
+  public void unresolvableFullyQualifiedConstant() throws Exception {
+    checkErrorCase(
+        UnresolvableFullyQualifiedConstant.class,
+        new Errors().unableToResolveFullyQualifiedConstant("A#F"));
+  }
+
+  static class ConstantIsNotStaticFinal {
+    int NOT_STATIC_FINAL;
+    ConstantIsNotStaticFinal(@Optional(constant = "NOT_STATIC_FINAL") int a) {
+    }
+  }
+
+  @Test
+  public void constantIsNotStaticFinal() throws Exception {
+    checkErrorCase(
+        ConstantIsNotStaticFinal.class,
+        new Errors().constantIsNotStaticFinal(ConstantIsNotStaticFinal.class, "NOT_STATIC_FINAL"));
+  }
+
+  static class ConstantIsOfAnIncompatibleType {
+    static final String WRONG_TYPE = "noononono";
+    ConstantIsOfAnIncompatibleType(@Optional(constant = "WRONG_TYPE") int a) {
+    }
+  }
+
+  @Test
+  public void constantIsOfAnIncompatibleType() throws Exception {
+    checkErrorCase(
+        ConstantIsOfAnIncompatibleType.class,
+        new Errors().constantHasIncompatibleType(ConstantIsOfAnIncompatibleType.class, "WRONG_TYPE"));
+  }
+
   @SuppressWarnings("unchecked")
   private <T> void checkErrorCase(Class<T> klass, Errors errors, Converters... converters) {
     // TODO(pascal): Refactor. Very ugly pattern here because build() is too
