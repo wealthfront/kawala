@@ -98,6 +98,12 @@ class Errors {
         type);
   }
 
+  Errors duplicateConverterBindingForType(Type type) {
+    return addMessage(
+        "duplicate converter binding for %s",
+        type);
+  }
+
   Errors incorrectDefaultValue(String value, RuntimeException e) {
     return addMessage(
         "%s: For default value \"%s\"",

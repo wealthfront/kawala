@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.BitSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
@@ -72,6 +73,8 @@ class InstantiatorImplFactory<T> {
     if (this.instances == null) {
       this.instances = newHashMap();
     }
+    verifyNoDuplicates(this.instances, instances.keySet());
+    verifyNoDuplicates(this.bindings, instances.keySet());
     this.instances.putAll(instances);
     return this;
   }
@@ -81,8 +84,21 @@ class InstantiatorImplFactory<T> {
     if (this.bindings == null) {
       this.bindings = newHashMap();
     }
+    verifyNoDuplicates(this.instances, bindings.keySet());
+    verifyNoDuplicates(this.bindings, bindings.keySet());
     this.bindings.putAll(bindings);
     return this;
+  }
+
+  private void verifyNoDuplicates(
+      Map<TypeLiteral<?>, ?> map, Set<TypeLiteral<?>> typeLiterals) {
+    if (map != null) {
+      for (TypeLiteral<?> typeLiteral : typeLiterals) {
+        if (map.containsKey(typeLiteral)) {
+          errors.duplicateConverterBindingForType(typeLiteral.getType());
+        }
+      }
+    }
   }
 
   InstantiatorImpl<T> build() {

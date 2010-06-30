@@ -38,17 +38,19 @@ public class Instantiators {
   /**
    * Creates a {@link ConverterInstances} wrapper for the {@code instances} map.
    */
+  @SuppressWarnings("unchecked")
   public static ConverterInstances instances(
-      Map<? extends TypeLiteral<?>, ? extends Converter<?>> instances) {
-    return new ConverterInstances(instances);
+      Map<? extends TypeLiteral<?>, ? extends Converter> instances) {
+    return new ConverterInstances((Map) instances);
   }
 
   /**
    * Creates a {@link ConverterBindings} wrapper for the {@code bindings} map.
    */
+  @SuppressWarnings("unchecked")
   public static ConverterBindings bindings(
-      Map<? extends TypeLiteral<?>, ? extends Class<? extends Converter<?>>> bindings) {
-    return new ConverterBindings(bindings);
+      Map<? extends TypeLiteral<?>, ? extends Class<? extends Converter>> bindings) {
+    return new ConverterBindings((Map) bindings);
   }
 
   public static abstract class Converters<V> {
