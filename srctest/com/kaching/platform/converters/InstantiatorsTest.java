@@ -232,6 +232,43 @@ public class InstantiatorsTest {
         instantiator.fromInstance(instance));
   }
 
+  static class LocalConstant {
+    static final String MY_CONSTANT = "this text is long and great for a test";
+    final String message;
+    LocalConstant(@Optional(constant = "MY_CONSTANT") String message) {
+      this.message = message;
+    }
+  }
+
+  @Test
+  public void localConstant() {
+    Instantiator<LocalConstant> instantiator = Instantiators
+        .createInstantiator(LocalConstant.class);
+
+    LocalConstant instance = instantiator
+        .newInstance((String) null);
+    assertNotNull(instance);
+    assertEquals(LocalConstant.MY_CONSTANT, instance.message);
+  }
+
+  static class FullyQualifiedConstant {
+    final String message;
+    FullyQualifiedConstant(@Optional(constant = "com.kaching.platform.converters.InstantiatorsTest$LocalConstant#MY_CONSTANT") String message) {
+      this.message = message;
+    }
+  }
+
+  @Test
+  public void fullyQualifiedConstant() {
+    Instantiator<FullyQualifiedConstant> instantiator = Instantiators
+        .createInstantiator(FullyQualifiedConstant.class);
+
+    FullyQualifiedConstant instance = instantiator
+        .newInstance((String) null);
+    assertNotNull(instance);
+    assertEquals(LocalConstant.MY_CONSTANT, instance.message);
+  }
+
   static class WrappedString {
     private final String content;
     WrappedString(String content) {

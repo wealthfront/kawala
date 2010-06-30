@@ -122,6 +122,36 @@ class Errors {
         klass, message == null ? "" : ": " + message);
   }
 
+  Errors cannotSpecifyDefaultValueAndConstant(Optional annotation) {
+    return addMessage(
+        "cannot specify both a default constant and a default value %s",
+        annotation.toString().replaceFirst(Optional.class.getName(), Optional.class.getSimpleName()));
+  }
+
+  Errors unableToResolveConstant(Class<?> container, String constant) {
+    return unableToResolveFullyQualifiedConstant(
+        localConstantQualifier(container, constant));
+  }
+
+  Errors unableToResolveFullyQualifiedConstant(String constant) {
+    return addMessage(
+        "unable to resolve constant %s", constant);
+  }
+
+  Errors constantIsNotStaticFinal(Class<?> container, String constant) {
+    return addMessage("constant %s is not static final",
+        localConstantQualifier(container, constant));
+  }
+
+  Errors constantHasIncompatibleType(Class<?> container, String constant) {
+    return addMessage("constant %s of incompatible type",
+        localConstantQualifier(container, constant));
+  }
+
+  private String localConstantQualifier(Class<?> container, String constant) {
+    return format("%s#%s", container.getName(), constant);
+  }
+
   @Override
   public int hashCode() {
     return messages == null ? EMPTY_LIST.hashCode() : messages.hashCode();

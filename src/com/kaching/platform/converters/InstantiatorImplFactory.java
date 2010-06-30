@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.BitSet;
 import java.util.Map;
@@ -113,7 +114,8 @@ class InstantiatorImplFactory<T> {
           parametersCount == 0 ? null : new Converter<?>[parametersCount];
       BitSet optionality = new BitSet();
       String[] defaultValues = null;
-      for (int i = 0; i < parametersCount; i++) {
+      Object[] defaultConstants = null;
+      next_parameter: for (int i = 0; i < parametersCount; i++) {
         Annotation[] annotations = parameterAnnotations[i];
         Type genericParameterType = genericParameterTypes[i];
         for (final Converter<?> converter : createConverter(
@@ -121,13 +123,12 @@ class InstantiatorImplFactory<T> {
           converters[i] = converter;
           for (Optional optional : getOptionalAnnotation(annotations)) {
             String defaultValue = optional.value();
-            if (defaultValue.isEmpty()) {
-              // optional literal types are not allowed to omit default values
-              if (BASE_CONVERTERS.containsKey(genericParameterType) &&
-                  !String.class.equals(genericParameterType)) {
-                errors.optionalLiteralParameterMustHaveDefault(i);
-              }
-            } else {
+            String defaultConstant = optional.constant();
+
+            if (!defaultValue.isEmpty() && !defaultConstant.isEmpty()) {
+              errors.cannotSpecifyDefaultValueAndConstant(optional);
+              continue next_parameter;
+            } else if (!defaultValue.isEmpty()) {
               try {
                 converter.fromString(defaultValue);
                 if (defaultValues == null) {
@@ -136,6 +137,72 @@ class InstantiatorImplFactory<T> {
                 defaultValues[i] = defaultValue;
               } catch (RuntimeException e) {
                 errors.incorrectDefaultValue(defaultValue, e);
+              }
+            } else if (!defaultConstant.isEmpty()) {
+              String[] parts = defaultConstant.split("#");
+              Class<?> container;
+              String constantName;
+              switch (parts.length) {
+                case 1:
+                  container = klass;
+                  constantName = parts[0];
+                  break;
+
+                case 2:
+                  try {
+                    container = Class.forName(parts[0]);
+                  } catch (ClassNotFoundException e) {
+                    errors.unableToResolveFullyQualifiedConstant(defaultConstant);
+                    continue next_parameter;
+                  }
+                  constantName = parts[1];
+                  break;
+
+                default:
+                  errors.unableToResolveFullyQualifiedConstant(defaultConstant);
+                  continue next_parameter;
+              }
+
+              Field fieldOfConstant;
+              try {
+                fieldOfConstant = container.getDeclaredField(constantName);
+              } catch (SecurityException e) {
+                // TODO(pascal): better handling?
+                throw new RuntimeException(e);
+              } catch (NoSuchFieldException e) {
+                errors.unableToResolveConstant(container, defaultConstant);
+                continue next_parameter;
+              }
+
+              if ((fieldOfConstant.getModifiers() & Modifier.STATIC) == 0 ||
+                  (fieldOfConstant.getModifiers() & Modifier.FINAL) == 0) {
+                errors.constantIsNotStaticFinal(container, constantName);
+                continue next_parameter;
+              }
+
+              // TODO(pascal): improve check. Should use MoreTypes.isAssignableFrom.
+              if (!genericParameterType.equals(fieldOfConstant.getType())) {
+                errors.constantHasIncompatibleType(container, constantName);
+                continue next_parameter;
+              }
+
+              if (defaultConstants == null) {
+                defaultConstants = new Object[parametersCount];
+              }
+              try {
+                defaultConstants[i] = fieldOfConstant.get(null);
+              } catch (IllegalArgumentException e) {
+                // TODO(pascal): better handling?
+                throw new RuntimeException(e);
+              } catch (IllegalAccessException e) {
+                // TODO(pascal): better handling?
+                throw new RuntimeException(e);
+              }
+            } else {
+              // optional literal types are not allowed to omit default values
+              if (BASE_CONVERTERS.containsKey(genericParameterType) &&
+                  !String.class.equals(genericParameterType)) {
+                errors.optionalLiteralParameterMustHaveDefault(i);
               }
             }
             optionality.set(i);
@@ -155,7 +222,7 @@ class InstantiatorImplFactory<T> {
       // 4. done
       errors.throwIfHasErrors();
       return new InstantiatorImpl<T>(
-          constructor, converters, fields, optionality, defaultValues);
+          constructor, converters, fields, optionality, defaultValues, defaultConstants);
     }
 
     // This program point is only reachable in erroneous cases and the next

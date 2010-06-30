@@ -29,18 +29,21 @@ class InstantiatorImpl<T> implements Instantiator<T> {
   private final Converter[] converters;
   private final BitSet optionality;
   private final String[] defaultValues;
+  private final Object[] defaultConstants;
 
   InstantiatorImpl(
       Constructor<T> constructor,
       Converter<?>[] converters,
       Field[] fields,
       BitSet optionality,
-      String[] defaultValues) {
+      String[] defaultValues,
+      Object[] defaultConstants) {
     this.constructor = constructor;
     this.converters = converters;
     this.fields = fields;
     this.optionality = optionality;
     this.defaultValues = defaultValues;
+    this.defaultConstants = defaultConstants;
   }
 
   @Override
@@ -64,9 +67,12 @@ class InstantiatorImpl<T> implements Instantiator<T> {
           Object parameter;
           if (value == null) {
             if (optionality.get(i)) {
-              parameter = (defaultValues == null || defaultValues[i] == null) ?
-                  null :
-                  convert(converter, defaultValues[i]);
+              parameter =
+                  (defaultValues != null && defaultValues[i] != null) ?
+                  convert(converter, defaultValues[i]) :
+                  (defaultConstants != null && defaultConstants[i] != null) ?
+                  defaultConstants[i] :
+                  null;
             } else {
               throw new IllegalArgumentException(format(
                   "parameter %s is not optional but null was provided",

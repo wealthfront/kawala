@@ -38,7 +38,7 @@ public class InstantiatorImplTest {
   @Test
   public void newInstanceForObject() throws Exception {
     assertNotNull(
-        new InstantiatorImpl<Object>(Object.class.getConstructor(), null, null, new BitSet(), null).newInstance());
+        new InstantiatorImpl<Object>(Object.class.getConstructor(), null, null, new BitSet(), null, null).newInstance());
   }
 
   @Test
@@ -50,13 +50,14 @@ public class InstantiatorImplTest {
             new Converter[] { C_STRING },
             null,
             new BitSet(),
+            null,
             null).newInstance("hello"));
   }
 
   @Test
   public void wrongNumberOfArguments1() throws Exception {
     InstantiatorImpl<String> instantiator =
-        new InstantiatorImpl<String>(String.class.getConstructor(String.class), null, null, new BitSet(), null);
+        new InstantiatorImpl<String>(String.class.getConstructor(String.class), null, null, new BitSet(), null, null);
     try {
       instantiator.newInstance();
       fail();
@@ -73,6 +74,7 @@ public class InstantiatorImplTest {
             new Converter[] { C_STRING },
             null,
             new BitSet(),
+            null,
             null);
     try {
       instantiator.newInstance();
@@ -90,6 +92,7 @@ public class InstantiatorImplTest {
             new Converter[] { C_STRING },
             null,
             new BitSet(),
+            null,
             null);
     try {
       instantiator.newInstance("first", "second");
@@ -107,6 +110,7 @@ public class InstantiatorImplTest {
           new Converter[] { C_STRING },
           null,
           new BitSet(),
+          null,
           null);
     try {
       instantiator.newInstance((String) null);
@@ -124,6 +128,7 @@ public class InstantiatorImplTest {
           new Converter[] { new ConverterOnlyProducesNull() },
           null,
           new BitSet(),
+          null,
           null);
     try {
       instantiator.newInstance("hello");
@@ -150,6 +155,7 @@ public class InstantiatorImplTest {
         new Converter[] { C_STRING },
         null,
         optionality,
+        null,
         null)
         .newInstance((String) null);
     assertNotNull(instance);
@@ -172,7 +178,8 @@ public class InstantiatorImplTest {
         new Converter[] { C_LONG },
         null,
         optionality,
-        new String[] { "403" })
+        new String[] { "403" },
+        null)
         .newInstance((String) null);
     assertNotNull(instance);
     assertEquals(403L, instance.value);
@@ -196,6 +203,7 @@ public class InstantiatorImplTest {
           C_LONG, C_BOOLEAN, C_FLOAT, C_BYTE },
         null,
         new BitSet(),
+        null,
         null)
         .newInstance("1", "2.6", "3", "c", "4", "true", "5.5", "6");
     assertNotNull(instance);
@@ -238,21 +246,21 @@ public class InstantiatorImplTest {
   public void getConstructor() throws Exception {
     Constructor<Object> constructor = Object.class.getConstructor();
     InstantiatorImpl<Object> instantiator = new InstantiatorImpl<Object>(
-        constructor, null, null, new BitSet(), null);
+        constructor, null, null, new BitSet(), null, null);
     assertTrue(constructor == instantiator.getConstructor());
   }
 
   @Test
   public void toString1() throws Exception {
     InstantiatorImpl<Object> instantiator = new InstantiatorImpl<Object>(
-        Object.class.getConstructor(), null, null, new BitSet(), null);
+        Object.class.getConstructor(), null, null, new BitSet(), null, null);
     assertEquals("instantiator java.lang.Object()", instantiator.toString());
   }
 
   @Test
   public void toString2() throws Exception {
     InstantiatorImpl<String> instantiator = new InstantiatorImpl<String>(
-        String.class.getConstructor(byte[].class), null, null, new BitSet(), null);
+        String.class.getConstructor(byte[].class), null, null, new BitSet(), null, null);
     assertEquals("instantiator java.lang.String(byte[])", instantiator.toString());
   }
 
