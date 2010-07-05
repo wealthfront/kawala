@@ -42,25 +42,32 @@ governing permissions and limitations under the License.
     <mkdir dir="target/reports" />
   </target>
 
+  <!-- we're using google guice with JIT providers -->
+  <path id="classpath-guice">
+    <fileset file="lib/main/guice-snapshot-fca95d48b9536f5429c9.jar" />
+  </path>
+
   <target name="compile" depends="init">
     <compile srcdir="src" destdir="target/bin">
       <additional-classpath>
         <classpath refid="classpath-kawala-common" />
         <classpath refid="classpath-kawala-converters" />
-        <classpath refid="classpath-kawala-guice" />
         <classpath refid="classpath-kawala-hibernate" />
+        <classpath refid="classpath-guice" />
       </additional-classpath>
     </compile>
     <compile srcdir="srctesting/com/kaching/platform/testing"
         destdir="target/bin-testing">
       <additional-classpath>
         <classpath refid="classpath-kawala-testing" />
+        <classpath refid="classpath-guice" />
         <classpath path="target/bin" />
       </additional-classpath>
     </compile>
     <compile srcdir="srctest" destdir="target/bin-test">
       <additional-classpath>
         <classpath refid="classpath-kawala" />
+        <classpath refid="classpath-guice" />
         <classpath path="target/bin" />
         <classpath path="target/bin-testing" />
       </additional-classpath>
@@ -76,6 +83,7 @@ governing permissions and limitations under the License.
       <jvmarg value="-Xms128m"/>
       <jvmarg value="-Xmx1700m"/>
       <classpath refid="classpath-kawala" />
+      <classpath refid="classpath-guice" />
       <classpath path="target/bin" />
       <classpath path="target/bin-testing" />
       <classpath path="target/bin-test" />
@@ -154,6 +162,7 @@ governing permissions and limitations under the License.
                 output="bin-test" />
         <source path="srctesting"
                 output="bin-testing" />
+        <library pathref="classpath-guice" exported="true" />
         <library pathref="classpath-kawala" exported="true" />
       </classpath>
     </eclipse>
@@ -195,7 +204,6 @@ governing permissions and limitations under the License.
     <ivy:resolve conf="kawala" type="jar"/>
     <ivy:cachepath pathid="classpath-kawala-common" conf="common" type="jar"/>
     <ivy:cachepath pathid="classpath-kawala-converters" conf="converters" type="jar"/>
-    <ivy:cachepath pathid="classpath-kawala-guice" conf="guice" type="jar"/>
     <ivy:cachepath pathid="classpath-kawala-hibernate" conf="hibernate" type="jar"/>
     <ivy:cachepath pathid="classpath-kawala-testing" conf="testing" type="jar"/>
     <ivy:cachepath pathid="classpath-kawala" conf="kawala" type="jar"/>
