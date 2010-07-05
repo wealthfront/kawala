@@ -15,10 +15,9 @@ governing permissions and limitations under the License.
     <description homepage="http://code.google.com/p/kawala">kawala: kaChing's software platform</description>
   </info>
   <configurations>
-    <conf name="kawala" description="all of kawala" extends="common,converters,guice,hibernate,testing"/>
+    <conf name="kawala" description="all of kawala" extends="common,converters,hibernate,testing"/>
     <conf name="common" description="kawala common"/>
     <conf name="converters" description="kawala converters"/>
-    <conf name="guice" description="kawala guice"/>
     <conf name="hibernate" description="kawala hibernate"/>
     <conf name="testing" description="kawala testing"/>
   </configurations>
@@ -26,7 +25,7 @@ governing permissions and limitations under the License.
     <artifact name="kawala" type="jar" conf="kawala" ext="jar"/>
     <artifact name="kawala-common" type="jar" conf="common" ext="jar"/>
     <artifact name="kawala-converters" type="jar" conf="converters" ext="jar"/>
-    <artifact name="kawala-guice" type="jar" conf="guice" ext="jar"/>
+    <artifact name="kawala-guice" type="jar" ext="jar"/>
     <artifact name="kawala-hibernate" type="jar" conf="hibernate" ext="jar"/>
     <artifact name="kawala-testing" type="jar" conf="testing" ext="jar"/>
   </publications>
@@ -39,8 +38,8 @@ governing permissions and limitations under the License.
     <dependency org="asm" name="asm" rev="3.2" conf="converters->default" />
     <dependency org="asm" name="asm-commons" rev="3.2" conf="converters->default" />
 
-    <!-- kawala-guice -->
-    <dependency org="com.google.inject" name="guice" rev="2.0" conf="guice->default" transitive="false" />
+    <!-- kawala-guice | we now use Guice with JIT Providers
+    <dependency org="com.google.inject" name="guice" rev="2.0" conf="guice->default" transitive="false" />-->
 
     <!-- kawala-hibernate -->
     <dependency org="org.hibernate" name="hibernate" rev="3.2.1.ga" conf="hibernate->default" transitive="false" />
