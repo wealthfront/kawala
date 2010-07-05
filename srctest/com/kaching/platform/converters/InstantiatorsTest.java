@@ -165,11 +165,33 @@ public class InstantiatorsTest {
   }
 
   @Test
+  public void objectWithListOfIntUsingInstancesAndTypeScheme() {
+    Instantiator<ObjectWithListOfInt> instantiator = createInstantiator(
+        ObjectWithListOfInt.class,
+        instances(ImmutableMap.of(
+            new TypeLiteral<List<? extends Integer>>() {},
+            new ListOfIntConverter())));
+
+    checkObjectWithListOfInt(instantiator);
+  }
+
+  @Test
   public void objectWithListOfIntUsingBindings() {
     Instantiator<ObjectWithListOfInt> instantiator = createInstantiator(
         ObjectWithListOfInt.class,
         bindings(ImmutableMap.of(
             new TypeLiteral<List<Integer>>() {},
+            ListOfIntConverter.class)));
+
+    checkObjectWithListOfInt(instantiator);
+  }
+
+  @Test
+  public void objectWithListOfIntUsingBindingsAndTypeScheme() {
+    Instantiator<ObjectWithListOfInt> instantiator = createInstantiator(
+        ObjectWithListOfInt.class,
+        bindings(ImmutableMap.of(
+            new TypeLiteral<List<? extends Integer>>() {},
             ListOfIntConverter.class)));
 
     checkObjectWithListOfInt(instantiator);
