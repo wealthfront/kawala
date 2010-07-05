@@ -11,6 +11,7 @@
 package com.kaching.platform.converters;
 
 import static com.kaching.platform.converters.Instantiators.bindings;
+import static com.kaching.platform.converters.Instantiators.createConverter;
 import static com.kaching.platform.converters.Instantiators.createInstantiator;
 import static com.kaching.platform.converters.Instantiators.instances;
 import static java.lang.String.format;
@@ -19,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -267,6 +270,21 @@ public class InstantiatorsTest {
         .newInstance((String) null);
     assertNotNull(instance);
     assertEquals(LocalConstant.MY_CONSTANT, instance.message);
+  }
+
+  @Test
+  public void createUriConverter() throws URISyntaxException {
+    assertEquals(
+        new URI("www.kaching.com"),
+        createConverter(URI.class).fromString("www.kaching.com"));
+  }
+
+  @Test
+  public void createConverterPairConverter() throws URISyntaxException {
+    Converter<ConvertedPair> converter = createConverter(ConvertedPair.class);
+    assertEquals(
+        "1:2",
+        converter.toString(converter.fromString("1:2")));
   }
 
   static class WrappedString {

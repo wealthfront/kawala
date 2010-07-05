@@ -10,6 +10,7 @@
  */
 package com.kaching.platform.converters;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 
 import com.google.inject.TypeLiteral;
@@ -27,12 +28,42 @@ public class Instantiators {
   @SuppressWarnings("unchecked")
   public static <T> Instantiator<T> createInstantiator(
       Class<T> klass, Converters... converters) {
+    return factoryFor(klass, converters).build();
+  }
+
+  /**
+   * Creates a converter {@code klass}.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> Converter<T> createConverter(
+      Class<T> klass, Converters... converters) {
+    return createConverterForType(klass, converters);
+  }
+
+  /**
+   * Creates a converter {@code typeLiteral}.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> Converter<T> createConverter(
+      TypeLiteral<T> typeLiteral, Converters... converters) {
+    return createConverterForType(typeLiteral.getType(), converters);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> InstantiatorImplFactory<T> factoryFor(Class<T> klass,
+      Converters... converters) {
     InstantiatorImplFactory<T> factory = InstantiatorImplFactory
             .createFactory(klass);
     for (Converters c : converters) {
       c.addMeInto(factory);
     }
-    return factory.build();
+    return factory;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> Converter<T> createConverterForType(Type type,
+      Converters... converters) {
+    return (Converter<T>) factoryFor(null, converters).createConverter(type).getOrThrow();
   }
 
   /**
