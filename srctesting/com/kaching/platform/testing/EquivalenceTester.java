@@ -38,7 +38,7 @@ public class EquivalenceTester {
         }
       }
     }
-    
+
     // reflexivity
     for (Collection<? extends Object> congruenceClass : equivalenceClasses) {
       List<Object> c = newArrayList();
@@ -46,6 +46,7 @@ public class EquivalenceTester {
       for (Object element : congruenceClass) {
         assertTrue(format("reflexivity of %s", element),
             element.equals(element));
+        compareShouldReturn0(element, element);
         c.add(element);
       }
     }
@@ -58,6 +59,8 @@ public class EquivalenceTester {
           Object e2 = c.get(j);
           assertTrue(format("%s=%s", e1, e2), e1.equals(e2));
           assertTrue(format("%s=%s", e2, e1), e2.equals(e1));
+          compareShouldReturn0(e1, e2);
+          compareShouldReturn0(e2, e1);
           assertEquals(format("hashCode %s vs. %s", e1, e2), e1.hashCode(), e2.hashCode());
         }
       }
@@ -72,10 +75,28 @@ public class EquivalenceTester {
           for (Object e2 : c2) {
             assertFalse(format("%s!=%s", e1, e2), e1.equals(e2));
             assertFalse(format("%s!=%s", e2, e1), e2.equals(e1));
+            compareShouldNotReturn0(e1, e2);
+            compareShouldNotReturn0(e2, e1);
           }
         }
       }
     }
+  }
+
+  @SuppressWarnings("unchecked")
+private static void compareShouldReturn0(Object e1, Object e2) {
+	if (e1 instanceof Comparable<?>) {
+		  assertTrue(format("comparison should return 0 for %s and %s", e1, e2),
+				  ((Comparable<Object>) e1).compareTo(e2) == 0);
+	  }
+}
+
+  @SuppressWarnings("unchecked")
+private static void compareShouldNotReturn0(Object e1, Object e2) {
+	if (e1 instanceof Comparable<?>) {
+		  assertFalse(format("comparison should not return 0 for %s and %s", e1, e2),
+				  ((Comparable<Object>) e1).compareTo(e2) == 0);
+	  }
   }
 
 }
