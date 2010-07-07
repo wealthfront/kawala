@@ -14,11 +14,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
+import com.google.common.base.Objects;
+
 /**
  * Abstract class providing the skeleton to create type-safe identifiers. This
  * class implements {@link #hashCode()}, {@link #equals(Object)},
  * {@link #toString()} and {@link Comparable#compareTo(Object)}.
- * 
+ *
  * A typical use of this class is to introduce a marker type for a specific
  * identifier. In the following example, we are introducing a {@code PersonId}
  * which wraps a long.
@@ -30,14 +32,14 @@ import java.io.Serializable;
  * }</pre>
  * Using such identifiers makes it possible to have the compiler ensure these
  * identifiers are used consistently.
- * 
+ *
  * @param <I> the type of the wrapped identifier
  */
 public abstract class AbstractIdentifier<I extends Comparable<I>> implements
     Comparable<AbstractIdentifier<I>>, Serializable {
-  
+
   private static final long serialVersionUID = 8147623822365809694L;
-  
+
   private final I id;
 
   /**
@@ -47,7 +49,7 @@ public abstract class AbstractIdentifier<I extends Comparable<I>> implements
   protected AbstractIdentifier(I id) {
     this.id = checkNotNull(id);
   }
-  
+
   /**
    * Gets the wrapped identifier.
    * @return the wrapped identifier
@@ -55,35 +57,36 @@ public abstract class AbstractIdentifier<I extends Comparable<I>> implements
   public I getId() {
     return id;
   }
-  
+
   @Override
   @SuppressWarnings("unchecked")
   public boolean equals(Object that) {
-    if (this == that) {
-      return true;
-    } else if (that == null) {
-      return false;
-    }
-    if (this.getClass().equals(that.getClass())) {
-      return this.getId().equals(((AbstractIdentifier) that).getId());
-    } else {
-      return false;
-    }
+    return
+        this == that ||
+        (that != null &&
+         this.getClass().equals(that.getClass())) &&
+         id.equals(((AbstractIdentifier) that).id);
   }
-  
+
   @Override
   public int compareTo(AbstractIdentifier<I> that) {
-    return that == null ? 1 : this.getId().compareTo(that.getId());
+    if (that == null) {
+      return 1;
+    }
+    int result = this.getId().compareTo(that.getId());
+    return result != 0 ? result :
+      this.getClass().toString().compareTo(
+      that.getClass().toString());
   }
-  
+
   @Override
   public int hashCode() {
-    return id.hashCode();
+    return Objects.hashCode(id);
   }
-  
+
   @Override
   public String toString() {
-    return id.toString();
+    return String.valueOf(id);
   }
-  
+
 }
