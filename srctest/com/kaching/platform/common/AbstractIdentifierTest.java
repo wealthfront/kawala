@@ -15,7 +15,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.kaching.platform.common.AbstractIdentifier;
 import com.kaching.platform.testing.EquivalenceTester;
 
 public class AbstractIdentifierTest {
@@ -23,6 +22,13 @@ public class AbstractIdentifierTest {
   @Test(expected = NullPointerException.class)
   public void creationWithNull() {
     new MyId1(null);
+  }
+
+  @Test
+  public void equivalence_simplest() {
+    EquivalenceTester.check(
+        newArrayList(
+            new MyId1("a"), new MyId1("a")));
   }
 
   @Test
@@ -37,12 +43,12 @@ public class AbstractIdentifierTest {
         newArrayList(
             new MyId2("b"), new MyId2("b")));
   }
-  
+
   @Test
   public void toStringTest() {
     assertEquals("a", new MyId1("a").toString());
   }
-  
+
   @Test
   public void compareToTest() {
     assertEquals(1, new MyId1("a").compareTo(null));
@@ -60,19 +66,23 @@ public class AbstractIdentifierTest {
         id2.compareTo(id1),
         new MyId1(id2).compareTo(new MyId1(id1)));
   }
-  
+
   static class MyId1 extends AbstractIdentifier<String> {
     private static final long serialVersionUID = 937579551932508792L;
     public MyId1(String id) {
       super(id);
     }
   }
-  
+
   static class MyId2 extends AbstractIdentifier<String> {
     private static final long serialVersionUID = -4598517783225143579L;
     public MyId2(String id) {
       super(id);
     }
+
+    public String toString() {
+      return "MyId2(" + getId()+ ")";
+    }
   }
-  
+
 }
