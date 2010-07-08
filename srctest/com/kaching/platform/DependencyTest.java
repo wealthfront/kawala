@@ -40,6 +40,9 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
           "com.google.inject.*",
           "com.kaching.platform.common.types"
       }),
+      @CheckPackage(name = "com.kaching.platform.hibernate", mayDependOn = {
+          "com.kaching.platform.common"
+      }),
       @CheckPackage(name = "com.kaching.platform.hibernate.types", mayDependOn = {
           "org.hibernate.*",
           "org.apache.commons.logging", // TODO(adam): remove
