@@ -33,29 +33,29 @@ import com.google.common.base.Objects;
  * Using such identifiers makes it possible to have the compiler ensure these
  * identifiers are used consistently.
  *
- * @param <I> the type of the wrapped identifier
+ * @param <T> the type of the wrapped identifier
  */
-public abstract class AbstractIdentifier<I extends Comparable<I>> implements
-    Comparable<AbstractIdentifier<I>>, Serializable {
+public abstract class AbstractValue<T extends Comparable<T>> implements
+    Comparable<AbstractValue<T>>, Serializable {
 
   private static final long serialVersionUID = 8147623822365809694L;
 
-  private final I id;
+  private final T value;
 
   /**
    * Creates an identifier.
-   * @param id the wrapped identifier
+   * @param value the wrapped identifier
    */
-  protected AbstractIdentifier(I id) {
-    this.id = checkNotNull(id);
+  protected AbstractValue(T value) {
+    this.value = checkNotNull(value);
   }
 
   /**
    * Gets the wrapped identifier.
    * @return the wrapped identifier
    */
-  public I getId() {
-    return id;
+  public T getId() {
+    return value;
   }
 
   @Override
@@ -65,11 +65,11 @@ public abstract class AbstractIdentifier<I extends Comparable<I>> implements
         this == that ||
         (that != null &&
          this.getClass().equals(that.getClass())) &&
-         id.equals(((AbstractIdentifier) that).id);
+         value.equals(((AbstractValue) that).value);
   }
 
   @Override
-  public int compareTo(AbstractIdentifier<I> that) {
+  public int compareTo(AbstractValue<T> that) {
     if (that == null) {
       return 1;
     }
@@ -81,12 +81,12 @@ public abstract class AbstractIdentifier<I extends Comparable<I>> implements
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(id);
+    return Objects.hashCode(value);
   }
 
   @Override
   public String toString() {
-    return String.valueOf(id);
+    return String.valueOf(value);
   }
 
 }
