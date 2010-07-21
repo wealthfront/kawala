@@ -14,13 +14,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 
-import com.kaching.platform.common.AbstractIdentifier;
+import com.kaching.platform.common.AbstractValue;
 
 /**
  * A U.S. Social Security number, as issued to an individual by the Social
  * Security Administration.
  */
-public class Ssn extends AbstractIdentifier<String> {
+public class Ssn extends AbstractValue<String> {
 
   private static final long serialVersionUID = -7832881252708349697L;
 
