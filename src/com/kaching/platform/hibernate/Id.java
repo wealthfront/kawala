@@ -8,14 +8,14 @@ import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import com.kaching.platform.common.AbstractValue;
+import com.kaching.platform.common.AbstractIdentifier;
 
 /**
  * An {@link Entity} identifier.
  *
  * @param <E> the kind of {@code Entity} referenced by this kind of {@code Id}
  */
-public final class Id<E extends HibernateEntity> extends AbstractValue<Long> {
+public final class Id<E extends HibernateEntity> extends AbstractIdentifier<Long> {
 
   private static final long serialVersionUID = 404144686720487896L;
 
