@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import com.kaching.platform.testing.EquivalenceTester;
 
-public class AbstractValueTest {
+public class AbstractIdentifierTest {
 
   @Test(expected = NullPointerException.class)
   public void creationWithNull() {
@@ -67,14 +67,14 @@ public class AbstractValueTest {
         new MyId1(id2).compareTo(new MyId1(id1)));
   }
 
-  static class MyId1 extends AbstractValue<String> {
+  static class MyId1 extends AbstractIdentifier<String> {
     private static final long serialVersionUID = 937579551932508792L;
     public MyId1(String id) {
       super(id);
     }
   }
 
-  static class MyId2 extends AbstractValue<String> {
+  static class MyId2 extends AbstractIdentifier<String> {
     private static final long serialVersionUID = -4598517783225143579L;
     public MyId2(String id) {
       super(id);
