@@ -16,7 +16,7 @@ package com.kaching.platform.common.values;
  * <a href="http://en.wikipedia.org/wiki/ISO_3166-1">ISO 3166-1</a>. This
  * enumeration was generated from the second edition of ISO 3166-1 and was
  * last updated on February, 22 2010 based on the ISO 3166-1 Newsletter VI-7.
- * Note that this enumeration also contains dependent territories and special 
+ * Note that this enumeration also contains dependent territories and special
  * areas of geographical interest.
  */
 public enum Country implements NumberedValue {
@@ -266,7 +266,8 @@ public enum Country implements NumberedValue {
   EH(243, "Western Sahara"),
   YE(244, "Yemen"),
   ZM(245, "Zambia"),
-  ZW(246, "Zimbabwe");
+  ZW(246, "Zimbabwe"),
+  __(247, "Unknow");
 
   private final int number;
   private final String countryName;
