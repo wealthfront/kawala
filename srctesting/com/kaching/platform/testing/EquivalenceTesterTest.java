@@ -50,6 +50,13 @@ public class EquivalenceTesterTest {
     }
   }
 
+  @Test
+  public void comparableAndNotComparable() {
+    EquivalenceTester.check(
+        newArrayList(new NotComparable()),
+        newArrayList("Hello"));
+  }
+
   WeirdClass weird(int shift, int value) {
     return new WeirdClass(shift, value);
   }
@@ -81,4 +88,8 @@ public class EquivalenceTesterTest {
       return "WeirdClass(" + shift + "," + value + ")";
     }
   }
+
+  static class NotComparable {
+  }
+
 }

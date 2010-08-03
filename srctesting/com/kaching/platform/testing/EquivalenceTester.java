@@ -84,19 +84,21 @@ public class EquivalenceTester {
   }
 
   @SuppressWarnings("unchecked")
-private static void compareShouldReturn0(Object e1, Object e2) {
-	if (e1 instanceof Comparable<?>) {
-		  assertTrue(format("comparison should return 0 for %s and %s", e1, e2),
-				  ((Comparable<Object>) e1).compareTo(e2) == 0);
-	  }
-}
+  private static void compareShouldReturn0(Object e1, Object e2) {
+    if (e1 instanceof Comparable<?> &&
+        e2 instanceof Comparable<?>) {
+      assertTrue(format("comparison should return 0 for %s and %s", e1, e2),
+          ((Comparable<Object>) e1).compareTo(e2) == 0);
+    }
+  }
 
   @SuppressWarnings("unchecked")
-private static void compareShouldNotReturn0(Object e1, Object e2) {
-	if (e1 instanceof Comparable<?>) {
-		  assertFalse(format("comparison should not return 0 for %s and %s", e1, e2),
-				  ((Comparable<Object>) e1).compareTo(e2) == 0);
-	  }
+  private static void compareShouldNotReturn0(Object e1, Object e2) {
+    if (e1 instanceof Comparable<?> &&
+        e2 instanceof Comparable<?>) {
+      assertFalse(format("comparison should not return 0 for %s and %s", e1, e2),
+          ((Comparable<Object>) e1).compareTo(e2) == 0);
+    }
   }
 
 }
