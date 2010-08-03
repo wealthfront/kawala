@@ -267,7 +267,7 @@ public enum Country implements NumberedValue {
   YE(244, "Yemen"),
   ZM(245, "Zambia"),
   ZW(246, "Zimbabwe"),
-  __(247, "Unknow");
+  __(247, "Unknown");
 
   private final int number;
   private final String countryName;
