@@ -269,10 +269,11 @@ class InstantiatorImplFactory<T> {
       for (Converter<?> converter : createConverterUsingConvertedBy(targetClass)) {
         return Option.some(converter);
       }
-      // 3. has <init>(Ljava/lang/String;)V;
+      // 3. base converters
       if (BASE_CONVERTERS.containsKey(targetClass)) {
         return Option.some(BASE_CONVERTERS.get(targetClass));
       }
+      // 4. has <init>(Ljava/lang/String;)V;
       for (Converter<?> converter : createConverterUsingStringConstructor(targetClass)) {
         return Option.some(converter);
       }
