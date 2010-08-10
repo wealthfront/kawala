@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -141,16 +142,21 @@ public class InstantiatorsTest {
         instantiator.fromInstance(instance));
   }
 
+  static class ObjectWithMapOfIntToString {
+    ObjectWithMapOfIntToString(Map<Integer, String> numbers) {
+    }
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void objectWithMapOfIntToStringNoSpecificBindingWillFail() {
+    Instantiators.createInstantiator(ObjectWithMapOfIntToString.class);
+  }
+
   static class ObjectWithListOfInt {
     final List<Integer> numbers;
     ObjectWithListOfInt(List<Integer> numbers) {
       this.numbers = numbers;
     }
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void objectWithListOfIntNoSpecificBindingWillFail() {
-    Instantiators.createInstantiator(ObjectWithListOfInt.class);
   }
 
   @Test
@@ -199,11 +205,11 @@ public class InstantiatorsTest {
 
   private void checkObjectWithListOfInt(
       Instantiator<ObjectWithListOfInt> instantiator) {
-    ObjectWithListOfInt instance = instantiator.newInstance("1,2,3");
+    ObjectWithListOfInt instance = instantiator.newInstance("1|2|3");
     assertEquals(asList(1, 2, 3), instance.numbers);
 
     assertEquals(
-        asList("1,2,3"),
+        asList("1|2|3"),
         instantiator.fromInstance(instance));
   }
 
@@ -248,12 +254,12 @@ public class InstantiatorsTest {
   private void checkObjectWithListOfIntAndListOfBoolean(
       Instantiator<ObjectWithListOfIntAndListOfBoolean> instantiator) {
     ObjectWithListOfIntAndListOfBoolean instance = instantiator.newInstance(
-        "1,2,3", "true,false,true");
+        "1|2|3", "true|false|true");
     assertEquals(asList(1, 2, 3), instance.numbers);
     assertEquals(asList(true, false, true), instance.booleans);
 
     assertEquals(
-        asList("1,2,3", "true,false,true"),
+        asList("1|2|3", "true|false|true"),
         instantiator.fromInstance(instance));
   }
 
@@ -358,13 +364,13 @@ public class InstantiatorsTest {
       // NOTE using element.toString instead of elementConverter.toString(element)
       // which is equivalent in the context of this text but certainly not for
       // production code.
-      return Joiner.on(",").join(value);
+      return Joiner.on("|").join(value);
     }
 
     @Override
     public List<T> fromString(String representation) {
       ArrayList<T> fromString = Lists.newArrayList();
-      for (String single : representation.split(",")) {
+      for (String single : representation.split("\\|")) {
         fromString.add(elementConverter.fromString(single));
       }
       return fromString;
