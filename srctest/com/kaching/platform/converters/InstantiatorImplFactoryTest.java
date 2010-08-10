@@ -10,6 +10,7 @@
  */
 package com.kaching.platform.converters;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.kaching.platform.converters.InstantiatorImplFactory.createFactory;
 import static com.kaching.platform.converters.Instantiators.bindings;
 import static com.kaching.platform.converters.Instantiators.instances;
@@ -35,6 +36,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -179,11 +181,11 @@ public class InstantiatorImplFactoryTest {
   public void doesNotKnowHowToConvert() throws Exception {
     checkErrorCase(
         DoesNotKnowHowToConvert.class,
-        new Errors().noConverterForType(new TypeLiteral<List<String>>() {}.getType()));
+        new Errors().noConverterForType(new TypeLiteral<Map<String, String>>() {}.getType()));
   }
 
   static class DoesNotKnowHowToConvert {
-    DoesNotKnowHowToConvert(List<String> names) {
+    DoesNotKnowHowToConvert(Map<String, String> names) {
     }
   }
 
@@ -416,6 +418,31 @@ public class InstantiatorImplFactoryTest {
     assertEquals(
         new Errors().moreThanOnceConstructorWithInstantiate(Q.class),
         factory.getErrors());
+  }
+
+  @Test
+  public void createConverter_int() {
+    testConverter(int.class, "3", 3, "3");
+  }
+
+  @Test
+  public void createConverter_double() {
+    testConverter(double.class, "3", 3, "3");
+  }
+
+  @Test
+  public void createConverter_listOfIntegers() {
+    testConverter(new TypeLiteral<List<Integer>>() {}.getType(), "3", newArrayList(3), "3");
+  }
+
+  @SuppressWarnings("unchecked")
+  private void testConverter(Type type, String actual,
+      Object expectedFromString, String expectedToString) {
+    Option<? extends Converter<?>> maybeConverter = createFactory(null).createConverter(type);
+    assertTrue(format("no converter for type %s", type), maybeConverter.isDefined());
+    Converter converter = maybeConverter.getOrThrow();
+    assertEquals(expectedFromString, converter.fromString(actual));
+    assertEquals(expectedToString, converter.toString(expectedFromString));
   }
 
   static class A {

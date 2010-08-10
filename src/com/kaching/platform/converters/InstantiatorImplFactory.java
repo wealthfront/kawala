@@ -11,6 +11,7 @@
 package com.kaching.platform.converters;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.kaching.platform.converters.CollectionOfElementsConverter.COLLECTION_KINDS;
 import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
 import static com.kaching.platform.converters.NativeConverters.C_BYTE;
 import static com.kaching.platform.converters.NativeConverters.C_CHAR;
@@ -27,6 +28,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.BitSet;
 import java.util.Map;
@@ -276,6 +278,22 @@ class InstantiatorImplFactory<T> {
       // 4. has <init>(Ljava/lang/String;)V;
       for (Converter<?> converter : createConverterUsingStringConstructor(targetClass)) {
         return Option.some(converter);
+      }
+    } else if (targetType instanceof ParameterizedType) {
+      // 5. Set, List, Collection
+      ParameterizedType parameterizedTargetType = (ParameterizedType) targetType;
+      if (COLLECTION_KINDS.containsKey(parameterizedTargetType.getRawType()) &&
+          parameterizedTargetType.getActualTypeArguments().length == 1) {
+        Option<? extends Converter<?>> maybeElementConverter = createConverter(
+            parameterizedTargetType.getActualTypeArguments()[0]);
+        if (maybeElementConverter.isDefined()) {
+          return (Option) Option.some(new CollectionOfElementsConverter(
+              parameterizedTargetType.getRawType(),
+              maybeElementConverter.getOrThrow()));
+        }
+      } else {
+        // TODO(pascal) provide more detailed errors such as "you need to
+        // parameterize your list"
       }
     }
     if (sizeBefore == errors.size()) {
