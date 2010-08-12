@@ -37,6 +37,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.kaching.platform.common.Option;
 
@@ -51,13 +52,29 @@ public class ConstructorAnalysis {
   static Map<String, FormalParameter> analyse(
       Class<?> klass, Constructor<?> constructor) throws IOException {
     final String constructorDescriptor =
-        Type.getConstructorDescriptor(constructor);
+      Type.getConstructorDescriptor(constructor);
+    Class<?>[] parameterTypes = constructor.getParameterTypes();
+    InputStream in = klass.getResourceAsStream("/" + klass.getName().replace('.', '/') + ".class");
+    if (in == null) {
+      throw new IllegalArgumentException(format("can not find bytecode for %s", klass));
+    }
+    return analyse(in, klass.getName().replace('.', '/'),
+        klass.getSuperclass().getName().replace('.', '/'),
+        constructorDescriptor, parameterTypes);
+  }
+
+  @SuppressWarnings("unchecked")
+  @VisibleForTesting
+  static Map<String, FormalParameter> analyse(InputStream classInputStream,
+      String owner, String superclass, final String constructorDescriptor,
+      Class... parameterTypes) throws IOException {
     final ConstructorExecutionState state =
         new ConstructorExecutionState(
-            klass,
-            constructor.getParameterTypes());
+            owner,
+            superclass,
+            parameterTypes);
     final boolean[] hasVisitedConstructor = new boolean[] { false };
-    analyse(klass, new EmptyVisitor() {
+    analyse(classInputStream, new EmptyVisitor() {
       @Override
       public MethodVisitor visitMethod(int access, String name, String desc,
           String signature, String[] exceptions) {
@@ -77,7 +94,6 @@ public class ConstructorAnalysis {
     });
     return validateAndCast(state.assignements);
   }
-
   private static Map<String, FormalParameter> validateAndCast(
       final Map<String, JavaValue> assignements) {
     Map<String, FormalParameter> parameterAssignements = newHashMap();
@@ -171,8 +187,7 @@ public class ConstructorAnalysis {
           log.trace(format("putfield %s %s %s", owner, name, desc));
           JavaValue value = state.stackPop();
           reference = (ObjectReference) state.stackPop();
-          if (reference.value instanceof MethodCall &&
-              ((MethodCall) reference.value).object instanceof ThisPointer) {
+          if (isThis(reference)) {
             state.assign(name, value);
           } else {
             /* We do not care about tracking other object's modification. We
@@ -193,6 +208,12 @@ public class ConstructorAnalysis {
 
         default: unknown(opcode);
       }
+    }
+
+    private boolean isThis(ObjectReference reference) {
+      return (reference.value instanceof MethodCall &&
+          ((MethodCall) reference.value).object instanceof ThisPointer) ||
+          reference.value instanceof ThisPointer;
     }
 
     @Override
@@ -472,9 +493,9 @@ public class ConstructorAnalysis {
     private final LinkedList<JavaValue> stack = new LinkedList<JavaValue>();
     private final Map<String, JavaValue> assignements = newHashMap();
 
-    ConstructorExecutionState(Class<?> klass, Class<?>[] parameterTypes) {
-      owner = klass.getName().replace('.', '/');
-      superclass = klass.getSuperclass().getName().replace('.', '/');
+    ConstructorExecutionState(String owner, String superclass, Class<?>[] parameterTypes) {
+      this.owner = owner;
+      this.superclass = superclass;
       locals.add(new ObjectReference(new ThisPointer()));
       for (int i = 0; i < parameterTypes.length; i++) {
         Class<?> parameterType = parameterTypes[i];
@@ -760,19 +781,13 @@ public class ConstructorAnalysis {
     }
   }
 
-  private static void analyse(Class<?> klass, ClassVisitor visitor) throws IOException {
-    InputStream in = null;
+  private static void analyse(InputStream classFileIn,
+      ClassVisitor visitor) throws IOException {
     try {
-      in = klass.getResourceAsStream("/" + klass.getName().replace('.', '/') + ".class");
-      if (in == null) {
-        throw new IllegalArgumentException(format("can not find bytecode for %s", klass));
-      }
-      ClassReader reader = new ClassReader(in);
+      ClassReader reader = new ClassReader(classFileIn);
       reader.accept(visitor, SKIP_FRAMES | SKIP_DEBUG);
     } finally {
-      if (in != null) {
-        in.close();
-      }
+      classFileIn.close();
     }
   }
 

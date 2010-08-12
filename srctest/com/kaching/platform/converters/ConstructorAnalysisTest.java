@@ -3,13 +3,16 @@ package com.kaching.platform.converters;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.kaching.platform.converters.ConstructorAnalysis.analyse;
 import static java.math.BigDecimal.ZERO;
 import static java.math.MathContext.DECIMAL32;
 import static java.util.Collections.emptyMap;
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -423,6 +426,19 @@ public class ConstructorAnalysisTest {
             "non_idempotent", "p1"));
   }
 
+  @Test
+  public void regression1() throws IOException {
+    InputStream classInputStream = this.getClass().getResourceAsStream("/com/kaching/platform/converters/example_scala_case_class.class.bin");
+    assertNotNull(classInputStream);
+    Map<String, FormalParameter> assignements =
+      analyse(classInputStream,
+          "com/kaching/trading/rules/formula/FormulaValue",
+          "java/lang/Object",
+          "(I)V",
+          int.class);
+    assertMapEqualAsString(ImmutableMap.of("number", "p0"), assignements);
+  }
+
   static class CallingMethodOnStaticObject {
     static Object ref = new Object();
     CallingMethodOnStaticObject() {
@@ -455,6 +471,13 @@ public class ConstructorAnalysisTest {
       actual.put(entry.getKey(), entry.getValue().toString());
     }
     assertEquals(expected, actual);
+  }
+  private void assertMapEqualAsString(Map<String, String> expected, Map<String, ?> actual) {
+    Map<String, String> actualStrings = newHashMap();
+    for (Entry<String, ?> entry : actual.entrySet()) {
+      actualStrings.put(entry.getKey(), entry.getValue().toString());
+    }
+    assertEquals(expected, actualStrings);
   }
 
 }
