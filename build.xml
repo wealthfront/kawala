@@ -47,6 +47,10 @@ governing permissions and limitations under the License.
     <fileset file="lib/main/guice-snapshot-fca95d48b9536f5429c9.jar" />
   </path>
 
+  <path id="classpath-javax-inject">
+    <fileset file="lib/main/javax.inject.jar" />
+  </path>
+
   <target name="compile" depends="init">
     <compile srcdir="src" destdir="target/bin">
       <additional-classpath>
@@ -54,6 +58,7 @@ governing permissions and limitations under the License.
         <classpath refid="classpath-kawala-converters" />
         <classpath refid="classpath-kawala-hibernate" />
         <classpath refid="classpath-guice" />
+        <classpath refid="classpath-javax-inject" />
       </additional-classpath>
     </compile>
     <compile srcdir="srctesting/com/kaching/platform/testing"
@@ -61,6 +66,7 @@ governing permissions and limitations under the License.
       <additional-classpath>
         <classpath refid="classpath-kawala-testing" />
         <classpath refid="classpath-guice" />
+        <classpath refid="classpath-javax-inject" />
         <classpath path="target/bin" />
       </additional-classpath>
     </compile>
@@ -68,6 +74,7 @@ governing permissions and limitations under the License.
       <additional-classpath>
         <classpath refid="classpath-kawala" />
         <classpath refid="classpath-guice" />
+        <classpath refid="classpath-javax-inject" />
         <classpath path="target/bin" />
         <classpath path="target/bin-testing" />
       </additional-classpath>
@@ -84,6 +91,7 @@ governing permissions and limitations under the License.
       <jvmarg value="-Xmx1700m"/>
       <classpath refid="classpath-kawala" />
       <classpath refid="classpath-guice" />
+      <classpath refid="classpath-javax-inject" />
       <classpath path="target/bin" />
       <classpath path="target/bin-testing" />
       <classpath path="target/bin-test" />
@@ -163,6 +171,7 @@ governing permissions and limitations under the License.
         <source path="srctesting"
                 output="bin-testing" />
         <library pathref="classpath-guice" exported="true" />
+        <library pathref="classpath-javax-inject" exported="true" />
         <library pathref="classpath-kawala" exported="true" />
       </classpath>
     </eclipse>
