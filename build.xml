@@ -159,7 +159,6 @@ governing permissions and limitations under the License.
              classpath="${ant-eclipse.dir}/lib/ant-eclipse-1.0-jvm1.2.jar" />
     <eclipse updatealways="true">
       <settings>
-        <jdtcore compilercompliance="6.0" />
         <resources encoding="UTF-8" />
       </settings>
       <project name="${ant.project.name}" />
