@@ -10,10 +10,8 @@
  */
 package com.kaching.platform.converters;
 
-import static com.kaching.platform.converters.Instantiators.bindings;
 import static com.kaching.platform.converters.Instantiators.createConverter;
 import static com.kaching.platform.converters.Instantiators.createInstantiator;
-import static com.kaching.platform.converters.Instantiators.instances;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -29,7 +27,6 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
 
@@ -163,9 +160,13 @@ public class InstantiatorsTest {
   public void objectWithListOfIntUsingInstances() {
     Instantiator<ObjectWithListOfInt> instantiator = createInstantiator(
         ObjectWithListOfInt.class,
-        instances(ImmutableMap.of(
-            new TypeLiteral<List<Integer>>() {},
-            new ListOfIntConverter())));
+        new AbstractInstantiatorModule() {
+          @Override
+          protected void configure() {
+            registerFor(new TypeLiteral<List<Integer>>() {})
+                .converter(new ListOfIntConverter());
+          }
+        });
 
     checkObjectWithListOfInt(instantiator);
   }
@@ -174,9 +175,13 @@ public class InstantiatorsTest {
   public void objectWithListOfIntUsingInstancesAndTypeScheme() {
     Instantiator<ObjectWithListOfInt> instantiator = createInstantiator(
         ObjectWithListOfInt.class,
-        instances(ImmutableMap.of(
-            new TypeLiteral<List<? extends Integer>>() {},
-            new ListOfIntConverter())));
+        new AbstractInstantiatorModule() {
+          @Override
+          protected void configure() {
+            registerFor(new TypeLiteral<List<? extends Integer>>() {})
+                .converter(new ListOfIntConverter());
+          }
+        });
 
     checkObjectWithListOfInt(instantiator);
   }
@@ -185,9 +190,13 @@ public class InstantiatorsTest {
   public void objectWithListOfIntUsingBindings() {
     Instantiator<ObjectWithListOfInt> instantiator = createInstantiator(
         ObjectWithListOfInt.class,
-        bindings(ImmutableMap.of(
-            new TypeLiteral<List<Integer>>() {},
-            ListOfIntConverter.class)));
+        new AbstractInstantiatorModule() {
+          @Override
+          protected void configure() {
+            registerFor(new TypeLiteral<List<Integer>>() {})
+                .converter(ListOfIntConverter.class);
+          }
+        });
 
     checkObjectWithListOfInt(instantiator);
   }
@@ -196,9 +205,13 @@ public class InstantiatorsTest {
   public void objectWithListOfIntUsingBindingsAndTypeScheme() {
     Instantiator<ObjectWithListOfInt> instantiator = createInstantiator(
         ObjectWithListOfInt.class,
-        bindings(ImmutableMap.of(
-            new TypeLiteral<List<? extends Integer>>() {},
-            ListOfIntConverter.class)));
+        new AbstractInstantiatorModule() {
+          @Override
+          protected void configure() {
+            registerFor(new TypeLiteral<List<? extends Integer>>() {})
+                .converter(ListOfIntConverter.class);
+          }
+        });
 
     checkObjectWithListOfInt(instantiator);
   }
@@ -227,12 +240,15 @@ public class InstantiatorsTest {
   public void objectWithListOfIntAndListOfBooleanViaBindings() {
     Instantiator<ObjectWithListOfIntAndListOfBoolean> instantiator = createInstantiator(
         ObjectWithListOfIntAndListOfBoolean.class,
-        bindings(ImmutableMap.of(
-            new TypeLiteral<List<Integer>>() {},
-            ListOfIntConverter.class)),
-        bindings(ImmutableMap.of(
-            new TypeLiteral<List<Boolean>>() {},
-            ListOfBooleanConverter.class)));
+        new AbstractInstantiatorModule() {
+          @Override
+          protected void configure() {
+            registerFor(new TypeLiteral<List<Integer>>() {})
+                .converter(ListOfIntConverter.class);
+            registerFor(new TypeLiteral<List<Boolean>>() {})
+                .converter(ListOfBooleanConverter.class);
+          }
+        });
 
     checkObjectWithListOfIntAndListOfBoolean(instantiator);
   }
@@ -241,12 +257,15 @@ public class InstantiatorsTest {
   public void objectWithListOfIntAndListOfBooleanViaInstances() {
     Instantiator<ObjectWithListOfIntAndListOfBoolean> instantiator = createInstantiator(
         ObjectWithListOfIntAndListOfBoolean.class,
-        instances(ImmutableMap.of(
-            new TypeLiteral<List<Integer>>() {},
-            new ListOfIntConverter())),
-        instances(ImmutableMap.of(
-            new TypeLiteral<List<Boolean>>() {},
-            new ListOfBooleanConverter())));
+        new AbstractInstantiatorModule() {
+          @Override
+          protected void configure() {
+            registerFor(new TypeLiteral<List<Integer>>() {})
+                .converter(new ListOfIntConverter());
+            registerFor(new TypeLiteral<List<Boolean>>() {})
+                .converter(new ListOfBooleanConverter());
+          }
+        });
 
     checkObjectWithListOfIntAndListOfBoolean(instantiator);
   }
