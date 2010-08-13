@@ -12,8 +12,6 @@ package com.kaching.platform.converters;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.kaching.platform.converters.InstantiatorImplFactory.createFactory;
-import static com.kaching.platform.converters.Instantiators.bindings;
-import static com.kaching.platform.converters.Instantiators.instances;
 import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
 import static com.kaching.platform.converters.NativeConverters.C_BYTE;
 import static com.kaching.platform.converters.NativeConverters.C_CHAR;
@@ -46,7 +44,6 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
-import com.kaching.platform.converters.Instantiators.Converters;
 
 public class InstantiatorImplFactoryTest {
 
@@ -194,10 +191,13 @@ public class InstantiatorImplFactoryTest {
     checkErrorCase(
         String.class,
         new Errors().duplicateConverterBindingForType(new TypeLiteral<String>() {}.getType()),
-        instances(ImmutableMap.of(
-            new TypeLiteral<String>() {}, NativeConverters.C_STRING)),
-        instances(ImmutableMap.of(
-            new TypeLiteral<String>() {}, NativeConverters.C_STRING)));
+        new AbstractInstantiatorModule() {
+          @Override
+          protected void configure() {
+            registerFor(String.class).converter(C_STRING);
+            registerFor(String.class).converter(C_STRING);
+          }
+        });
   }
 
   @Test
@@ -205,10 +205,13 @@ public class InstantiatorImplFactoryTest {
     checkErrorCase(
         String.class,
         new Errors().duplicateConverterBindingForType(new TypeLiteral<String>() {}.getType()),
-        bindings(ImmutableMap.of(
-            new TypeLiteral<String>() {}, NativeConverters.C_STRING.getClass())),
-        bindings(ImmutableMap.of(
-            new TypeLiteral<String>() {}, NativeConverters.C_STRING.getClass())));
+        new AbstractInstantiatorModule() {
+          @Override
+          protected void configure() {
+            registerFor(String.class).converter(C_STRING.getClass());
+            registerFor(String.class).converter(C_STRING.getClass());
+          }
+        });
   }
 
   @Test
@@ -216,10 +219,13 @@ public class InstantiatorImplFactoryTest {
     checkErrorCase(
         String.class,
         new Errors().duplicateConverterBindingForType(new TypeLiteral<String>() {}.getType()),
-        bindings(ImmutableMap.of(
-            new TypeLiteral<String>() {}, NativeConverters.C_STRING.getClass())),
-        instances(ImmutableMap.of(
-            new TypeLiteral<String>() {}, NativeConverters.C_STRING)));
+        new AbstractInstantiatorModule() {
+          @Override
+          protected void configure() {
+            registerFor(String.class).converter(C_STRING);
+            registerFor(String.class).converter(C_STRING.getClass());
+          }
+        });
   }
 
   static class DefaultValueAndDefaultConstant {
@@ -285,15 +291,14 @@ public class InstantiatorImplFactoryTest {
         new Errors().constantHasIncompatibleType(ConstantIsOfAnIncompatibleType.class, "WRONG_TYPE"));
   }
 
-  @SuppressWarnings("unchecked")
-  private <T> void checkErrorCase(Class<T> klass, Errors errors, Converters... converters) {
+  private <T> void checkErrorCase(Class<T> klass, Errors errors, InstantiatorModule... modules) {
     // TODO(pascal): Refactor. Very ugly pattern here because build() is too
     // high level.
     InstantiatorImplFactory<T> f = null;
     try {
       f = InstantiatorImplFactory.createFactory(klass);
-      for (Converters c : converters) {
-        c.addMeInto(f);
+      for (InstantiatorModule m : modules) {
+        m.configure(f.binder());
       }
       f.build();
       fail();

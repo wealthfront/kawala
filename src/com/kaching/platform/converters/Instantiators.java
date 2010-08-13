@@ -11,7 +11,6 @@
 package com.kaching.platform.converters;
 
 import java.lang.reflect.Type;
-import java.util.Map;
 
 import com.google.inject.TypeLiteral;
 
@@ -25,119 +24,41 @@ public class Instantiators {
   /**
    * Creates an instantiator for {@code klass}.
    */
-  @SuppressWarnings("unchecked")
   public static <T> Instantiator<T> createInstantiator(
-      Class<T> klass, Converters... converters) {
-    return factoryFor(klass, converters).build();
+      Class<T> klass, InstantiatorModule... modules) {
+    return factoryFor(klass, modules).build();
   }
 
   /**
    * Creates a converter {@code klass}.
    */
-  @SuppressWarnings("unchecked")
   public static <T> Converter<T> createConverter(
-      Class<T> klass, Converters... converters) {
-    return createConverterForType(klass, converters);
+      Class<T> klass, InstantiatorModule... modules) {
+    return createConverterForType(klass, modules);
   }
 
   /**
    * Creates a converter {@code typeLiteral}.
    */
-  @SuppressWarnings("unchecked")
   public static <T> Converter<T> createConverter(
-      TypeLiteral<T> typeLiteral, Converters... converters) {
-    return createConverterForType(typeLiteral.getType(), converters);
+      TypeLiteral<T> typeLiteral, InstantiatorModule... modules) {
+    return createConverterForType(typeLiteral.getType(), modules);
   }
 
-  @SuppressWarnings("unchecked")
   private static <T> InstantiatorImplFactory<T> factoryFor(Class<T> klass,
-      Converters... converters) {
+      InstantiatorModule... modules) {
     InstantiatorImplFactory<T> factory = InstantiatorImplFactory
             .createFactory(klass);
-    for (Converters c : converters) {
-      c.addMeInto(factory);
+    for (InstantiatorModule c : modules) {
+      c.configure(factory.binder());
     }
     return factory;
   }
 
   @SuppressWarnings("unchecked")
   private static <T> Converter<T> createConverterForType(Type type,
-      Converters... converters) {
-    return (Converter<T>) factoryFor(null, converters).createConverter(type).getOrThrow();
-  }
-
-  /**
-   * Creates a {@link ConverterInstances} wrapper for the {@code instances} map.
-   */
-  @SuppressWarnings("unchecked")
-  public static ConverterInstances instances(
-      Map<? extends TypeLiteral<?>, ? extends Converter> instances) {
-    return new ConverterInstances((Map) instances);
-  }
-
-  /**
-   * Creates a {@link ConverterBindings} wrapper for the {@code bindings} map.
-   */
-  @SuppressWarnings("unchecked")
-  public static ConverterBindings bindings(
-      Map<? extends TypeLiteral<?>, ? extends Class<? extends Converter>> bindings) {
-    return new ConverterBindings((Map) bindings);
-  }
-
-  public static abstract class Converters<V> {
-
-    private final Map<? extends TypeLiteral<?>, ? extends V> map;
-
-    protected Converters(Map<? extends TypeLiteral<?>, ? extends V> map) {
-      this.map = map;
-    }
-
-    @SuppressWarnings("unchecked")
-    Map<TypeLiteral<?>, V> get() {
-      // Caller does not care about covariance of the key and value.
-      return (Map<TypeLiteral<?>, V>) map;
-    }
-
-    abstract void addMeInto(InstantiatorImplFactory<?> factory);
-
-  }
-
-  /**
-   * Wrapper to pass a {@code Map<TypeLiteral<?>, Converter<?>>}. We must use
-   * wrappers since the API passes multiple maps whose erasure is the same
-   * and thus illegal per the Java language spec.
-   */
-  public static class ConverterBindings extends Converters<Class<? extends Converter<?>>> {
-
-    private ConverterBindings(
-        Map<? extends TypeLiteral<?>, ? extends Class<? extends Converter<?>>> map) {
-      super(map);
-    }
-
-    @Override
-    void addMeInto(InstantiatorImplFactory<?> factory) {
-      factory.addConverterBindings(get());
-    }
-
-  }
-
-  /**
-   * Wrapper to pass a {@code Map<TypeLiteral<?>, Converter<?>>}. We must use
-   * wrappers since the API passes multiple maps whose erasure is the same
-   * and thus illegal per the Java language spec.
-   */
-  public static class ConverterInstances extends Converters<Converter<?>> {
-
-    private ConverterInstances(
-        Map<? extends TypeLiteral<?>, ? extends Converter<?>> map) {
-      super(map);
-    }
-
-    @Override
-    void addMeInto(InstantiatorImplFactory<?> factory) {
-      factory.addConverterInstances(get());
-    }
-
+      InstantiatorModule... modules) {
+    return (Converter<T>) factoryFor(null, modules).createConverter(type).getOrThrow();
   }
 
 }

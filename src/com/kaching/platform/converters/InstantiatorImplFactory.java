@@ -10,7 +10,6 @@
  */
 package com.kaching.platform.converters;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static com.kaching.platform.converters.CollectionOfElementsConverter.COLLECTION_KINDS;
 import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
 import static com.kaching.platform.converters.NativeConverters.C_BYTE;
@@ -32,7 +31,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.BitSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
@@ -60,9 +58,8 @@ class InstantiatorImplFactory<T> {
       .build();
 
   private final Errors errors = new Errors();
+  private final ConverterBinderImpl binder = new ConverterBinderImpl(errors);
   private final Class<T> klass;
-  private Map<TypeLiteral<?>, Converter<?>> instances;
-  private Map<TypeLiteral<?>, Class<? extends Converter<?>>> bindings;
 
   private InstantiatorImplFactory(Class<T> klass) {
     this.klass = klass;
@@ -72,7 +69,11 @@ class InstantiatorImplFactory<T> {
     return new InstantiatorImplFactory<T>(klass);
   }
 
-  InstantiatorImplFactory<T> addConverterInstances(
+  ConverterBinder binder() {
+    return binder;
+  }
+
+  /*InstantiatorImplFactory<T> addConverterInstances(
       Map<TypeLiteral<?>, Converter<?>> instances) {
     if (this.instances == null) {
       this.instances = newHashMap();
@@ -92,18 +93,7 @@ class InstantiatorImplFactory<T> {
     verifyNoDuplicates(this.bindings, bindings.keySet());
     this.bindings.putAll(bindings);
     return this;
-  }
-
-  private void verifyNoDuplicates(
-      Map<TypeLiteral<?>, ?> map, Set<TypeLiteral<?>> typeLiterals) {
-    if (map != null) {
-      for (TypeLiteral<?> typeLiteral : typeLiterals) {
-        if (map.containsKey(typeLiteral)) {
-          errors.duplicateConverterBindingForType(typeLiteral.getType());
-        }
-      }
-    }
-  }
+  }*/
 
   InstantiatorImpl<T> build() {
     // 1. find constructor
@@ -248,6 +238,8 @@ class InstantiatorImplFactory<T> {
   Option<? extends Converter<?>> createConverter(Type targetType) {
     int sizeBefore = errors.size();
     // 1. explicit binding
+    Map<TypeLiteral<?>, Converter<?>> instances = binder.getInstances();
+    Map<TypeLiteral<?>, Class<? extends Converter<?>>> bindings = binder.getBindings();
     if (instances != null) {
       for (Entry<TypeLiteral<?>, Converter<?>> entry : instances.entrySet()) {
         if (MoreTypes.isInstance(entry.getKey().getType(), targetType)) {
