@@ -73,28 +73,6 @@ class InstantiatorImplFactory<T> {
     return binder;
   }
 
-  /*InstantiatorImplFactory<T> addConverterInstances(
-      Map<TypeLiteral<?>, Converter<?>> instances) {
-    if (this.instances == null) {
-      this.instances = newHashMap();
-    }
-    verifyNoDuplicates(this.instances, instances.keySet());
-    verifyNoDuplicates(this.bindings, instances.keySet());
-    this.instances.putAll(instances);
-    return this;
-  }
-
-  InstantiatorImplFactory<T> addConverterBindings(
-      Map<TypeLiteral<?>, Class<? extends Converter<?>>> bindings) {
-    if (this.bindings == null) {
-      this.bindings = newHashMap();
-    }
-    verifyNoDuplicates(this.instances, bindings.keySet());
-    verifyNoDuplicates(this.bindings, bindings.keySet());
-    this.bindings.putAll(bindings);
-    return this;
-  }*/
-
   InstantiatorImpl<T> build() {
     // 1. find constructor
     for (Constructor<T> constructor : getConstructor()) {
