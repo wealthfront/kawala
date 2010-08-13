@@ -235,12 +235,19 @@ class InstantiatorImplFactory<T> {
       }
     }
 
-    if (targetType instanceof Class) {
-      Class targetClass = (Class) targetType;
-      // 2. @ConvertedBy
-      for (Converter<?> converter : createConverterUsingConvertedBy(targetClass)) {
+    // 2. @ConvertedBy
+    if (targetType instanceof Class ||
+        targetType instanceof ParameterizedType) {
+      Class targetClass = (Class) (targetType instanceof Class ?
+          targetType :
+          ((ParameterizedType) targetType).getRawType());
+      for (Converter<?> converter : createConverterUsingConvertedBy(targetType, targetClass)) {
         return Option.some(converter);
       }
+    }
+
+    if (targetType instanceof Class) {
+      Class targetClass = (Class) targetType;
       // 3. base converters
       if (BASE_CONVERTERS.containsKey(targetClass)) {
         return Option.some(BASE_CONVERTERS.get(targetClass));
@@ -309,12 +316,12 @@ class InstantiatorImplFactory<T> {
   }
 
   private Option<? extends Converter<?>> createConverterUsingConvertedBy(
-      final Class<?> targetClass) {
+      final Type targetType, Class<?> targetClass) {
     Annotation[] typeAnnotations = targetClass.getAnnotations();
     for (Annotation typeAnnotation : typeAnnotations) {
       if (typeAnnotation instanceof ConvertedBy) {
         Class<? extends Converter<?>> converterClass = ((ConvertedBy) typeAnnotation).value();
-        for (Converter<?> converter : instantiateConverter(converterClass, targetClass)) {
+        for (Converter<?> converter : instantiateConverter(converterClass, targetType)) {
           return Option.some(converter);
         }
       }
@@ -343,7 +350,7 @@ class InstantiatorImplFactory<T> {
     try {
       Type producedType =
           Unification.getActualTypeArgument(converterClass, Converter.class, 0);
-      if (targetType.equals(producedType)) {
+      if (MoreTypes.isInstance(producedType, targetType)) {
         return Option.some(converterClass.newInstance());
       } else {
         errors.incorrectBoundForConverter(targetType, converterClass, producedType);
