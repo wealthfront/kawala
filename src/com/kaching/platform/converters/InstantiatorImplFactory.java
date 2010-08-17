@@ -256,8 +256,12 @@ class InstantiatorImplFactory<T> {
       for (Converter<?> converter : createConverterUsingStringConstructor(targetClass)) {
         return Option.some(converter);
       }
+      // 5. is an Enum
+      if (Enum.class.isAssignableFrom(targetClass)) {
+        return (Option<? extends Converter<?>>) Option.some(new EnumConverter(targetClass));
+      }
     } else if (targetType instanceof ParameterizedType) {
-      // 5. Set, List, Collection
+      // 6. Set, List, Collection
       ParameterizedType parameterizedTargetType = (ParameterizedType) targetType;
       if (COLLECTION_KINDS.containsKey(parameterizedTargetType.getRawType()) &&
           parameterizedTargetType.getActualTypeArguments().length == 1) {
