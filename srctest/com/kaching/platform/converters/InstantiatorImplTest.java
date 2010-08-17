@@ -233,6 +233,34 @@ public class InstantiatorImplTest {
   }
 
   @Test
+  public void newInstanceHasEnum() {
+    assertEquals(
+        IsEnum.FOO,
+        createFactory(HasEnum.class).build()
+            .newInstance("FOO")
+            .value);
+  }
+
+  @Test
+  public void fromInstanceHasEnum() {
+    assertEquals(
+        newArrayList("FOO"),
+        createFactory(HasEnum.class).build()
+            .fromInstance(new HasEnum(IsEnum.FOO)));
+  }
+
+  static class HasEnum {
+    IsEnum value;
+    HasEnum(IsEnum value) {
+      this.value = value;
+    }
+  }
+
+  static enum IsEnum {
+    FOO, BAR
+  }
+
+  @Test
   public void fromInstanceNatives() {
     List<String> parameters = createFactory(Natives.class).build()
         .fromInstance(new Natives(2, 3.4, (short) 5, '6', 7l, true, 8.0f, (byte) 9));

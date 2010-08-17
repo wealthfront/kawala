@@ -117,6 +117,17 @@ public class InstantiatorImplFactoryTest {
   }
 
   @Test
+  public void createConverterForEnum() throws Exception {
+    Converter<?> converter = createFactory(null).createConverter(AnEnum.class).getOrThrow();
+    assertNotNull(converter);
+    assertEquals(EnumConverter.class, converter.getClass());
+  }
+
+  static enum AnEnum {
+    FOO, BAR
+  }
+
+  @Test
   public void createConverterNatives() throws Exception {
     Object[] fixtures = new Object[] {
         C_STRING, String.class,
