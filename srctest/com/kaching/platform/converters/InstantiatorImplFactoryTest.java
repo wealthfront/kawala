@@ -38,6 +38,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.TypeLiteral;
@@ -173,6 +174,101 @@ public class InstantiatorImplFactoryTest {
 
   static class WrongDefaultValue {
     WrongDefaultValue(@Optional("foobar") char c) {
+    }
+  }
+
+  @Test
+  public void convertedAnnotatedClass() throws Exception {
+    InstantiatorImplFactory<Object> factory = createFactory(null);
+    Converter<?> converter = factory.createConverter(AnnotatedClass.class).getOrThrow();
+    assertEquals(StringConstructorConverter.class, converter.getClass());
+  }
+
+  @Test
+  public void convertedAnnotatedClassWithFunction() throws Exception {
+    InstantiatorImplFactory<Object> factory = createFactory(null);
+    InstantiatorModule module = new AbstractInstantiatorModule() {
+      @Override
+      protected void configure() {
+        register(new Function<Type, Option<? extends Converter<?>>>() {
+          @SuppressWarnings("unchecked")
+          @Override
+          public Option<? extends Converter<?>> apply(Type type) {
+            if (type instanceof Class &&
+                ((Class) type).getAnnotation(AnAnnotation.class) != null) {
+              return Option.some(new ConverterForAnnotatedClass());
+            } else {
+              return Option.none();
+            }
+          }
+        });
+      }
+    };
+    module.configure(factory.binder());
+    Converter<?> converter = factory.createConverter(AnnotatedClass.class).getOrThrow();
+    assertEquals(ConverterForAnnotatedClass.class, converter.getClass());
+
+    Converter<?> converter2 = factory.createConverter(NonAnnotatedClass.class).getOrThrow();
+    assertEquals(StringConstructorConverter.class, converter2.getClass());
+  }
+
+  @Test
+  public void convertedAnnotatedClassWithTwoFunctions() throws Exception {
+    InstantiatorImplFactory<Object> factory = createFactory(null);
+    InstantiatorModule module = new AbstractInstantiatorModule() {
+      @Override
+      protected void configure() {
+        Function<Type, Option<? extends Converter<?>>> function =
+            new Function<Type, Option<? extends Converter<?>>>() {
+              @SuppressWarnings("unchecked")
+              @Override
+              public Option<? extends Converter<?>> apply(Type type) {
+                if (type instanceof Class &&
+                    ((Class) type).getAnnotation(AnAnnotation.class) != null) {
+                  return Option.some(new ConverterForAnnotatedClass());
+                } else {
+                  return Option.none();
+                }
+              }
+            };
+        register(function);
+        register(function);
+      }
+    };
+    module.configure(factory.binder());
+    factory.createConverter(AnnotatedClass.class);
+    assertEquals(
+        new Errors().moreThanOneMatchingFunction(AnnotatedClass.class),
+        factory.getErrors());
+  }
+
+  @AnAnnotation
+  static class AnnotatedClass {
+    String value;
+    AnnotatedClass(String value) {
+      this.value = value;
+    }
+  }
+
+  static class NonAnnotatedClass {
+    String value;
+    NonAnnotatedClass(String value) {
+      this.value = value;
+    }
+  }
+
+  @Retention(RUNTIME)
+  @interface AnAnnotation {
+  }
+
+  static class ConverterForAnnotatedClass implements Converter<AnnotatedClass> {
+    @Override
+    public String toString(AnnotatedClass value) {
+      return null;
+    }
+    @Override
+    public AnnotatedClass fromString(String representation) {
+      return null;
     }
   }
 
@@ -445,7 +541,7 @@ public class InstantiatorImplFactoryTest {
     InstantiatorImplFactory<Q> factory = createFactory(Q.class);
     factory.getConstructor();
     assertEquals(
-        new Errors().moreThanOnceConstructorWithInstantiate(Q.class),
+        new Errors().moreThanOneConstructorWithInstantiate(Q.class),
         factory.getErrors());
   }
 

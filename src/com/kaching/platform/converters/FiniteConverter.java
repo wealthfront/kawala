@@ -36,7 +36,7 @@ public class FiniteConverter<T> extends NullHandlingConverter<T> {
     if (o != null) {
       return o;
     } else {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(representation);
     }
   }
 

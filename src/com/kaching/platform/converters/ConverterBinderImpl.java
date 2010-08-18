@@ -10,11 +10,16 @@
  */
 package com.kaching.platform.converters;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.inject.internal.Maps.newHashMap;
 
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import com.google.inject.TypeLiteral;
+import com.kaching.platform.common.Option;
 
 class ConverterBinderImpl implements ConverterBinder {
 
@@ -22,6 +27,7 @@ class ConverterBinderImpl implements ConverterBinder {
   private final Map<TypeLiteral<?>, Converter<?>> instances = newHashMap();
   @SuppressWarnings("unchecked")
   private final Map<TypeLiteral<?>, Class<? extends Converter>> bindings = newHashMap();
+  private final List<Function<Type, Option<? extends Converter<?>>>> functions = newArrayList();
 
   ConverterBinderImpl(Errors errors) {
     this.errors = errors;
@@ -37,6 +43,11 @@ class ConverterBinderImpl implements ConverterBinder {
     return new ConverterSpecifierImpl<T>(type);
   }
 
+  @Override
+  public void register(Function<Type, Option<? extends Converter<?>>> function) {
+    functions.add(function);
+  }
+
   Map<TypeLiteral<?>, Converter<?>> getInstances() {
     return instances;
   }
@@ -44,6 +55,10 @@ class ConverterBinderImpl implements ConverterBinder {
   @SuppressWarnings("unchecked")
   Map<TypeLiteral<?>, Class<? extends Converter<?>>> getBindings() {
     return (Map) bindings;
+  }
+
+  List<Function<Type, Option<? extends Converter<?>>>> getFunctions() {
+    return functions;
   }
 
   class ConverterSpecifierImpl<T> implements ConverterSpecifier<T> {
