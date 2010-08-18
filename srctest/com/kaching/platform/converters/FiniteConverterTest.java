@@ -11,10 +11,8 @@
 package com.kaching.platform.converters;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
-import java.util.Map;
-
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
@@ -22,28 +20,29 @@ import com.google.common.collect.ImmutableMap;
 
 public class FiniteConverterTest {
 
+  private Converter<Integer> converter;
+
+  @Before
+  public void before() throws Exception {
+    converter = new FiniteConverter<Integer>(ImmutableMap.of("a", 1, "b", 2));
+  }
+
   @Test
   public void fromAndTo() throws Exception {
-    Converter<Integer> converter = 
-        new FiniteConverter<Integer>(ImmutableMap.of("a", 1, "b", 2));
     assertEquals(1, converter.fromString("a"));
     assertEquals(2, converter.fromString("b"));
     assertEquals("a", converter.toString(1));
     assertEquals("b", converter.toString(2));
-    assertNull(converter.fromString("c"));
-    assertNull(converter.toString(3));
   }
-  
-  @Test
-  public void getMap() throws Exception {
-    Map<String, EnumType> map = FiniteConverter.getMap(EnumType.values());
-    assertEquals(2, map.size());
-    assertEquals(EnumType.A, map.get("a"));
-    assertEquals(EnumType.B, map.get("b"));
+
+  @Test(expected = IllegalArgumentException.class)
+  public void fromUnknownString() throws Exception {
+    converter.fromString("c");
   }
-  
-  private enum EnumType {
-    A, B
+
+  @Test(expected = IllegalArgumentException.class)
+  public void unknownToString() throws Exception {
+    converter.toString(3);
   }
-  
+
 }

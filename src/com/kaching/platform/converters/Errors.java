@@ -92,6 +92,12 @@ class Errors {
         fieldName);
   }
 
+  Errors enumHasAmbiguousNames(Class<? extends Enum<?>> clazz) {
+    return addMessage(
+        "enum %s has ambiguous names",
+        clazz.getName());
+  }
+
   Errors noConverterForType(Type type) {
     return addMessage(
         "no converter for %s",

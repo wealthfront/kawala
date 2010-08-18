@@ -128,6 +128,19 @@ public class InstantiatorImplFactoryTest {
   }
 
   @Test
+  public void createConverterForAmbiguousEnum() throws Exception {
+    InstantiatorImplFactory<Object> factory = createFactory(null);
+    factory.createConverter(AmbiguousEnum.class);
+    assertEquals(
+        new Errors().enumHasAmbiguousNames(AmbiguousEnum.class),
+        factory.getErrors());
+  }
+
+  static enum AmbiguousEnum {
+    FOO, Foo
+  }
+
+  @Test
   public void createConverterNatives() throws Exception {
     Object[] fixtures = new Object[] {
         C_STRING, String.class,

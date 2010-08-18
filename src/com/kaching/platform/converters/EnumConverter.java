@@ -19,20 +19,30 @@ import java.util.Map;
  */
 public class EnumConverter<E extends Enum<E>> extends FiniteConverter<E> {
 
-  public EnumConverter(E[] values) {
-    super(enumMap(values));
-  }
-
   public EnumConverter(Class<E> clazz) {
-    this(clazz.getEnumConstants());
+    super(enumMap(clazz));
   }
 
-  private static <E extends Enum<E>> Map<String, E> enumMap(E[] values) {
-    Map<String, E> maps = newHashMapWithExpectedSize(values.length);
+  @Override
+  protected E fromNonNullableString(String representation) {
+    return super.fromNonNullableString(normalizeName(representation));
+  }
+
+  private static String normalizeName(String name) {
+    return name.toUpperCase();
+  }
+
+  private static <E extends Enum<E>> Map<String, E> enumMap(Class<E> clazz) {
+    E[] values = clazz.getEnumConstants();
+    Map<String, E> map = newHashMapWithExpectedSize(values.length);
     for (E value : values) {
-      maps.put(value.name(), value);
+      String name = normalizeName(value.name());
+      if (map.containsKey(name)) {
+        throw new IllegalArgumentException();
+      }
+      map.put(name, value);
     }
-    return maps;
+    return map;
   }
 
 }

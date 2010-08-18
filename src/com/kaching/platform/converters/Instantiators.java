@@ -30,7 +30,7 @@ public class Instantiators {
   }
 
   /**
-   * Creates a converter {@code klass}.
+   * Creates a converter for {@code klass}.
    */
   public static <T> Converter<T> createConverter(
       Class<T> klass, InstantiatorModule... modules) {
@@ -38,7 +38,7 @@ public class Instantiators {
   }
 
   /**
-   * Creates a converter {@code typeLiteral}.
+   * Creates a converter for {@code typeLiteral}.
    */
   public static <T> Converter<T> createConverter(
       TypeLiteral<T> typeLiteral, InstantiatorModule... modules) {
