@@ -30,11 +30,13 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.TypeLiteral;
 import com.google.inject.internal.MoreTypes;
@@ -218,6 +220,7 @@ class InstantiatorImplFactory<T> {
     // 1. explicit binding
     Map<TypeLiteral<?>, Converter<?>> instances = binder.getInstances();
     Map<TypeLiteral<?>, Class<? extends Converter<?>>> bindings = binder.getBindings();
+    List<Function<Type, Option<? extends Converter<?>>>> functions = binder.getFunctions();
     if (instances != null) {
       for (Entry<TypeLiteral<?>, Converter<?>> entry : instances.entrySet()) {
         if (MoreTypes.isInstance(entry.getKey().getType(), targetType)) {
@@ -235,7 +238,23 @@ class InstantiatorImplFactory<T> {
       }
     }
 
-    // 2. @ConvertedBy
+    // 2. function
+    Converter<?> foundConverter = null;
+    for (Function<Type, Option<? extends Converter<?>>> function : functions) {
+      Option<? extends Converter<?>> option = function.apply(targetType);
+      if (option.isDefined()) {
+        if (foundConverter == null) {
+          foundConverter = option.getOrThrow();
+        } else {
+          errors.moreThanOneMatchingFunction(targetType);
+        }
+      }
+    }
+    if (foundConverter != null) {
+      return Option.some(foundConverter);
+    }
+
+    // 3. @ConvertedBy
     if (targetType instanceof Class ||
         targetType instanceof ParameterizedType) {
       Class targetClass = (Class) (targetType instanceof Class ?
@@ -248,15 +267,15 @@ class InstantiatorImplFactory<T> {
 
     if (targetType instanceof Class) {
       Class targetClass = (Class) targetType;
-      // 3. base converters
+      // 4. base converters
       if (BASE_CONVERTERS.containsKey(targetClass)) {
         return Option.some(BASE_CONVERTERS.get(targetClass));
       }
-      // 4. has <init>(Ljava/lang/String;)V;
+      // 5. has <init>(Ljava/lang/String;)V;
       for (Converter<?> converter : createConverterUsingStringConstructor(targetClass)) {
         return Option.some(converter);
       }
-      // 5. is an Enum
+      // 6. is an Enum
       if (Enum.class.isAssignableFrom(targetClass)) {
         try {
           return Option.some((Converter<?>) new EnumConverter(targetClass));
@@ -265,7 +284,7 @@ class InstantiatorImplFactory<T> {
         }
       }
     } else if (targetType instanceof ParameterizedType) {
-      // 6. Set, List, Collection
+      // 7. Set, List, Collection
       ParameterizedType parameterizedTargetType = (ParameterizedType) targetType;
       if (COLLECTION_KINDS.containsKey(parameterizedTargetType.getRawType()) &&
           parameterizedTargetType.getActualTypeArguments().length == 1) {
@@ -281,6 +300,7 @@ class InstantiatorImplFactory<T> {
         // parameterize your list"
       }
     }
+
     if (sizeBefore == errors.size()) {
       errors.noConverterForType(targetType);
     }
@@ -383,7 +403,7 @@ class InstantiatorImplFactory<T> {
           if (convertableConstructor == null) {
             convertableConstructor = constructor;
           } else {
-            errors.moreThanOnceConstructorWithInstantiate(klass);
+            errors.moreThanOneConstructorWithInstantiate(klass);
             return Option.none();
           }
         }

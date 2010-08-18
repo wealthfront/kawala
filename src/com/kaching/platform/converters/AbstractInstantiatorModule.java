@@ -12,7 +12,11 @@ package com.kaching.platform.converters;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.lang.reflect.Type;
+
+import com.google.common.base.Function;
 import com.google.inject.TypeLiteral;
+import com.kaching.platform.common.Option;
 
 public abstract class AbstractInstantiatorModule implements InstantiatorModule {
 
@@ -35,6 +39,10 @@ public abstract class AbstractInstantiatorModule implements InstantiatorModule {
   protected <T> ConverterSpecifier<T> registerFor(TypeLiteral<T> type) {
     checkState(binder != null);
     return binder.registerFor(type);
+  }
+
+  protected void register(Function<Type, Option<? extends Converter<?>>> function) {
+    binder.register(function);
   }
 
 }

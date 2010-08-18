@@ -60,7 +60,7 @@ class Errors {
         ConvertedBy.class.getSimpleName());
   }
 
-  Errors moreThanOnceConstructorWithInstantiate(Class<?> klass) {
+  Errors moreThanOneConstructorWithInstantiate(Class<?> klass) {
     return addMessage(
         "%s has more than one constructor annotated with @%s",
         klass,
@@ -96,6 +96,12 @@ class Errors {
     return addMessage(
         "enum %s has ambiguous names",
         clazz.getName());
+  }
+
+  Errors moreThanOneMatchingFunction(Type type) {
+    return addMessage(
+        "%s has more than one matching function",
+        type);
   }
 
   Errors noConverterForType(Type type) {

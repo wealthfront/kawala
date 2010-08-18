@@ -70,6 +70,13 @@ public class ErrorsTest {
   }
 
   @Test
+  public void moreThanOneMatchingFunction() {
+    check(
+        "class com.kaching.platform.converters.ErrorsTest$AmbiguousEnum has more than one matching function",
+        new Errors().moreThanOneMatchingFunction(AmbiguousEnum.class));
+  }
+
+  @Test
   public void noConverterForType() {
     check(
         "no converter for java.util.List<java.lang.String>",
