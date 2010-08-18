@@ -10,12 +10,9 @@
  */
 package com.kaching.platform.converters;
 
-import static com.google.common.collect.ImmutableMap.builder;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * A converter for a finite set of values.
@@ -35,25 +32,22 @@ public class FiniteConverter<T> extends NullHandlingConverter<T> {
 
   @Override
   protected T fromNonNullableString(String representation) {
-    return s2o.get(representation);
+    T o = s2o.get(representation);
+    if (o != null) {
+      return o;
+    } else {
+      throw new IllegalArgumentException();
+    }
   }
 
   @Override
   protected String nonNullableToString(T value) {
-    return o2s.get(value);
+    String s = o2s.get(value);
+    if (s != null) {
+      return s;
+    } else {
+      throw new IllegalArgumentException();
+    }
   }
 
-  /**
-   * Returns a map of the enum values passed in, using the lower case
-   * name as the key. This allows a converter for an enum type to be
-   * expresses as {@code super(getMap(EnumType.values()))}
-   */
-  static <T extends Enum<T>> Map<String, T> getMap(T[] values) {
-    ImmutableMap.Builder<String, T> builder = builder();
-    for (T value : values) {
-      builder.put(value.name().toLowerCase(), value);
-    }
-    return builder.build();
-  }
-  
 }

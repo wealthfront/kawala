@@ -12,32 +12,44 @@ package com.kaching.platform.converters;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Before;
 import org.junit.Test;
 
 
 public class EnumConverterTest {
 
-  @Test
-  public void converter() throws Exception {
-    TestConverter testConverter = new TestConverter();
+  private Converter<TheEnum> converter;
 
-    assertEquals("GooD", testConverter.toString(TheEnum.GooD));
-    assertEquals("BaD", testConverter.toString(TheEnum.BaD));
-
-    assertEquals(TheEnum.GooD, testConverter.fromString("GooD"));
-    assertEquals(TheEnum.BaD, testConverter.fromString("BaD"));
+  @Before
+  public void before() throws Exception {
+    converter = new EnumConverter<TheEnum>(TheEnum.class);
   }
 
-  static class TestConverter extends EnumConverter<TheEnum> {
+  @Test
+  public void fromAndTo() throws Exception {
+    assertEquals(TheEnum.FOO, converter.fromString("FOO"));
+    assertEquals(TheEnum.BAR, converter.fromString("BAR"));
+    assertEquals("FOO", converter.toString(TheEnum.FOO));
+    assertEquals("BAR", converter.toString(TheEnum.BAR));
+  }
 
-    public TestConverter() {
-      super(TheEnum.values());
-    }
-
+  @Test
+  public void fromLowerCase() throws Exception {
+    assertEquals(TheEnum.FOO, converter.fromString("foo"));
+    assertEquals(TheEnum.BAR, converter.fromString("bar"));
   }
 
   enum TheEnum {
-    GooD, BaD;
-  };
+    FOO, BAR;
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void cannotConvertAmbiguousEnum() throws Exception {
+    new EnumConverter<AmbiguousEnum>(AmbiguousEnum.class);
+  }
+
+  enum AmbiguousEnum {
+    FOO, Foo;
+  }
 
 }

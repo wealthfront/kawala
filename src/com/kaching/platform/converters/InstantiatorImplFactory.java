@@ -258,7 +258,11 @@ class InstantiatorImplFactory<T> {
       }
       // 5. is an Enum
       if (Enum.class.isAssignableFrom(targetClass)) {
-        return Option.some((Converter<?>) new EnumConverter(targetClass));
+        try {
+          return Option.some((Converter<?>) new EnumConverter(targetClass));
+        } catch (IllegalArgumentException e) {
+          errors.enumHasAmbiguousNames(targetClass);
+        }
       }
     } else if (targetType instanceof ParameterizedType) {
       // 6. Set, List, Collection

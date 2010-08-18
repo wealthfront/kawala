@@ -60,6 +60,16 @@ public class ErrorsTest {
   }
 
   @Test
+  public void enumHasAmbiguousNames() {
+    check(
+        "enum com.kaching.platform.converters.ErrorsTest$AmbiguousEnum has ambiguous names",
+        new Errors().enumHasAmbiguousNames(AmbiguousEnum.class));
+  }
+
+  enum AmbiguousEnum {
+  }
+
+  @Test
   public void noConverterForType() {
     check(
         "no converter for java.util.List<java.lang.String>",
