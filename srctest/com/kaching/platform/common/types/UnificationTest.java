@@ -18,6 +18,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.TypeLiteral;
@@ -252,6 +253,14 @@ public class UnificationTest {
     return Unification.getActualTypeArgument(query, TopLevel.class, 0);
   }
 
+  @Test
+  @Ignore("issue 18")
+  public void bottomOfMidLevel3() throws Exception {
+    assertEquals(
+        TypeLiteral.get(String.class).getType(),
+        queryReturnType(BottomOfMidLevel3.class));
+  }
+
   private static class Foo {}
 
   private interface ManyTypeParams<A, B, C> {}
@@ -263,6 +272,8 @@ public class UnificationTest {
   private static class MidLevel1<T> implements TopLevel<T> {}
 
   private static class MidLevel2<T> implements TopLevel<T> {}
+
+  private static class MidLevel3<S, T> implements TopLevel<T> {}
 
   private static abstract class StubQuery extends MidLevel1<String> {}
 
@@ -279,5 +290,7 @@ public class UnificationTest {
   private static class DoubleSecuredQuery extends MidLevel2<Double> {}
 
   private static class StringQuery extends StubQuery {}
+
+  private static class BottomOfMidLevel3 extends MidLevel3<Integer, String> {}
 
 }
