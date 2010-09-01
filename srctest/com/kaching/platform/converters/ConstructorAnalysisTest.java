@@ -450,6 +450,18 @@ public class ConstructorAnalysisTest {
     assertMapEqualAsString(ImmutableMap.of("com$kaching$user$GetAllModels$$withHistory", "p0"), assignements);
   }
 
+  static class Regression3 {
+    @SuppressWarnings("unused")
+    private Object unimportant = ImmutableMap.builder().build();
+  }
+
+  @Test
+  public void regression3() throws IOException {
+    assertAssignement(
+        Regression3.class,
+        Collections.emptyMap());
+  }
+
   static class CallingMethodOnStaticObject {
     static Object ref = new Object();
     CallingMethodOnStaticObject() {

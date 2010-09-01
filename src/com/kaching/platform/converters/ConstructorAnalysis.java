@@ -417,7 +417,8 @@ public class ConstructorAnalysis {
             returnValue = reference;
           }
           if (desc.charAt(index + 1) != 'V') {
-            state.stackPushLiteral(returnValue);
+            int rparen = desc.indexOf(')');
+            state.stackPush(desc.substring(rparen + 1), returnValue);
           }
           return;
 
@@ -543,7 +544,7 @@ public class ConstructorAnalysis {
     }
 
     void stackPush(String desc, JavaValue value) {
-      if (desc.charAt(0) == 'L') {
+      if (desc.charAt(0) == 'L' && !(value instanceof ObjectReference)) {
         stack.push(new ObjectReference(value));
       } else {
         stack.push(value);
