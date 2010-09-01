@@ -33,7 +33,6 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -46,7 +45,7 @@ import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
 
 class InstantiatorImplFactory<T> {
 
-  private final static ConcurrentMap<Type, Converter<?>> BASE_CONVERTERS =
+  private final static ImmutableMap<Type, Converter<?>> BASE_CONVERTERS =
       ImmutableMap.<Type, Converter<?>> builder()
       .put(String.class, C_STRING)
       .put(Boolean.TYPE, C_BOOLEAN)
