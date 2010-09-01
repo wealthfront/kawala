@@ -51,8 +51,6 @@ public class ConstructorAnalysis {
    */
   static Map<String, FormalParameter> analyse(
       Class<?> klass, Constructor<?> constructor) throws IOException {
-    final String constructorDescriptor =
-      Type.getConstructorDescriptor(constructor);
     Class<?>[] parameterTypes = constructor.getParameterTypes();
     InputStream in = klass.getResourceAsStream("/" + klass.getName().replace('.', '/') + ".class");
     if (in == null) {
@@ -60,14 +58,20 @@ public class ConstructorAnalysis {
     }
     return analyse(in, klass.getName().replace('.', '/'),
         klass.getSuperclass().getName().replace('.', '/'),
-        constructorDescriptor, parameterTypes);
+        parameterTypes);
   }
 
   @SuppressWarnings("unchecked")
   @VisibleForTesting
   static Map<String, FormalParameter> analyse(InputStream classInputStream,
-      String owner, String superclass, final String constructorDescriptor,
+      String owner, String superclass,
       Class... parameterTypes) throws IOException {
+    Type[] types = new Type[parameterTypes.length];
+    for (int i = 0; i < types.length; i++) {
+      types[i] = Type.getType(parameterTypes[i]);
+    }
+    final String constructorDescriptor =
+      Type.getMethodDescriptor(Type.VOID_TYPE, types);
     final ConstructorExecutionState state =
         new ConstructorExecutionState(
             owner,
@@ -232,6 +236,10 @@ public class ConstructorAnalysis {
         case 0xB1: // return
           log.trace("return");
           return;
+
+        case 0x01: // aconst_null
+          state.stackPushLiteral(new ObjectReference(null));
+          break;
 
         case 0x03: // iconst_0
         case 0x04: // iconst_1
@@ -640,11 +648,11 @@ public class ConstructorAnalysis {
     }
     @Override
     public boolean containsFormalParameter() {
-      return value.containsFormalParameter();
+      return value != null && value.containsFormalParameter();
     }
     @Override
     public String toString() {
-      return value.toString();
+      return String.valueOf(value);
     }
     void updateReference(JavaValue value) {
       this.value = value;

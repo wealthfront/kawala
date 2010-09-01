@@ -428,15 +428,26 @@ public class ConstructorAnalysisTest {
 
   @Test
   public void regression1() throws IOException {
-    InputStream classInputStream = this.getClass().getResourceAsStream("/com/kaching/platform/converters/example_scala_case_class.class.bin");
+    InputStream classInputStream = this.getClass().getResourceAsStream("/com/kaching/platform/converters/example_scala_class01.bin");
     assertNotNull(classInputStream);
     Map<String, FormalParameter> assignements =
       analyse(classInputStream,
           "com/kaching/trading/rules/formula/FormulaValue",
           "java/lang/Object",
-          "(I)V",
           int.class);
     assertMapEqualAsString(ImmutableMap.of("number", "p0"), assignements);
+  }
+
+  @Test
+  public void regression2() throws IOException {
+    InputStream classInputStream = this.getClass().getResourceAsStream("/com/kaching/platform/converters/example_scala_class02.bin");
+    assertNotNull(classInputStream);
+    Map<String, FormalParameter> assignements =
+      analyse(classInputStream,
+          "com/kaching/user/GetAllModels",
+          "com/kaching/platform/queryengine/AbstractQuery",
+          Boolean.class);
+    assertMapEqualAsString(ImmutableMap.of("com$kaching$user$GetAllModels$$withHistory", "p0"), assignements);
   }
 
   static class CallingMethodOnStaticObject {
