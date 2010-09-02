@@ -112,7 +112,7 @@ public class Unification {
     LinkedList<GenericTypeInstantiation> chain = new LinkedList<GenericTypeInstantiation>();
     int max = linearHierarchy.size() - 1;
     resolve: for (int i = 0; i < max; /* done in loop */) {
-      ClassWithType classWithType = linearHierarchy.get(i);
+      final ClassWithType classWithType = linearHierarchy.get(i);
       TypeVariable<?>[] typeParameters = classWithType.clazz.getTypeParameters();
       for (int index = 0; index < typeParameters.length; index++) {
         if (targetTypeVariable.equals(typeParameters[index])) {
@@ -125,6 +125,12 @@ public class Unification {
           TypeVariable<?>[] potentialTargetTypeParameters = linearHierarchy.get(i).clazz.getTypeParameters();
           if (potentialTargetTypeParameters.length <= index) {
             return chain;
+          }
+          for (int j = 0; j < potentialTargetTypeParameters.length; j++) {
+            if (classWithType.type.getActualTypeArguments()[index].equals(potentialTargetTypeParameters[j])) {
+              targetTypeVariable = potentialTargetTypeParameters[j];
+              continue resolve;
+            }
           }
           targetTypeVariable = potentialTargetTypeParameters[index];
           continue resolve;
