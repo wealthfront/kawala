@@ -18,7 +18,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.TypeLiteral;
@@ -254,10 +253,9 @@ public class UnificationTest {
   }
 
   @Test
-  @Ignore("issue 18")
   public void bottomOfMidLevel3() throws Exception {
     assertEquals(
-        TypeLiteral.get(String.class).getType(),
+        String.class,
         queryReturnType(BottomOfMidLevel3.class));
   }
 
