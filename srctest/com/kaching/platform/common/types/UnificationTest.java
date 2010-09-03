@@ -30,49 +30,49 @@ public class UnificationTest {
   public void testGetReturnType1() throws Exception {
     assertEquals(
         new TypeLiteral<Integer>() {}.getType(),
-        queryReturnType(IntegerQuery.class));
+        Unification.getActualTypeArgument(IntegerQuery.class, TopLevel.class, 0));
   }
 
   @Test
   public void testGetReturnType2() throws Exception {
     assertEquals(
         new TypeLiteral<Double>() {}.getType(),
-        queryReturnType(DoubleAbstractQuery.class));
+        Unification.getActualTypeArgument(DoubleAbstractQuery.class, TopLevel.class, 0));
   }
 
   @Test
   public void testGetReturnType3() throws Exception {
     assertEquals(
         new TypeLiteral<List<Integer>>() {}.getType(),
-        queryReturnType(IntegerListQuery.class));
+        Unification.getActualTypeArgument(IntegerListQuery.class, TopLevel.class, 0));
   }
 
   @Test
   public void testGetReturnType4() throws Exception {
     assertEquals(
         new TypeLiteral<List<Double>>() {}.getType(),
-        queryReturnType(DoubleListAbstractQuery.class));
+        Unification.getActualTypeArgument(DoubleListAbstractQuery.class, TopLevel.class, 0));
   }
 
   @Test
   public void testGetReturnType5() throws Exception {
     assertEquals(
         new TypeLiteral<Double>() {}.getType(),
-        queryReturnType(DoubleSecuredQuery.class));
+        Unification.getActualTypeArgument(DoubleSecuredQuery.class, TopLevel.class, 0));
   }
 
   @Test
   public void testGetReturnType6() throws Exception {
     assertEquals(
         new TypeLiteral<String>() {}.getType(),
-        queryReturnType(StringQuery.class));
+        Unification.getActualTypeArgument(StringQuery.class, TopLevel.class, 0));
   }
 
   @Test
   public void testGetReturnType7() throws Exception {
     assertEquals(
         new TypeLiteral<byte[]>() {}.getType(),
-        queryReturnType(ByteArrayQuery.class));
+        Unification.getActualTypeArgument(ByteArrayQuery.class, TopLevel.class, 0));
   }
 
   @Test
@@ -248,15 +248,11 @@ public class UnificationTest {
     @Override public List<Integer> fromString(String representation) { return null; }
   }
 
-  private Type queryReturnType(Class<?> query) {
-    return Unification.getActualTypeArgument(query, TopLevel.class, 0);
-  }
-
   @Test
   public void bottomOfMidLevel3() throws Exception {
     assertEquals(
         String.class,
-        queryReturnType(BottomOfMidLevel3.class));
+        Unification.getActualTypeArgument(BottomOfMidLevel3.class, TopLevel.class, 0));
   }
 
   private static class Foo {}
