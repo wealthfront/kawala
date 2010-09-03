@@ -56,6 +56,16 @@ public class OptionTest {
   }
 
   @Test
+  public void noneGetOrThrowWithMessage() {
+    try {
+      Option.none().getOrThrow("foo");
+      fail();
+    } catch (IllegalArgumentException eCaught) {
+      assertEquals("foo", eCaught.getMessage());
+    }
+  }
+
+  @Test
   public void someGetOrThrowNoParam() {
     assertEquals(600, Option.some(600).getOrThrow());
   }
@@ -63,6 +73,11 @@ public class OptionTest {
   @Test
   public void someGetOrThrowWithParam() {
     assertEquals("", Option.some("").getOrThrow(new RuntimeException()));
+  }
+
+  @Test
+  public void someGetOrThrowWithMessage() {
+    assertEquals("", Option.some("").getOrThrow("foo"));
   }
 
   @Test

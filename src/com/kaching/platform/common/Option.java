@@ -1,3 +1,13 @@
+/**
+ * Copyright 2010 KaChing Group Inc. Licensed under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law
+ * or agreed to in writing, software distributed under the License is
+ * distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
 package com.kaching.platform.common;
 
 import static java.lang.String.format;
@@ -39,6 +49,11 @@ public abstract class Option<T> implements Iterable<T> {
     @Override
     public Object getOrThrow() {
       return getOrThrow(new IllegalArgumentException());
+    }
+
+    @Override
+    public Object getOrThrow(String message) {
+      return getOrThrow(new IllegalArgumentException(message));
     }
 
     @Override
@@ -111,6 +126,11 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public U getOrThrow(String message) {
+      return u;
+    }
+
+    @Override
     public <E extends Throwable> U getOrThrow(E e) throws E {
       return u;
     }
@@ -160,6 +180,13 @@ public abstract class Option<T> implements Iterable<T> {
    * otherwise an {@link IllegalArgumentException} is thrown.
    */
   public abstract T getOrThrow();
+
+  /**
+   * Gets the value of this option. If this is a Some(T) the value is returned,
+   * otherwise an {@link IllegalArgumentException} is thrown with the specifed
+   * message.
+   */
+  public abstract T getOrThrow(String message);
 
   /**
    * Returns its value if not empty, otherwise throws {@code e}.
