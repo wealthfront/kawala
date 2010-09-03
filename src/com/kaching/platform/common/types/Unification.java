@@ -116,8 +116,9 @@ public class Unification {
       TypeVariable<?>[] typeParameters = classWithType.clazz.getTypeParameters();
       for (int index = 0; index < typeParameters.length; index++) {
         if (targetTypeVariable.equals(typeParameters[index])) {
+          Type actualTypeVariable = classWithType.type.getActualTypeArguments()[index];
           chain.addFirst(new GenericTypeInstantiation(
-              classWithType.type.getActualTypeArguments()[index],
+              actualTypeVariable,
               typeParameters[index]));
 
           // next
@@ -127,7 +128,7 @@ public class Unification {
             return chain;
           }
           for (int j = 0; j < potentialTargetTypeParameters.length; j++) {
-            if (classWithType.type.getActualTypeArguments()[index].equals(potentialTargetTypeParameters[j])) {
+            if (actualTypeVariable.equals(potentialTargetTypeParameters[j])) {
               targetTypeVariable = potentialTargetTypeParameters[j];
               continue resolve;
             }
