@@ -27,6 +27,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
 
@@ -57,6 +58,15 @@ public class InstantiatorsTest {
     assertEquals("Jack Bauer", instance.name);
   }
 
+  @Test
+  public void constructMe2ByName() {
+    ConstructMe2 instance = Instantiators
+        .createInstantiator(ConstructMe2.class)
+        .newInstance(ImmutableMap.of("name", "Jack Bauer"));
+    assertNotNull(instance);
+    assertEquals("Jack Bauer", instance.name);
+  }
+
   static class ConstructMe3 {
     private final WrappedString name;
     private final ConvertedPair pair;
@@ -79,6 +89,20 @@ public class InstantiatorsTest {
     assertEquals(
         asList("Jack Bauer", "First:Last"),
         instantiator.fromInstance(instance));
+  }
+
+  @Test
+  public void constructMe3ByName() {
+    Instantiator<ConstructMe3> instantiator = Instantiators
+        .createInstantiator(ConstructMe3.class);
+    ConstructMe3 instance = instantiator
+        .newInstance(ImmutableMap.of(
+            "name", "Jack Bauer",
+            "pair", "First:Last"));
+    assertNotNull(instance);
+    assertEquals("Jack Bauer", instance.name.content);
+    assertEquals("First", instance.pair.first);
+    assertEquals("Last", instance.pair.last);
   }
 
   static class ConstructMe4Optionality {

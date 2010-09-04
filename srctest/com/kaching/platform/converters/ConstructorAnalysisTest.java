@@ -434,7 +434,7 @@ public class ConstructorAnalysisTest {
       analyse(classInputStream,
           "com/kaching/trading/rules/formula/FormulaValue",
           "java/lang/Object",
-          int.class);
+          int.class).assignments;
     assertMapEqualAsString(ImmutableMap.of("number", "p0"), assignements);
   }
 
@@ -446,7 +446,7 @@ public class ConstructorAnalysisTest {
       analyse(classInputStream,
           "com/kaching/user/GetAllModels",
           "com/kaching/platform/queryengine/AbstractQuery",
-          Boolean.class);
+          Boolean.class).assignments;
     assertMapEqualAsString(ImmutableMap.of("com$kaching$user$GetAllModels$$withHistory", "p0"), assignements);
   }
 
@@ -488,7 +488,8 @@ public class ConstructorAnalysisTest {
   private void assertAssignement(
       Class<?> klass, Map<?, ?> expected) throws IOException {
     Map<String, FormalParameter> assignements =
-        ConstructorAnalysis.analyse(klass, klass.getDeclaredConstructors()[0]);
+        ConstructorAnalysis.analyse(klass, klass.getDeclaredConstructors()[0])
+        .assignments;
     Map<String, String> actual = newHashMap();
     for (Entry<String, FormalParameter> entry : assignements.entrySet()) {
       actual.put(entry.getKey(), entry.getValue().toString());

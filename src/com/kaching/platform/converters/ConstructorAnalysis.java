@@ -16,7 +16,6 @@ import static com.kaching.platform.converters.ConstructorAnalysis.Operation.USHR
 import static com.kaching.platform.converters.ConstructorAnalysis.Operation.XOR;
 import static java.lang.String.format;
 import static org.apache.commons.logging.LogFactory.getLog;
-import static org.objectweb.asm.ClassReader.SKIP_DEBUG;
 import static org.objectweb.asm.ClassReader.SKIP_FRAMES;
 
 import java.io.IOException;
@@ -49,7 +48,7 @@ public class ConstructorAnalysis {
    * Produces an assignment or field names to values or fails.
    * @throws IllegalConstructorException
    */
-  static Map<String, FormalParameter> analyse(
+  static AnalysisResult analyse(
       Class<?> klass, Constructor<?> constructor) throws IOException {
     Class<?>[] parameterTypes = constructor.getParameterTypes();
     InputStream in = klass.getResourceAsStream("/" + klass.getName().replace('.', '/') + ".class");
@@ -63,7 +62,7 @@ public class ConstructorAnalysis {
 
   @SuppressWarnings("unchecked")
   @VisibleForTesting
-  static Map<String, FormalParameter> analyse(InputStream classInputStream,
+  static AnalysisResult analyse(InputStream classInputStream,
       String owner, String superclass,
       Class... parameterTypes) throws IOException {
     Type[] types = new Type[parameterTypes.length];
@@ -96,7 +95,10 @@ public class ConstructorAnalysis {
         }
       }
     });
-    return validateAndCast(state.assignements);
+    return new AnalysisResult() {{
+      this.assignments = validateAndCast(state.assignements);
+      this.paramaterNames = state.parameterNames;
+    }};
   }
   private static Map<String, FormalParameter> validateAndCast(
       final Map<String, JavaValue> assignements) {
@@ -351,7 +353,7 @@ public class ConstructorAnalysis {
 
     @Override
     public void visitLabel(Label label) {
-      throw illegalConstructor();
+      // debug information
     }
 
     @Override
@@ -361,13 +363,13 @@ public class ConstructorAnalysis {
 
     @Override
     public void visitLineNumber(int line, Label start) {
-      throw illegalConstructor();
+      // debug information
     }
 
     @Override
     public void visitLocalVariable(String name, String desc, String signature,
         Label start, Label end, int index) {
-      throw illegalConstructor();
+      state.recordParameterName(index, name);
     }
 
     @Override
@@ -490,6 +492,11 @@ public class ConstructorAnalysis {
 
   }
 
+  static class AnalysisResult {
+    Map<String, FormalParameter> assignments;
+    String[] paramaterNames;
+  }
+
   /**
    * This constructor execution state captures the abstract interpretation of
    * a constructor's instructions.
@@ -498,25 +505,41 @@ public class ConstructorAnalysis {
 
     private final String owner;
     private final String superclass;
+    private final int parameterNums;
     private final List<JavaValue> locals = newArrayList();
     private final LinkedList<JavaValue> stack = new LinkedList<JavaValue>();
     private final Map<String, JavaValue> assignements = newHashMap();
+    private final List<Integer> parameterNameRewrite;
+    private String[] parameterNames;
 
     ConstructorExecutionState(String owner, String superclass, Class<?>[] parameterTypes) {
       this.owner = owner;
       this.superclass = superclass;
       locals.add(new ObjectReference(new ThisPointer()));
-      for (int i = 0; i < parameterTypes.length; i++) {
+      this.parameterNums = parameterTypes.length;
+      this.parameterNameRewrite = newArrayList();
+      for (int i = 0; i < parameterNums; i++) {
         Class<?> parameterType = parameterTypes[i];
         JavaValue formalParameter = new FormalParameter(i);
         if (!parameterType.isPrimitive()) {
           formalParameter = new ObjectReference(formalParameter);
         }
         locals.add(formalParameter);
+        parameterNameRewrite.add(i);
         if (parameterType.equals(Long.TYPE) ||
             parameterType.equals(Double.TYPE)) {
           locals.add(formalParameter);
+          parameterNameRewrite.add(i);
         }
+      }
+    }
+
+    void recordParameterName(int index, String name) {
+      if (index > 0) {
+        if (parameterNames == null) {
+          parameterNames = new String[parameterNums];
+        }
+        parameterNames[parameterNameRewrite.get(index - 1)] = name;
       }
     }
 
@@ -794,7 +817,7 @@ public class ConstructorAnalysis {
       ClassVisitor visitor) throws IOException {
     try {
       ClassReader reader = new ClassReader(classFileIn);
-      reader.accept(visitor, SKIP_FRAMES | SKIP_DEBUG);
+      reader.accept(visitor, SKIP_FRAMES);
     } finally {
       classFileIn.close();
     }

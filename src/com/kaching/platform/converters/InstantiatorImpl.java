@@ -10,6 +10,7 @@
  */
 package com.kaching.platform.converters;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 
 import java.lang.reflect.Constructor;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
 
@@ -30,6 +32,7 @@ class InstantiatorImpl<T> implements Instantiator<T> {
   private final BitSet optionality;
   private final String[] defaultValues;
   private final Object[] defaultConstants;
+  private final String[] parameterNames;
 
   InstantiatorImpl(
       Constructor<T> constructor,
@@ -37,18 +40,32 @@ class InstantiatorImpl<T> implements Instantiator<T> {
       Field[] fields,
       BitSet optionality,
       String[] defaultValues,
-      Object[] defaultConstants) {
+      Object[] defaultConstants,
+      String[] parameterNames) {
     this.constructor = constructor;
     this.converters = converters;
     this.fields = fields;
     this.optionality = optionality;
     this.defaultValues = defaultValues;
     this.defaultConstants = defaultConstants;
+    this.parameterNames = parameterNames;
   }
 
   @Override
   public T newInstance(String... values) {
     return newInstance(Arrays.asList(values));
+  }
+
+  @Override
+  public T newInstance(Map<String, String> namedValues) {
+    if (parameterNames == null) {
+      throw new UnsupportedOperationException();
+    }
+    List<String> values = newArrayList();
+    for (String paramaterName : parameterNames) {
+      values.add(namedValues.get(paramaterName));
+    }
+    return newInstance(values);
   }
 
   @Override
