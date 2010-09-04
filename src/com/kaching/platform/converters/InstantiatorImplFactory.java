@@ -41,6 +41,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.internal.MoreTypes;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.common.types.Unification;
+import com.kaching.platform.converters.ConstructorAnalysis.AnalysisResult;
 import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
 
 class InstantiatorImplFactory<T> {
@@ -183,9 +184,11 @@ class InstantiatorImplFactory<T> {
       }
       // 3. reverse mapping (fields to parameters)
       Field[] fields = null;
+      AnalysisResult analysisResult = null;
       try {
+        analysisResult = ConstructorAnalysis.analyse(klass, constructor);
         fields = retrieveFieldsFromAssignment(
-            parametersCount, ConstructorAnalysis.analyse(klass, constructor));
+            parametersCount, analysisResult.assignments);
       } catch (IOException e) {
         throw new IllegalStateException("should be able to access the class");
       } catch (ConstructorAnalysis.IllegalConstructorException e) {
@@ -194,7 +197,8 @@ class InstantiatorImplFactory<T> {
       // 4. done
       errors.throwIfHasErrors();
       return new InstantiatorImpl<T>(
-          constructor, converters, fields, optionality, defaultValues, defaultConstants);
+          constructor, converters, fields, optionality, defaultValues,
+          defaultConstants, analysisResult.paramaterNames);
     }
 
     // This program point is only reachable in erroneous cases and the next
