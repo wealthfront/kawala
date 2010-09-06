@@ -435,7 +435,7 @@ public class InstantiatorImplFactoryTest {
         .retrieveFieldsFromAssignment(
             1,
             ImmutableMap.of(
-                "representation", new FormalParameter(0)));
+                "representation", new FormalParameter(0, null)));
     assertEquals(1, fields.length);
     assertEquals("representation", fields[0].getName());
     assertTrue(fields[0].isAccessible());
@@ -447,7 +447,7 @@ public class InstantiatorImplFactoryTest {
     f.retrieveFieldsFromAssignment(
         1,
         ImmutableMap.of(
-            "thisfielddoesnotexist", new FormalParameter(0)));
+            "thisfielddoesnotexist", new FormalParameter(0, null)));
     assertEquals(
         new Errors().noSuchField("thisfielddoesnotexist"),
         f.getErrors());
@@ -458,7 +458,7 @@ public class InstantiatorImplFactoryTest {
     createFactory(HasStringConstructor.class).retrieveFieldsFromAssignment(
         1,
         ImmutableMap.of(
-            "representation", new FormalParameter(1))); // wrong index
+            "representation", new FormalParameter(1, null))); // wrong index
   }
 
   @Test
@@ -467,7 +467,7 @@ public class InstantiatorImplFactoryTest {
         .retrieveFieldsFromAssignment(
             1,
             ImmutableMap.of(
-                "theFieldYouAreLookingFor", new FormalParameter(0)));
+                "theFieldYouAreLookingFor", new FormalParameter(0, null)));
     assertEquals(1, fields.length);
     assertEquals("theFieldYouAreLookingFor", fields[0].getName());
     assertTrue(fields[0].isAccessible());

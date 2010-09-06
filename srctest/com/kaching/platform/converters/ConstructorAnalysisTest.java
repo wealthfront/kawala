@@ -476,6 +476,24 @@ public class ConstructorAnalysisTest {
         Collections.emptyMap());
   }
 
+  static class BoxingBoolean {
+    boolean unboxed;
+    Boolean boxed;
+    BoxingBoolean(Boolean unboxed, boolean boxed) {
+      this.unboxed = unboxed;
+      this.boxed = boxed;
+    }
+  }
+
+  @Test
+  public void boxingBoolean() throws Exception {
+    assertAssignement(
+        BoxingBoolean.class,
+        ImmutableMap.of(
+            "unboxed", "p0",
+            "boxed", "p1"));
+  }
+
   private void assertAnalysisFails(Class<?> klass, String message) throws IOException {
     try {
       ConstructorAnalysis.analyse(klass, klass.getDeclaredConstructors()[0]);
