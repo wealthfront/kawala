@@ -38,7 +38,7 @@ import org.objectweb.asm.commons.EmptyVisitor;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-import com.kaching.platform.common.Option;
+import com.google.common.collect.ImmutableMap;
 
 public class ConstructorAnalysis {
 
@@ -105,32 +105,65 @@ public class ConstructorAnalysis {
     Map<String, FormalParameter> parameterAssignements = newHashMap();
     for (Entry<String, JavaValue> entry : assignements.entrySet()) {
       JavaValue value = entry.getValue();
-      Option<FormalParameter> formalParameter = extractFormalParameter(value);
-      if (formalParameter.isEmpty()) {
+      FormalParameter formalParameter = extractFormalParameterIfIsIdempotent(value);
+      if (formalParameter == null) {
         if (value.containsFormalParameter()) {
           throw new IllegalConstructorException(format(
               "can not assign non-idempotent expression %s to field", value.toString().replaceAll("%", "%%")));
         }
       } else {
-        parameterAssignements.put(entry.getKey(), formalParameter.getOrThrow());
+        parameterAssignements.put(entry.getKey(), formalParameter);
       }
     }
     return parameterAssignements;
   }
 
-  /* 1. FormalParameter
-   * 2. ObjectReference -> FormalParameter
-   * 3. not a formal parameter, we return none
-   */
-  private static Option<FormalParameter> extractFormalParameter(JavaValue value) {
+  private static final Map<Class<?>, String> NATIVES = ImmutableMap.<Class<?>, String> builder()
+      .put(Byte.class, "byteValue")
+      .put(Character.class, "charValue")
+      .put(Boolean.class, "booleanValue")
+      .put(Short.class, "shortValue")
+      .put(Integer.class, "intValue")
+      .put(Long.class, "longValue")
+      .put(Float.class, "floatValue")
+      .put(Double.class, "doubleValue")
+      .build();
+
+  private static FormalParameter extractFormalParameterIfIsIdempotent(JavaValue value) {
+    // note to self: pattern matching would be handy here...
     if (value instanceof FormalParameter) {
-      return Option.some((FormalParameter) value);
-    } else if (value instanceof ObjectReference &&
-        ((ObjectReference) value).value instanceof FormalParameter) {
-      return Option.some((FormalParameter) ((ObjectReference) value).value);
-    } else {
-      return Option.none();
+      return (FormalParameter) value;
+    } else if (value instanceof ObjectReference) {
+      JavaValue reference = ((ObjectReference) value).getReference();
+      if (reference instanceof FormalParameter) {
+        return (FormalParameter) reference;
+      }
+      for (Entry<Class<?>, String> entry : NATIVES.entrySet()) {
+        // java.lang.Boolean.valueOf(pN)
+        // ObjectRef(StaticCall("java/lang/Boolean", "valueOf", FormalParameter(N)))
+        if (reference instanceof StaticCall) {
+          StaticCall call = (StaticCall) reference;
+          if (call.owner.equals(entry.getKey().getName().replace('.', '/')) &&
+              call.name.equals("valueOf") &&
+              call.arguments.size() == 1 &&
+              call.arguments.get(0) instanceof FormalParameter) {
+            return (FormalParameter) call.arguments.get(0);
+          }
+        }
+        // pN.booleanValue()
+        // ObjectReference(MethodCall([], "booleanValue", FormalParameter(N)))
+        if (reference instanceof MethodCall) {
+          MethodCall call = (MethodCall) reference;
+          if (call.arguments.isEmpty() &&
+              call.name.equals(entry.getValue()) &&
+              call.object instanceof FormalParameter &&
+              ((FormalParameter) call.object).kind.equals(entry.getKey())) {
+            return (FormalParameter) call.object;
+          }
+        }
+      }
     }
+    return null;
   }
 
   /**
@@ -520,7 +553,7 @@ public class ConstructorAnalysis {
       this.parameterNameRewrite = newArrayList();
       for (int i = 0; i < parameterNums; i++) {
         Class<?> parameterType = parameterTypes[i];
-        JavaValue formalParameter = new FormalParameter(i);
+        JavaValue formalParameter = new FormalParameter(i, parameterType);
         if (!parameterType.isPrimitive()) {
           formalParameter = new ObjectReference(formalParameter);
         }
@@ -627,8 +660,10 @@ public class ConstructorAnalysis {
 
   static class FormalParameter implements JavaValue {
     private final int index;
-    FormalParameter(int index) {
+    private final Class<?> kind;
+    FormalParameter(int index, Class<?> kind) {
       this.index = index;
+      this.kind = kind;
     }
     @Override
     public String toString() {
@@ -636,6 +671,9 @@ public class ConstructorAnalysis {
     }
     int getIndex() {
       return index;
+    }
+    Class<?> getKind() {
+      return kind;
     }
     @Override
     public boolean containsFormalParameter() {
@@ -680,6 +718,9 @@ public class ConstructorAnalysis {
     }
     void updateReference(JavaValue value) {
       this.value = value;
+    }
+    JavaValue getReference() {
+      return value;
     }
   }
 
