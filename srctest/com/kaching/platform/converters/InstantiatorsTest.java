@@ -17,6 +17,7 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,6 +31,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
+import com.kaching.platform.common.Option;
 
 public class InstantiatorsTest {
 
@@ -137,6 +139,48 @@ public class InstantiatorsTest {
     assertNotNull(instance);
     assertEquals(90, instance.number);
   }
+
+  static class ConstructMe6OptionalType {
+    private final Option<String> hero;
+    private final Option<String> sidekick;
+    ConstructMe6OptionalType(Option<String> hero, Option<String> sidekick) {
+      this.hero = hero;
+      this.sidekick = sidekick;
+    }
+  }
+
+  @Test
+  public void constructMe6() {
+    Instantiator<ConstructMe6OptionalType> instantiator = Instantiators
+        .createInstantiator(ConstructMe6OptionalType.class);
+
+    ConstructMe6OptionalType instance = instantiator
+        .newInstance((String) null, (String) null);
+    assertNotNull(instance);
+    assertTrue(instance.hero.isEmpty());
+    assertTrue(instance.sidekick.isEmpty());
+
+    assertEquals(
+        asList(null, null),
+        instantiator.fromInstance(instance));
+  }
+
+  @Test
+  public void constructMe6WithValue() {
+    Instantiator<ConstructMe6OptionalType> instantiator = Instantiators
+        .createInstantiator(ConstructMe6OptionalType.class);
+
+    ConstructMe6OptionalType instance = instantiator
+        .newInstance("Jack Bauer", "Chloe O'Brian");
+    assertNotNull(instance);
+    assertEquals("Jack Bauer", instance.hero.getOrThrow());
+    assertEquals("Chloe O'Brian", instance.sidekick.getOrThrow());
+
+    assertEquals(
+        asList("Jack Bauer", "Chloe O'Brian"),
+        instantiator.fromInstance(instance));
+  }
+
 
   static class ArgumentAreNotSavedToFields {
     private final int is;

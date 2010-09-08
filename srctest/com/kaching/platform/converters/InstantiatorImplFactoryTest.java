@@ -411,6 +411,18 @@ public class InstantiatorImplFactoryTest {
         new Errors().constantHasIncompatibleType(ConstantIsOfAnIncompatibleType.class, "WRONG_TYPE"));
   }
 
+  static class AtOptionalOnOption {
+    AtOptionalOnOption(@Optional Option<Integer> foo) {
+    }
+  }
+
+  @Test
+  public void atOptionalOnOption() throws Exception {
+    checkErrorCase(
+        AtOptionalOnOption.class,
+        new Errors().cannotAnnotateOptionWithOptional(new TypeLiteral<Option<Integer>>() {}.getType()));
+  }
+
   private <T> void checkErrorCase(Class<T> klass, Errors errors, InstantiatorModule... modules) {
     // TODO(pascal): Refactor. Very ugly pattern here because build() is too
     // high level.

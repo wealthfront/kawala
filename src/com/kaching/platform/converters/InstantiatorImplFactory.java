@@ -86,18 +86,31 @@ class InstantiatorImplFactory<T> {
       Converter<?>[] converters =
           parametersCount == 0 ? null : new Converter<?>[parametersCount];
       BitSet optionality = new BitSet();
+      BitSet wrapInOption = new BitSet();
       String[] defaultValues = null;
       Object[] defaultConstants = null;
       next_parameter: for (int i = 0; i < parametersCount; i++) {
         Annotation[] annotations = parameterAnnotations[i];
         Type genericParameterType = genericParameterTypes[i];
+        Type genericParameterTypeForConverter;
+        if (genericParameterType instanceof ParameterizedType &&
+            ((ParameterizedType) genericParameterType).getRawType().equals(Option.class)) {
+          wrapInOption.set(i);
+          genericParameterTypeForConverter = ((ParameterizedType) genericParameterType).getActualTypeArguments()[0];
+        } else {
+          genericParameterTypeForConverter = genericParameterType;
+        }
         for (final Converter<?> converter : createConverter(
-            genericParameterType)) {
+            genericParameterTypeForConverter)) {
           converters[i] = converter;
           for (Optional optional : getOptionalAnnotation(annotations)) {
+            if (wrapInOption.get(i)) {
+              errors.cannotAnnotateOptionWithOptional(genericParameterType);
+              continue next_parameter;
+            }
+
             String defaultValue = optional.value();
             String defaultConstant = optional.constant();
-
             if (!defaultValue.isEmpty() && !defaultConstant.isEmpty()) {
               errors.cannotSpecifyDefaultValueAndConstant(optional);
               continue next_parameter;
@@ -197,7 +210,7 @@ class InstantiatorImplFactory<T> {
       // 4. done
       errors.throwIfHasErrors();
       return new InstantiatorImpl<T>(
-          constructor, converters, fields, optionality, defaultValues,
+          constructor, converters, fields, optionality, wrapInOption, defaultValues,
           defaultConstants, analysisResult.paramaterNames);
     }
 
