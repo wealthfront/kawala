@@ -134,6 +134,12 @@ class Errors {
         klass, message == null ? "" : ": " + message);
   }
 
+  Errors cannotAnnotateOptionWithOptional(Type genericParameterType) {
+    return addMessage(
+        "cannot annotate %s with @Optional",
+        genericParameterType.toString());
+  }
+
   Errors cannotSpecifyDefaultValueAndConstant(Optional annotation) {
     return addMessage(
         "cannot specify both a default constant and a default value %s",

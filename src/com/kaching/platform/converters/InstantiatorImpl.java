@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Lists;
+import com.kaching.platform.common.Option;
 
 class InstantiatorImpl<T> implements Instantiator<T> {
 
@@ -30,6 +31,7 @@ class InstantiatorImpl<T> implements Instantiator<T> {
   @SuppressWarnings("unchecked")
   private final Converter[] converters;
   private final BitSet optionality;
+  private final BitSet wrapInOption;
   private final String[] defaultValues;
   private final Object[] defaultConstants;
   private final String[] parameterNames;
@@ -39,6 +41,7 @@ class InstantiatorImpl<T> implements Instantiator<T> {
       Converter<?>[] converters,
       Field[] fields,
       BitSet optionality,
+      BitSet wrapInOption,
       String[] defaultValues,
       Object[] defaultConstants,
       String[] parameterNames) {
@@ -46,6 +49,7 @@ class InstantiatorImpl<T> implements Instantiator<T> {
     this.converters = converters;
     this.fields = fields;
     this.optionality = optionality;
+    this.wrapInOption = wrapInOption;
     this.defaultValues = defaultValues;
     this.defaultConstants = defaultConstants;
     this.parameterNames = parameterNames;
@@ -83,13 +87,18 @@ class InstantiatorImpl<T> implements Instantiator<T> {
           // TODO(pascal): properly handle predicates.
           Object parameter;
           if (value == null) {
-            if (optionality.get(i)) {
-              parameter =
-                  (defaultValues != null && defaultValues[i] != null) ?
-                  convert(converter, defaultValues[i]) :
-                  (defaultConstants != null && defaultConstants[i] != null) ?
-                  defaultConstants[i] :
-                  null;
+            if (wrapInOption.get(i)) {
+               parameter = Option.none();
+            } else if (optionality.get(i)) {
+              if (defaultValues != null && defaultValues[i] != null) {
+                parameter = convert(converter, defaultValues[i]);
+              } else {
+                if (defaultConstants != null && defaultConstants[i] != null) {
+                  parameter = defaultConstants[i];
+                } else {
+                  parameter = null;
+                }
+              }
             } else {
               throw new IllegalArgumentException(format(
                   "parameter %s is not optional but null was provided",
@@ -97,6 +106,9 @@ class InstantiatorImpl<T> implements Instantiator<T> {
             }
           } else {
             parameter = convert(converter, value);
+            if (wrapInOption.get(i)) {
+              parameter = Option.some(parameter);
+            }
           }
           parameters[i] = parameter;
         }
@@ -123,9 +135,17 @@ class InstantiatorImpl<T> implements Instantiator<T> {
     for (int i = 0; i < fields.length; i++) {
       try {
         Field field = fields[i];
-        parameters.add(field == null ?
-            null :
-            converters[i].toString(field.get(instance)));
+        String parameterAsString;
+        if (field != null) {
+          Object value = field.get(instance);
+          if (wrapInOption.get(i)) {
+            value = ((Option<Object>) value).getOrElse((Object) null);
+          }
+          parameterAsString = value == null ? null : converters[i].toString(value);
+        } else {
+          parameterAsString = null;
+        }
+        parameters.add(parameterAsString);
       } catch (IllegalArgumentException e) {
         throw new RuntimeException(e);
       } catch (IllegalAccessException e) {
