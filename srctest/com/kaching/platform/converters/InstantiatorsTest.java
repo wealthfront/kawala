@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.inject.TypeLiteral;
 import com.kaching.platform.common.Option;
+import com.kaching.platform.converters.someotherpackage.ValueWithConverterAsInnerClass;
 
 public class InstantiatorsTest {
 
@@ -336,6 +337,25 @@ public class InstantiatorsTest {
         });
 
     checkObjectWithListOfIntAndListOfBoolean(instantiator);
+  }
+
+  static class ObjectUsesValueWithConverterAsInnerClass {
+    private final ValueWithConverterAsInnerClass value;
+    ObjectUsesValueWithConverterAsInnerClass(
+        ValueWithConverterAsInnerClass value) {
+      this.value = value;
+    }
+  }
+
+  @Test
+  public void objectUsesValueWithConverterAsInnerClass() {
+    Instantiator<ObjectUsesValueWithConverterAsInnerClass> instantiator = Instantiators
+        .createInstantiator(ObjectUsesValueWithConverterAsInnerClass.class);
+
+    ObjectUsesValueWithConverterAsInnerClass instance = instantiator
+        .newInstance("5");
+    assertNotNull(instance);
+    assertEquals(5, instance.value.getId());
   }
 
   private void checkObjectWithListOfIntAndListOfBoolean(

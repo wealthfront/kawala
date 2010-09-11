@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -395,13 +396,23 @@ class InstantiatorImplFactory<T> {
       Type producedType =
           Unification.getActualTypeArgument(converterClass, Converter.class, 0);
       if (MoreTypes.isInstance(producedType, targetType)) {
-        return Option.some(converterClass.newInstance());
+        Constructor<? extends Converter<?>> ctor = converterClass.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        return Option.some(ctor.newInstance());
       } else {
         errors.incorrectBoundForConverter(targetType, converterClass, producedType);
       }
     } catch (InstantiationException e) {
       errors.unableToInstantiate(converterClass, e);
     } catch (IllegalAccessException e) {
+      errors.unableToInstantiate(converterClass, e);
+    } catch (SecurityException e) {
+      errors.unableToInstantiate(converterClass, e);
+    } catch (NoSuchMethodException e) {
+      errors.unableToInstantiate(converterClass, e);
+    } catch (IllegalArgumentException e) {
+      errors.unableToInstantiate(converterClass, e);
+    } catch (InvocationTargetException e) {
       errors.unableToInstantiate(converterClass, e);
     }
     return Option.none();
