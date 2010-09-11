@@ -67,7 +67,7 @@ class Errors {
         Instantiate.class.getSimpleName());
   }
 
-  Errors unableToInstantiate(Class<?> klass, InstantiationException e) {
+  Errors unableToInstantiate(Class<?> klass, Exception e) {
     return addMessage(
         "unable to instantiate %s due to %s",
         klass,
