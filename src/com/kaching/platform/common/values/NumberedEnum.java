@@ -13,6 +13,7 @@ package com.kaching.platform.common.values;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -34,13 +35,15 @@ public class NumberedEnum {
           try {
             Builder<Integer, Enum<?>> builder = ImmutableMap.<Integer, Enum<?>> builder();
             // Multiple casts valid from type parameter bounds declared in valueOf().
-            Enum<?>[] values = (Enum<?>[]) from.getMethod("values").invoke(null);
+            Method method = from.getMethod("values");
+            method.setAccessible(true);
+            Enum<?>[] values = (Enum<?>[]) method.invoke(null);
             for (Enum<?> value : values) {
               builder.put(((NumberedValue)value).getNumber(), value);
             }
             return builder.build();
           } catch (Exception e) {
-            throw new IllegalStateException();
+            throw new IllegalStateException(e);
           }
         }
       });
