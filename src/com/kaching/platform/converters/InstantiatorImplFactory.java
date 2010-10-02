@@ -11,6 +11,23 @@
 package com.kaching.platform.converters;
 
 import static com.kaching.platform.converters.CollectionOfElementsConverter.COLLECTION_KINDS;
+import static com.kaching.platform.converters.InstantiatorErrors.cannotAnnotateOptionWithOptional;
+import static com.kaching.platform.converters.InstantiatorErrors.cannotSpecifyDefaultValueAndConstant;
+import static com.kaching.platform.converters.InstantiatorErrors.constantHasIncompatibleType;
+import static com.kaching.platform.converters.InstantiatorErrors.constantIsNotStaticFinal;
+import static com.kaching.platform.converters.InstantiatorErrors.enumHasAmbiguousNames;
+import static com.kaching.platform.converters.InstantiatorErrors.illegalConstructor;
+import static com.kaching.platform.converters.InstantiatorErrors.incorrectBoundForConverter;
+import static com.kaching.platform.converters.InstantiatorErrors.incorrectDefaultValue;
+import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneConstructorWithInstantiate;
+import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneMatchingFunction;
+import static com.kaching.platform.converters.InstantiatorErrors.noConverterForType;
+import static com.kaching.platform.converters.InstantiatorErrors.noSuchField;
+import static com.kaching.platform.converters.InstantiatorErrors.optionalLiteralParameterMustHaveDefault;
+import static com.kaching.platform.converters.InstantiatorErrors.unableToGetField;
+import static com.kaching.platform.converters.InstantiatorErrors.unableToInstantiate;
+import static com.kaching.platform.converters.InstantiatorErrors.unableToResolveConstant;
+import static com.kaching.platform.converters.InstantiatorErrors.unableToResolveFullyQualifiedConstant;
 import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
 import static com.kaching.platform.converters.NativeConverters.C_BYTE;
 import static com.kaching.platform.converters.NativeConverters.C_CHAR;
@@ -40,6 +57,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.TypeLiteral;
 import com.google.inject.internal.MoreTypes;
+import com.kaching.platform.common.Errors;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.common.types.Unification;
 import com.kaching.platform.converters.ConstructorAnalysis.AnalysisResult;
@@ -106,14 +124,14 @@ class InstantiatorImplFactory<T> {
           converters[i] = converter;
           for (Optional optional : getOptionalAnnotation(annotations)) {
             if (wrapInOption.get(i)) {
-              errors.cannotAnnotateOptionWithOptional(genericParameterType);
+              cannotAnnotateOptionWithOptional(errors, genericParameterType);
               continue next_parameter;
             }
 
             String defaultValue = optional.value();
             String defaultConstant = optional.constant();
             if (!defaultValue.isEmpty() && !defaultConstant.isEmpty()) {
-              errors.cannotSpecifyDefaultValueAndConstant(optional);
+              cannotSpecifyDefaultValueAndConstant(errors, optional);
               continue next_parameter;
             } else if (!defaultValue.isEmpty()) {
               try {
@@ -123,7 +141,7 @@ class InstantiatorImplFactory<T> {
                 }
                 defaultValues[i] = defaultValue;
               } catch (RuntimeException e) {
-                errors.incorrectDefaultValue(defaultValue, e);
+                incorrectDefaultValue(errors, defaultValue, e);
               }
             } else if (!defaultConstant.isEmpty()) {
               String[] parts = defaultConstant.split("#");
@@ -139,14 +157,14 @@ class InstantiatorImplFactory<T> {
                   try {
                     container = Class.forName(parts[0]);
                   } catch (ClassNotFoundException e) {
-                    errors.unableToResolveFullyQualifiedConstant(defaultConstant);
+                    unableToResolveFullyQualifiedConstant(errors, defaultConstant);
                     continue next_parameter;
                   }
                   constantName = parts[1];
                   break;
 
                 default:
-                  errors.unableToResolveFullyQualifiedConstant(defaultConstant);
+                  unableToResolveFullyQualifiedConstant(errors, defaultConstant);
                   continue next_parameter;
               }
 
@@ -157,19 +175,19 @@ class InstantiatorImplFactory<T> {
                 // TODO(pascal): better handling?
                 throw new RuntimeException(e);
               } catch (NoSuchFieldException e) {
-                errors.unableToResolveConstant(container, defaultConstant);
+                unableToResolveConstant(errors, container, defaultConstant);
                 continue next_parameter;
               }
 
               if ((fieldOfConstant.getModifiers() & Modifier.STATIC) == 0 ||
                   (fieldOfConstant.getModifiers() & Modifier.FINAL) == 0) {
-                errors.constantIsNotStaticFinal(container, constantName);
+                constantIsNotStaticFinal(errors, container, constantName);
                 continue next_parameter;
               }
 
               // TODO(pascal): improve check. Should use MoreTypes.isAssignableFrom.
               if (!genericParameterType.equals(fieldOfConstant.getType())) {
-                errors.constantHasIncompatibleType(container, constantName);
+                constantHasIncompatibleType(errors, container, constantName);
                 continue next_parameter;
               }
 
@@ -189,7 +207,7 @@ class InstantiatorImplFactory<T> {
               // optional literal types are not allowed to omit default values
               if (BASE_CONVERTERS.containsKey(genericParameterType) &&
                   !String.class.equals(genericParameterType)) {
-                errors.optionalLiteralParameterMustHaveDefault(i);
+                optionalLiteralParameterMustHaveDefault(errors, i);
               }
             }
             optionality.set(i);
@@ -206,7 +224,7 @@ class InstantiatorImplFactory<T> {
       } catch (IOException e) {
         throw new IllegalStateException("should be able to access the class");
       } catch (ConstructorAnalysis.IllegalConstructorException e) {
-        errors.illegalConstructor(klass, e.getMessage());
+        illegalConstructor(errors, klass, e.getMessage());
       }
       // 4. done
       errors.throwIfHasErrors();
@@ -263,7 +281,7 @@ class InstantiatorImplFactory<T> {
         if (foundConverter == null) {
           foundConverter = option.getOrThrow();
         } else {
-          errors.moreThanOneMatchingFunction(targetType);
+          moreThanOneMatchingFunction(errors, targetType);
         }
       }
     }
@@ -297,7 +315,7 @@ class InstantiatorImplFactory<T> {
         try {
           return Option.some((Converter<?>) new EnumConverter(targetClass));
         } catch (IllegalArgumentException e) {
-          errors.enumHasAmbiguousNames(targetClass);
+          enumHasAmbiguousNames(errors, targetClass);
         }
       }
     } else if (targetType instanceof ParameterizedType) {
@@ -319,7 +337,7 @@ class InstantiatorImplFactory<T> {
     }
 
     if (sizeBefore == errors.size()) {
-      errors.noConverterForType(targetType);
+      noConverterForType(errors, targetType);
     }
     return Option.none();
   }
@@ -345,11 +363,11 @@ class InstantiatorImplFactory<T> {
           fields[parameterIndex] = field;
           continue outer;
         } catch (SecurityException e) {
-          errors.unableToGetField(fieldName, e);
+          unableToGetField(errors, fieldName, e);
           continue outer;
         } catch (NoSuchFieldException e) {
           if (classSearched.equals(Object.class)) {
-            errors.noSuchField(fieldName);
+            noSuchField(errors, fieldName);
             continue outer;
           } else {
             classSearched = classSearched.getSuperclass();
@@ -400,20 +418,20 @@ class InstantiatorImplFactory<T> {
         ctor.setAccessible(true);
         return Option.some(ctor.newInstance());
       } else {
-        errors.incorrectBoundForConverter(targetType, converterClass, producedType);
+        incorrectBoundForConverter(errors, targetType, converterClass, producedType);
       }
     } catch (InstantiationException e) {
-      errors.unableToInstantiate(converterClass, e);
+      unableToInstantiate(errors, converterClass, e);
     } catch (IllegalAccessException e) {
-      errors.unableToInstantiate(converterClass, e);
+      unableToInstantiate(errors, converterClass, e);
     } catch (SecurityException e) {
-      errors.unableToInstantiate(converterClass, e);
+      unableToInstantiate(errors, converterClass, e);
     } catch (NoSuchMethodException e) {
-      errors.unableToInstantiate(converterClass, e);
+      unableToInstantiate(errors, converterClass, e);
     } catch (IllegalArgumentException e) {
-      errors.unableToInstantiate(converterClass, e);
+      unableToInstantiate(errors, converterClass, e);
     } catch (InvocationTargetException e) {
-      errors.unableToInstantiate(converterClass, e);
+      unableToInstantiate(errors, converterClass, e);
     }
     return Option.none();
   }
@@ -430,7 +448,7 @@ class InstantiatorImplFactory<T> {
           if (convertableConstructor == null) {
             convertableConstructor = constructor;
           } else {
-            errors.moreThanOneConstructorWithInstantiate(klass);
+            moreThanOneConstructorWithInstantiate(errors, klass);
             return Option.none();
           }
         }

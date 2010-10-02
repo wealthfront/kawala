@@ -1,9 +1,6 @@
 package com.kaching.platform.testing;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.Iterator;
-import java.util.List;
+import com.kaching.platform.common.Errors;
 
 /**
  * Thrown when an assertion failed for multiple reasons.
@@ -13,14 +10,19 @@ public class CombinedAssertionFailedError extends AssertionError {
   private static final long serialVersionUID = 5967202290583940192L;
 
   private final String message;
-  private final List<String> errors = newArrayList();
+  private final Errors errors;
+
+  public CombinedAssertionFailedError() {
+    this(null);
+  }
 
   public CombinedAssertionFailedError(String message) {
     this.message = message;
+    this.errors = new Errors();
   }
 
   public void addError(String error) {
-    errors.add(error);
+    errors.addMessage(error);
   }
 
   @Override
@@ -34,14 +36,12 @@ public class CombinedAssertionFailedError extends AssertionError {
     if (message != null) {
       builder.append(message);
     }
-    int i = 1;
-    Iterator<String> iterator = errors.iterator();
-    while (iterator.hasNext()) {
-      String error = iterator.next();
-      builder.append('\n');
-      builder.append(i++);
-      builder.append(") ");
-      builder.append(error);
+    if (0 < errors.size()) {
+      if (message != null) {
+        builder.append(':');
+        builder.append('\n');
+      }
+      builder.append(errors.toString());
     }
     return builder.toString();
   }
@@ -51,7 +51,7 @@ public class CombinedAssertionFailedError extends AssertionError {
    * encountered.
    */
   public void throwIfHasErrors() {
-    if (!errors.isEmpty()) {
+    if (0 < errors.size()) {
       throw this;
     }
   }

@@ -12,6 +12,7 @@ package com.kaching.platform.converters;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.inject.internal.Maps.newHashMap;
+import static com.kaching.platform.converters.InstantiatorErrors.duplicateConverterBindingForType;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.Map;
 
 import com.google.common.base.Function;
 import com.google.inject.TypeLiteral;
+import com.kaching.platform.common.Errors;
 import com.kaching.platform.common.Option;
 
 class ConverterBinderImpl implements ConverterBinder {
@@ -67,7 +69,7 @@ class ConverterBinderImpl implements ConverterBinder {
 
     ConverterSpecifierImpl(TypeLiteral<T> key) {
       if (bindings.containsKey(key) || instances.containsKey(key)) {
-        errors.duplicateConverterBindingForType(key.getType());
+        duplicateConverterBindingForType(errors, key.getType());
       }
       this.key = key;
     }
