@@ -11,6 +11,21 @@
 package com.kaching.platform.converters;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.kaching.platform.converters.InstantiatorErrors.cannotAnnotateOptionWithOptional;
+import static com.kaching.platform.converters.InstantiatorErrors.cannotSpecifyDefaultValueAndConstant;
+import static com.kaching.platform.converters.InstantiatorErrors.constantHasIncompatibleType;
+import static com.kaching.platform.converters.InstantiatorErrors.duplicateConverterBindingForType;
+import static com.kaching.platform.converters.InstantiatorErrors.enumHasAmbiguousNames;
+import static com.kaching.platform.converters.InstantiatorErrors.illegalConstructor;
+import static com.kaching.platform.converters.InstantiatorErrors.incorrectBoundForConverter;
+import static com.kaching.platform.converters.InstantiatorErrors.incorrectDefaultValue;
+import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneConstructorWithInstantiate;
+import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneMatchingFunction;
+import static com.kaching.platform.converters.InstantiatorErrors.noConverterForType;
+import static com.kaching.platform.converters.InstantiatorErrors.noSuchField;
+import static com.kaching.platform.converters.InstantiatorErrors.optionalLiteralParameterMustHaveDefault;
+import static com.kaching.platform.converters.InstantiatorErrors.unableToResolveConstant;
+import static com.kaching.platform.converters.InstantiatorErrors.unableToResolveFullyQualifiedConstant;
 import static com.kaching.platform.converters.InstantiatorImplFactory.createFactory;
 import static com.kaching.platform.converters.NativeConverters.C_BOOLEAN;
 import static com.kaching.platform.converters.NativeConverters.C_BYTE;
@@ -43,6 +58,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.BindingAnnotation;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
+import com.kaching.platform.common.Errors;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
 
@@ -81,7 +97,8 @@ public class InstantiatorImplFactoryTest {
     InstantiatorImplFactory<Object> factory = createFactory(null);
     factory.createConverter(HasConvertedByWrongBound.class);
     assertEquals(
-        new Errors().incorrectBoundForConverter(
+        incorrectBoundForConverter(
+            new Errors(),
             HasConvertedByWrongBound.class,
             HasConvertedByConverterWrongBound.class,
             String.class),
@@ -133,7 +150,7 @@ public class InstantiatorImplFactoryTest {
     InstantiatorImplFactory<Object> factory = createFactory(null);
     factory.createConverter(AmbiguousEnum.class);
     assertEquals(
-        new Errors().enumHasAmbiguousNames(AmbiguousEnum.class),
+        enumHasAmbiguousNames(new Errors(), AmbiguousEnum.class),
         factory.getErrors());
   }
 
@@ -167,7 +184,8 @@ public class InstantiatorImplFactoryTest {
   public void createInstantiatorWithIncorrectDefaultValue() throws Exception {
     checkErrorCase(
         WrongDefaultValue.class,
-        new Errors().incorrectDefaultValue(
+        incorrectDefaultValue(
+            new Errors(),
             "foobar",
             new IllegalArgumentException()));
   }
@@ -238,7 +256,7 @@ public class InstantiatorImplFactoryTest {
     module.configure(factory.binder());
     factory.createConverter(AnnotatedClass.class);
     assertEquals(
-        new Errors().moreThanOneMatchingFunction(AnnotatedClass.class),
+        moreThanOneMatchingFunction(new Errors(), AnnotatedClass.class),
         factory.getErrors());
   }
 
@@ -276,14 +294,14 @@ public class InstantiatorImplFactoryTest {
   public void createInstantiatorWithLiteralTypeNotHavingDefault() throws Exception {
     checkErrorCase(
         OptionalLiteralParameterWithoutDefault.class,
-        new Errors().optionalLiteralParameterMustHaveDefault(0));
+        optionalLiteralParameterMustHaveDefault(new Errors(), 0));
   }
 
   @Test
   public void createInstantiatorWithIllegalConstructor() throws Exception {
     checkErrorCase(
         HasIllegalConstructor.class,
-        new Errors().illegalConstructor(HasIllegalConstructor.class, null));
+        illegalConstructor(new Errors(), HasIllegalConstructor.class, null));
   }
 
   static class HasIllegalConstructor {
@@ -298,7 +316,7 @@ public class InstantiatorImplFactoryTest {
   public void doesNotKnowHowToConvert() throws Exception {
     checkErrorCase(
         DoesNotKnowHowToConvert.class,
-        new Errors().noConverterForType(new TypeLiteral<Map<String, String>>() {}.getType()));
+        noConverterForType(new Errors(), new TypeLiteral<Map<String, String>>() {}.getType()));
   }
 
   static class DoesNotKnowHowToConvert {
@@ -310,7 +328,7 @@ public class InstantiatorImplFactoryTest {
   public void duplicateConverterBinding1() throws Exception {
     checkErrorCase(
         String.class,
-        new Errors().duplicateConverterBindingForType(new TypeLiteral<String>() {}.getType()),
+        duplicateConverterBindingForType(new Errors(), new TypeLiteral<String>() {}.getType()),
         new AbstractInstantiatorModule() {
           @Override
           protected void configure() {
@@ -324,7 +342,7 @@ public class InstantiatorImplFactoryTest {
   public void duplicateConverterBinding2() throws Exception {
     checkErrorCase(
         String.class,
-        new Errors().duplicateConverterBindingForType(new TypeLiteral<String>() {}.getType()),
+        duplicateConverterBindingForType(new Errors(), new TypeLiteral<String>() {}.getType()),
         new AbstractInstantiatorModule() {
           @Override
           protected void configure() {
@@ -338,7 +356,7 @@ public class InstantiatorImplFactoryTest {
   public void duplicateConverterBinding3() throws Exception {
     checkErrorCase(
         String.class,
-        new Errors().duplicateConverterBindingForType(new TypeLiteral<String>() {}.getType()),
+        duplicateConverterBindingForType(new Errors(), new TypeLiteral<String>() {}.getType()),
         new AbstractInstantiatorModule() {
           @Override
           protected void configure() {
@@ -357,7 +375,8 @@ public class InstantiatorImplFactoryTest {
   public void defaultValueAndDefaultConstant() throws Exception {
     checkErrorCase(
         DefaultValueAndDefaultConstant.class,
-        new Errors().cannotSpecifyDefaultValueAndConstant(
+        cannotSpecifyDefaultValueAndConstant(
+            new Errors(),
             (Optional) DefaultValueAndDefaultConstant.class.getDeclaredConstructor(int.class).getParameterAnnotations()[0][0]));
   }
 
@@ -370,7 +389,7 @@ public class InstantiatorImplFactoryTest {
   public void unresolvableLocalConstant() throws Exception {
     checkErrorCase(
         UnresolvableLocalConstant.class,
-        new Errors().unableToResolveConstant(UnresolvableLocalConstant.class, "F"));
+        unableToResolveConstant(new Errors(), UnresolvableLocalConstant.class, "F"));
   }
 
   static class UnresolvableFullyQualifiedConstant {
@@ -382,7 +401,7 @@ public class InstantiatorImplFactoryTest {
   public void unresolvableFullyQualifiedConstant() throws Exception {
     checkErrorCase(
         UnresolvableFullyQualifiedConstant.class,
-        new Errors().unableToResolveFullyQualifiedConstant("A#F"));
+        unableToResolveFullyQualifiedConstant(new Errors(), "A#F"));
   }
 
   static class ConstantIsNotStaticFinal {
@@ -395,7 +414,8 @@ public class InstantiatorImplFactoryTest {
   public void constantIsNotStaticFinal() throws Exception {
     checkErrorCase(
         ConstantIsNotStaticFinal.class,
-        new Errors().constantIsNotStaticFinal(ConstantIsNotStaticFinal.class, "NOT_STATIC_FINAL"));
+        InstantiatorErrors.constantIsNotStaticFinal(
+            new Errors(), ConstantIsNotStaticFinal.class, "NOT_STATIC_FINAL"));
   }
 
   static class ConstantIsOfAnIncompatibleType {
@@ -408,7 +428,7 @@ public class InstantiatorImplFactoryTest {
   public void constantIsOfAnIncompatibleType() throws Exception {
     checkErrorCase(
         ConstantIsOfAnIncompatibleType.class,
-        new Errors().constantHasIncompatibleType(ConstantIsOfAnIncompatibleType.class, "WRONG_TYPE"));
+        constantHasIncompatibleType(new Errors(), ConstantIsOfAnIncompatibleType.class, "WRONG_TYPE"));
   }
 
   static class AtOptionalOnOption {
@@ -420,7 +440,7 @@ public class InstantiatorImplFactoryTest {
   public void atOptionalOnOption() throws Exception {
     checkErrorCase(
         AtOptionalOnOption.class,
-        new Errors().cannotAnnotateOptionWithOptional(new TypeLiteral<Option<Integer>>() {}.getType()));
+        cannotAnnotateOptionWithOptional(new Errors(), new TypeLiteral<Option<Integer>>() {}.getType()));
   }
 
   private <T> void checkErrorCase(Class<T> klass, Errors errors, InstantiatorModule... modules) {
@@ -461,7 +481,7 @@ public class InstantiatorImplFactoryTest {
         ImmutableMap.of(
             "thisfielddoesnotexist", new FormalParameter(0, null)));
     assertEquals(
-        new Errors().noSuchField("thisfielddoesnotexist"),
+        noSuchField(new Errors(), "thisfielddoesnotexist"),
         f.getErrors());
   }
 
@@ -553,7 +573,7 @@ public class InstantiatorImplFactoryTest {
     InstantiatorImplFactory<Q> factory = createFactory(Q.class);
     factory.getConstructor();
     assertEquals(
-        new Errors().moreThanOneConstructorWithInstantiate(Q.class),
+        moreThanOneConstructorWithInstantiate(new Errors(), Q.class),
         factory.getErrors());
   }
 

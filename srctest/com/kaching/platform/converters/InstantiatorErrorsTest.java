@@ -10,7 +10,7 @@
  */
 package com.kaching.platform.converters;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static com.kaching.platform.converters.InstantiatorErrors.noSuchField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -19,14 +19,9 @@ import java.util.List;
 import org.junit.Test;
 
 import com.google.inject.TypeLiteral;
-import com.kaching.platform.testing.EquivalenceTester;
+import com.kaching.platform.common.Errors;
 
-public class ErrorsTest {
-
-  @Test
-  public void noErrorsShouldNotThrow() {
-    new Errors().throwIfHasErrors();
-  }
+public class InstantiatorErrorsTest {
 
   @Test
   public void incorrectBoundForConverter() {
@@ -35,35 +30,40 @@ public class ErrorsTest {
         "mentioned on class java.lang.String using @ConvertedBy, " +
         "does not produce instances of class java.lang.String. It produces " +
         "class java.lang.Integer.",
-        new Errors().incorrectBoundForConverter(String.class, Converter.class, Integer.class));
+        InstantiatorErrors.incorrectBoundForConverter(
+            new Errors(), String.class, Converter.class, Integer.class));
   }
 
   @Test
   public void incorrectDefaultValue() {
     check(
         "java.lang.NumberFormatException: For default value \"90z\"",
-        new Errors().incorrectDefaultValue("90z", new NumberFormatException("the message")));
+        InstantiatorErrors.incorrectDefaultValue(
+            new Errors(), "90z", new NumberFormatException("the message")));
   }
 
   @Test
   public void illegalConstructor1() {
     check(
         "class java.lang.String has an illegal constructor: hello",
-        new Errors().illegalConstructor(String.class, "hello"));
+        InstantiatorErrors.illegalConstructor(
+            new Errors(), String.class, "hello"));
   }
 
   @Test
   public void illegalConstructor2() {
     check(
         "class java.lang.String has an illegal constructor",
-        new Errors().illegalConstructor(String.class, null));
+        InstantiatorErrors.illegalConstructor(
+            new Errors(), String.class, null));
   }
 
   @Test
   public void enumHasAmbiguousNames() {
     check(
-        "enum com.kaching.platform.converters.ErrorsTest$AmbiguousEnum has ambiguous names",
-        new Errors().enumHasAmbiguousNames(AmbiguousEnum.class));
+        "enum com.kaching.platform.converters.InstantiatorErrorsTest$AmbiguousEnum has ambiguous names",
+        InstantiatorErrors.enumHasAmbiguousNames(
+            new Errors(), AmbiguousEnum.class));
   }
 
   enum AmbiguousEnum {
@@ -72,22 +72,24 @@ public class ErrorsTest {
   @Test
   public void moreThanOneMatchingFunction() {
     check(
-        "class com.kaching.platform.converters.ErrorsTest$AmbiguousEnum has more than one matching function",
-        new Errors().moreThanOneMatchingFunction(AmbiguousEnum.class));
+        "class com.kaching.platform.converters.InstantiatorErrorsTest$AmbiguousEnum has more than one matching function",
+        InstantiatorErrors.moreThanOneMatchingFunction(
+            new Errors(), AmbiguousEnum.class));
   }
 
   @Test
   public void noConverterForType() {
     check(
         "no converter for java.util.List<java.lang.String>",
-        new Errors().noConverterForType(new TypeLiteral<List<String>>() {}.getType()));
+        InstantiatorErrors.noConverterForType(
+            new Errors(), new TypeLiteral<List<String>>() {}.getType()));
   }
 
   @Test
   public void addinTwiceTheSameMessageDoesNotDuplicateTheError() {
     check(
         "no such field a",
-        new Errors().noSuchField("a").noSuchField("a"));
+        noSuchField(noSuchField(new Errors(), "a"), "a"));
   }
 
   @Test
@@ -95,7 +97,8 @@ public class ErrorsTest {
     check(
         "cannot specify both a default constant and a default value " +
         "@Optional(constant=FOO, value=4)",
-        new Errors().cannotSpecifyDefaultValueAndConstant(inspectMeCannotSpecifyDefaultValueAndConstant(8)));
+        InstantiatorErrors.cannotSpecifyDefaultValueAndConstant(
+            new Errors(), inspectMeCannotSpecifyDefaultValueAndConstant(8)));
   }
 
   Optional inspectMeCannotSpecifyDefaultValueAndConstant(
@@ -109,8 +112,9 @@ public class ErrorsTest {
   @Test
   public void unableToResolveLocalConstant() throws Exception {
     check(
-        "unable to resolve constant com.kaching.platform.converters.Errors#MY_CONSTANT",
-        new Errors().unableToResolveConstant(Errors.class, "MY_CONSTANT"));
+        "unable to resolve constant com.kaching.platform.converters.InstantiatorErrorsTest#MY_CONSTANT",
+        InstantiatorErrors.unableToResolveConstant(
+            new Errors(), InstantiatorErrorsTest.class, "MY_CONSTANT"));
   }
 
   private void check(String expected, Errors errors) {
@@ -120,14 +124,6 @@ public class ErrorsTest {
     } catch (RuntimeException e) {
       assertEquals("1) " + expected, e.getMessage());
     }
-  }
-
-  @Test
-  public void equivalence() {
-    EquivalenceTester.check(
-        newArrayList(
-            new Errors().incorrectBoundForConverter(String.class, Converter.class, Integer.class),
-            new Errors().incorrectBoundForConverter(String.class, Converter.class, Integer.class)));
   }
 
 }
