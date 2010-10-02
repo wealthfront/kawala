@@ -18,6 +18,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.inject.TypeLiteral;
@@ -254,6 +255,27 @@ public class UnificationTest {
         String.class,
         Unification.getActualTypeArgument(BottomOfMidLevel3.class, TopLevel.class, 0));
   }
+
+  @Test
+  @Ignore("issue 22")
+  public void crazyMerge() throws Exception {
+    assertEquals(
+        new TypeLiteral<Map<Integer, String>>() {}.getType(),
+        Unification.getActualTypeArgument(
+            MergeOfIntegerAndString.class, ManyTypeParams.class, 0));
+    assertEquals(
+        new TypeLiteral<Map<String, Integer>>() {}.getType(),
+        Unification.getActualTypeArgument(
+            MergeOfIntegerAndString.class, ManyTypeParams.class, 1));
+    assertEquals(
+        new TypeLiteral<List<Map<Integer, String>>>() {}.getType(),
+        Unification.getActualTypeArgument(
+            MergeOfIntegerAndString.class, ManyTypeParams.class, 2));
+  }
+
+  static class MergeOfIntegerAndString extends Merge<Integer, String> {}
+  static class Merge<K, V> implements ManyTypeParams<Map<K, V>, Map<V, K>, List<Map<K, V>>> {}
+
 
   private static class Foo {}
 
