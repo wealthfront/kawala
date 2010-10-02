@@ -19,8 +19,10 @@ import static com.kaching.platform.converters.InstantiatorErrors.enumHasAmbiguou
 import static com.kaching.platform.converters.InstantiatorErrors.illegalConstructor;
 import static com.kaching.platform.converters.InstantiatorErrors.incorrectBoundForConverter;
 import static com.kaching.platform.converters.InstantiatorErrors.incorrectDefaultValue;
+import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneConstructor;
 import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneConstructorWithInstantiate;
 import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneMatchingFunction;
+import static com.kaching.platform.converters.InstantiatorErrors.noConstructorFound;
 import static com.kaching.platform.converters.InstantiatorErrors.noConverterForType;
 import static com.kaching.platform.converters.InstantiatorErrors.noSuchField;
 import static com.kaching.platform.converters.InstantiatorErrors.optionalLiteralParameterMustHaveDefault;
@@ -39,9 +41,9 @@ import static com.kaching.platform.converters.NativeConverters.C_STRING;
 import static java.lang.String.format;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -51,6 +53,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -64,9 +67,19 @@ import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
 
 public class InstantiatorImplFactoryTest {
 
-  @Test(expected = RuntimeException.class)
-  public void buildShouldFailIfErrorsExist() {
-    InstantiatorImplFactory.createFactory(SomethingUsingHasConvertedByWrongBound.class).build();
+  private Errors actualErrors;
+
+  @Before
+  public void createErrors() {
+    actualErrors = new Errors();
+  }
+
+  public void buildShouldReportIfErrorsExist() {
+    assertFalse(InstantiatorImplFactory
+        .createFactory(actualErrors, SomethingUsingHasConvertedByWrongBound.class)
+        .build()
+        .isDefined());
+    assertTrue(actualErrors.hasErrors());
   }
 
   static class SomethingUsingHasConvertedByWrongBound {
@@ -76,7 +89,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverterConvertedBy() throws Exception {
-    Converter<?> converter = createFactory(null).createConverter(HasConvertedBy.class).getOrThrow();
+    Converter<?> converter = createFactory(actualErrors, null).createConverter(HasConvertedBy.class).getOrThrow();
     assertNotNull(converter);
     assertEquals(HasConvertedByConverter.class, converter.getClass());
   }
@@ -94,7 +107,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverterConvertedByWrongBound() throws Exception {
-    InstantiatorImplFactory<Object> factory = createFactory(null);
+    InstantiatorImplFactory<Object> factory = createFactory(actualErrors, null);
     factory.createConverter(HasConvertedByWrongBound.class);
     assertEquals(
         incorrectBoundForConverter(
@@ -122,7 +135,7 @@ public class InstantiatorImplFactoryTest {
   @Test
   public void createConverterDefaultIfHasStringConstructor() throws Exception {
     Converter<?> converter =
-      createFactory(null).createConverter(HasStringConstructor.class).getOrThrow();
+      createFactory(actualErrors, null).createConverter(HasStringConstructor.class).getOrThrow();
     assertNotNull(converter);
     assertEquals(StringConstructorConverter.class, converter.getClass());
   }
@@ -136,7 +149,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverterForEnum() throws Exception {
-    Converter<?> converter = createFactory(null).createConverter(AnEnum.class).getOrThrow();
+    Converter<?> converter = createFactory(actualErrors, null).createConverter(AnEnum.class).getOrThrow();
     assertNotNull(converter);
     assertEquals(EnumConverter.class, converter.getClass());
   }
@@ -147,7 +160,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverterForAmbiguousEnum() throws Exception {
-    InstantiatorImplFactory<Object> factory = createFactory(null);
+    InstantiatorImplFactory<Object> factory = createFactory(actualErrors, null);
     factory.createConverter(AmbiguousEnum.class);
     assertEquals(
         enumHasAmbiguousNames(new Errors(), AmbiguousEnum.class),
@@ -174,7 +187,7 @@ public class InstantiatorImplFactoryTest {
     for (int i = 0; i < fixtures.length; i += 2) {
       String message = format("type %s", fixtures[i + 1]);
       Option<? extends Converter<?>> converter =
-        createFactory(null).createConverter((Type) fixtures[i + 1]);
+        createFactory(actualErrors, null).createConverter((Type) fixtures[i + 1]);
       assertTrue(message, converter.isDefined());
       assertEquals(message, fixtures[i], converter.getOrThrow());
     }
@@ -197,14 +210,14 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void convertedAnnotatedClass() throws Exception {
-    InstantiatorImplFactory<Object> factory = createFactory(null);
+    InstantiatorImplFactory<Object> factory = createFactory(actualErrors, null);
     Converter<?> converter = factory.createConverter(AnnotatedClass.class).getOrThrow();
     assertEquals(StringConstructorConverter.class, converter.getClass());
   }
 
   @Test
   public void convertedAnnotatedClassWithFunction() throws Exception {
-    InstantiatorImplFactory<Object> factory = createFactory(null);
+    InstantiatorImplFactory<Object> factory = createFactory(actualErrors, null);
     InstantiatorModule module = new AbstractInstantiatorModule() {
       @Override
       protected void configure() {
@@ -232,7 +245,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void convertedAnnotatedClassWithTwoFunctions() throws Exception {
-    InstantiatorImplFactory<Object> factory = createFactory(null);
+    InstantiatorImplFactory<Object> factory = createFactory(actualErrors, null);
     InstantiatorModule module = new AbstractInstantiatorModule() {
       @Override
       protected void configure() {
@@ -326,9 +339,13 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void duplicateConverterBinding1() throws Exception {
+    Errors expected = new Errors();
+    duplicateConverterBindingForType(expected, new TypeLiteral<String>() {}.getType());
+    moreThanOneConstructor(expected, String.class);
+
     checkErrorCase(
         String.class,
-        duplicateConverterBindingForType(new Errors(), new TypeLiteral<String>() {}.getType()),
+        expected,
         new AbstractInstantiatorModule() {
           @Override
           protected void configure() {
@@ -340,9 +357,13 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void duplicateConverterBinding2() throws Exception {
+    Errors expected = new Errors();
+    duplicateConverterBindingForType(expected, new TypeLiteral<String>() {}.getType());
+    moreThanOneConstructor(expected, String.class);
+
     checkErrorCase(
         String.class,
-        duplicateConverterBindingForType(new Errors(), new TypeLiteral<String>() {}.getType()),
+        expected,
         new AbstractInstantiatorModule() {
           @Override
           protected void configure() {
@@ -354,9 +375,13 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void duplicateConverterBinding3() throws Exception {
+    Errors expected = new Errors();
+    duplicateConverterBindingForType(expected, new TypeLiteral<String>() {}.getType());
+    moreThanOneConstructor(expected, String.class);
+
     checkErrorCase(
         String.class,
-        duplicateConverterBindingForType(new Errors(), new TypeLiteral<String>() {}.getType()),
+        expected,
         new AbstractInstantiatorModule() {
           @Override
           protected void configure() {
@@ -443,27 +468,18 @@ public class InstantiatorImplFactoryTest {
         cannotAnnotateOptionWithOptional(new Errors(), new TypeLiteral<Option<Integer>>() {}.getType()));
   }
 
-  private <T> void checkErrorCase(Class<T> klass, Errors errors, InstantiatorModule... modules) {
-    // TODO(pascal): Refactor. Very ugly pattern here because build() is too
-    // high level.
-    InstantiatorImplFactory<T> f = null;
-    try {
-      f = InstantiatorImplFactory.createFactory(klass);
-      for (InstantiatorModule m : modules) {
-        m.configure(f.binder());
-      }
-      f.build();
-      fail();
-    } catch (RuntimeException e) {
+  private <T> void checkErrorCase(Class<T> klass, Errors expected, InstantiatorModule... modules) {
+    InstantiatorImplFactory<T> f = InstantiatorImplFactory.createFactory(actualErrors, klass);
+    for (InstantiatorModule m : modules) {
+      m.configure(f.binder());
     }
-    assertEquals(
-        errors,
-        f.getErrors());
+    assertTrue(f.build().isEmpty());
+    assertEquals(expected, actualErrors);
   }
 
   @Test
   public void retrieveFieldsFromAssignment1() {
-    Field[] fields = createFactory(HasStringConstructor.class)
+    Field[] fields = createFactory(actualErrors, HasStringConstructor.class)
         .retrieveFieldsFromAssignment(
             1,
             ImmutableMap.of(
@@ -475,7 +491,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void retrieveFieldsFromAssignment2() {
-    InstantiatorImplFactory<HasStringConstructor> f = createFactory(HasStringConstructor.class);
+    InstantiatorImplFactory<HasStringConstructor> f = createFactory(actualErrors, HasStringConstructor.class);
     f.retrieveFieldsFromAssignment(
         1,
         ImmutableMap.of(
@@ -487,7 +503,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test(expected = IllegalStateException.class)
   public void retrieveFieldsFromAssignment3() {
-    createFactory(HasStringConstructor.class).retrieveFieldsFromAssignment(
+    createFactory(actualErrors, HasStringConstructor.class).retrieveFieldsFromAssignment(
         1,
         ImmutableMap.of(
             "representation", new FormalParameter(1, null))); // wrong index
@@ -495,7 +511,7 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void retrieveFieldsFromAssignment4FieldIsInSuperclass() {
-    Field[] fields = createFactory(FieldIsInSuperSuperclass.class)
+    Field[] fields = createFactory(actualErrors, FieldIsInSuperSuperclass.class)
         .retrieveFieldsFromAssignment(
             1,
             ImmutableMap.of(
@@ -515,62 +531,58 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void getPublicConstructor() throws Exception {
-    createFactory(A.class).getConstructor();
+    createFactory(actualErrors, A.class).getConstructor();
   }
 
   @Test
   public void getProtectedConstructor() throws Exception {
-    createFactory(B.class).getConstructor();
+    createFactory(actualErrors, B.class).getConstructor();
   }
 
   @Test
   public void getDefaultVisibleConstructor() throws Exception {
-    createFactory(C.class).getConstructor();
+    createFactory(actualErrors, C.class).getConstructor();
   }
 
   @Test
   public void getPrivateConstructor() throws Exception {
-    createFactory(D.class).getConstructor();
+    createFactory(actualErrors, D.class).getConstructor();
   }
 
   @Test
   public void getNonExistingConstructor() throws Exception {
-    try {
-      createFactory(E.class).getConstructor();
-      fail();
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
+    assertTrue(createFactory(actualErrors, E.class).getConstructor().isEmpty());
+    assertEquals(
+        noConstructorFound(new Errors(), E.class),
+        actualErrors);
   }
 
   @Test
   public void getNonUniqueConstructor() throws Exception {
-    try {
-      createFactory(F.class).getConstructor();
-      fail();
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
+    assertTrue(createFactory(actualErrors, F.class).getConstructor().isEmpty());
+    assertEquals(
+        moreThanOneConstructor(new Errors(), F.class),
+        actualErrors);
   }
 
   @Test
   public void getConstructorFromSuperclass() throws Exception {
-    createFactory(G.class).getConstructor();
+    createFactory(actualErrors, G.class).getConstructor();
   }
 
   @Test
   public void getConstructorFromSuperclassWithMultipleConstructors() {
-    createFactory(H.class).getConstructor();
+    createFactory(actualErrors, H.class).getConstructor();
   }
 
   @Test
   public void getNonUniqueConstructorWithAnnotation1() throws Exception {
-    assertNotNull(createFactory(P.class).getConstructor());
+    assertNotNull(createFactory(actualErrors, P.class).getConstructor());
   }
 
   @Test
   public void getNonUniqueConstructorWithAnnotation2() throws Exception {
-    InstantiatorImplFactory<Q> factory = createFactory(Q.class);
+    InstantiatorImplFactory<Q> factory = createFactory(actualErrors, Q.class);
     factory.getConstructor();
     assertEquals(
         moreThanOneConstructorWithInstantiate(new Errors(), Q.class),
@@ -595,7 +607,7 @@ public class InstantiatorImplFactoryTest {
   @SuppressWarnings("unchecked")
   private void testConverter(Type type, String actual,
       Object expectedFromString, String expectedToString) {
-    Option<? extends Converter<?>> maybeConverter = createFactory(null).createConverter(type);
+    Option<? extends Converter<?>> maybeConverter = createFactory(actualErrors, null).createConverter(type);
     assertTrue(format("no converter for type %s", type), maybeConverter.isDefined());
     Converter converter = maybeConverter.getOrThrow();
     assertEquals(expectedFromString, converter.fromString(actual));

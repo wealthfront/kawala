@@ -45,6 +45,10 @@ public class Errors {
     return messages == null ? 0 : messages.size();
   }
 
+  public boolean hasErrors() {
+    return 0 < size();
+  }
+
   @Override
   public int hashCode() {
     return messages == null ? EMPTY_LIST.hashCode() : messages.hashCode();

@@ -19,6 +19,7 @@ import static com.kaching.platform.converters.InstantiatorErrors.enumHasAmbiguou
 import static com.kaching.platform.converters.InstantiatorErrors.illegalConstructor;
 import static com.kaching.platform.converters.InstantiatorErrors.incorrectBoundForConverter;
 import static com.kaching.platform.converters.InstantiatorErrors.incorrectDefaultValue;
+import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneConstructor;
 import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneConstructorWithInstantiate;
 import static com.kaching.platform.converters.InstantiatorErrors.moreThanOneMatchingFunction;
 import static com.kaching.platform.converters.InstantiatorErrors.noConverterForType;
@@ -78,23 +79,25 @@ class InstantiatorImplFactory<T> {
       .put(Short.TYPE, C_SHORT)
       .build();
 
-  private final Errors errors = new Errors();
-  private final ConverterBinderImpl binder = new ConverterBinderImpl(errors);
+  private final Errors errors;
+  private final ConverterBinderImpl binder;
   private final Class<T> klass;
 
-  private InstantiatorImplFactory(Class<T> klass) {
+  private InstantiatorImplFactory(Errors errors, Class<T> klass) {
+    this.errors = errors;
     this.klass = klass;
+    this.binder = new ConverterBinderImpl(errors);
   }
 
-  static <T> InstantiatorImplFactory<T> createFactory(Class<T> klass) {
-    return new InstantiatorImplFactory<T>(klass);
+  static <T> InstantiatorImplFactory<T> createFactory(Errors errors, Class<T> klass) {
+    return new InstantiatorImplFactory<T>(errors, klass);
   }
 
   ConverterBinder binder() {
     return binder;
   }
 
-  InstantiatorImpl<T> build() {
+  Option<InstantiatorImpl<T>> build() {
     // 1. find constructor
     for (Constructor<T> constructor : getConstructor()) {
       constructor.setAccessible(true);
@@ -227,16 +230,15 @@ class InstantiatorImplFactory<T> {
         illegalConstructor(errors, klass, e.getMessage());
       }
       // 4. done
-      errors.throwIfHasErrors();
-      return new InstantiatorImpl<T>(
-          constructor, converters, fields, optionality, wrapInOption, defaultValues,
-          defaultConstants, analysisResult.paramaterNames);
+      if (!errors.hasErrors()) {
+        return Option.some(new InstantiatorImpl<T>(
+            constructor, converters, fields, optionality, wrapInOption, defaultValues,
+            defaultConstants, analysisResult.paramaterNames));
+      } else {
+        return Option.none();
+      }
     }
-
-    // This program point is only reachable in erroneous cases and the next
-    // statement will therefore end the control flow.
-    errors.throwIfHasErrors();
-    throw new IllegalStateException();
+    return Option.none();
   }
 
   private Option<Optional> getOptionalAnnotation(Annotation[] annotations) {
@@ -456,13 +458,12 @@ class InstantiatorImplFactory<T> {
       if (convertableConstructor != null) {
         return Option.some(convertableConstructor);
       } else {
-        // should accumulate errors here
-        throw new IllegalArgumentException(klass.toString() +
-            " has more than one constructors");
+        moreThanOneConstructor(errors, klass);
+        return Option.none();
       }
     } else if (constructors.length == 0) {
-      // should accumulate errors here
-      throw new IllegalArgumentException("No constructor found in " + klass);
+      InstantiatorErrors.noConstructorFound(errors, klass);
+      return Option.none();
     } else {
       return Option.some(constructors[0]);
     }
