@@ -13,6 +13,8 @@ package com.kaching.platform.converters;
 import java.lang.reflect.Type;
 
 import com.google.inject.TypeLiteral;
+import com.kaching.platform.common.Errors;
+import com.kaching.platform.common.Option;
 
 public class Instantiators {
 
@@ -26,7 +28,27 @@ public class Instantiators {
    */
   public static <T> Instantiator<T> createInstantiator(
       Class<T> klass, InstantiatorModule... modules) {
-    return factoryFor(klass, modules).build();
+    Errors errors = new Errors();
+    for (Instantiator<T> instantiator : createInstantiator(errors, klass, modules)) {
+      return instantiator;
+    }
+    errors.throwIfHasErrors();
+
+    // The following program should not be reachable since the factory should
+    // produce errors if it is unable to create an instantiator.
+    throw new IllegalStateException();
+  }
+
+  /**
+   * Creates an instantiator for {@code klass} if possible and aggregates errors.
+   * This factory method is mostly useful when instantiators are used as a piece
+   * in larger framework and allows errors aggregation to be done hollisticly.
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> Option<Instantiator<T>> createInstantiator(
+      Errors errors, Class<T> klass, InstantiatorModule... modules) {
+    // we do not want to expose the covariant option
+    return (Option) factoryFor(errors, klass, modules).build();
   }
 
   /**
@@ -45,10 +67,11 @@ public class Instantiators {
     return createConverterForType(typeLiteral.getType(), modules);
   }
 
-  private static <T> InstantiatorImplFactory<T> factoryFor(Class<T> klass,
+  private static <T> InstantiatorImplFactory<T> factoryFor(
+      Errors errors, Class<T> klass,
       InstantiatorModule... modules) {
     InstantiatorImplFactory<T> factory = InstantiatorImplFactory
-            .createFactory(klass);
+            .createFactory(errors, klass);
     for (InstantiatorModule c : modules) {
       c.configure(factory.binder());
     }
@@ -58,7 +81,7 @@ public class Instantiators {
   @SuppressWarnings("unchecked")
   private static <T> Converter<T> createConverterForType(Type type,
       InstantiatorModule... modules) {
-    return (Converter<T>) factoryFor(null, modules).createConverter(type).getOrThrow();
+    return (Converter<T>) factoryFor(new Errors(), null, modules).createConverter(type).getOrThrow();
   }
 
 }

@@ -34,6 +34,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.kaching.platform.common.Errors;
+
 public class InstantiatorImplTest {
 
   @Test
@@ -238,7 +240,7 @@ public class InstantiatorImplTest {
   public void fromInstanceSimple() {
     assertEquals(
         newArrayList("56"),
-        createFactory(Simple.class).build()
+        createFactory(new Errors(), Simple.class).build().getOrThrow()
             .fromInstance(new Simple(56)));
   }
 
@@ -253,7 +255,7 @@ public class InstantiatorImplTest {
   public void newInstanceHasEnum() {
     assertEquals(
         IsEnum.FOO,
-        createFactory(HasEnum.class).build()
+        createFactory(new Errors(), HasEnum.class).build().getOrThrow()
             .newInstance("FOO")
             .value);
   }
@@ -262,7 +264,7 @@ public class InstantiatorImplTest {
   public void fromInstanceHasEnum() {
     assertEquals(
         newArrayList("FOO"),
-        createFactory(HasEnum.class).build()
+        createFactory(new Errors(), HasEnum.class).build().getOrThrow()
             .fromInstance(new HasEnum(IsEnum.FOO)));
   }
 
@@ -279,7 +281,7 @@ public class InstantiatorImplTest {
 
   @Test
   public void fromInstanceNatives() {
-    List<String> parameters = createFactory(Natives.class).build()
+    List<String> parameters = createFactory(new Errors(), Natives.class).build().getOrThrow()
         .fromInstance(new Natives(2, 3.4, (short) 5, '6', 7l, true, 8.0f, (byte) 9));
     assertEquals(
         newArrayList(

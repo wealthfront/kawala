@@ -36,6 +36,18 @@ class InstantiatorErrors {
         ConvertedBy.class.getSimpleName());
   }
 
+  static Errors moreThanOneConstructor(Errors errors, Class<?> klass) {
+    return errors.addMessage(
+        "%s has more than one constructors",
+        klass);
+  }
+
+  static Errors noConstructorFound(Errors errors, Class<?> klass) {
+    return errors.addMessage(
+        "No constructor found in %s",
+        klass);
+  }
+
   static Errors moreThanOneConstructorWithInstantiate(Errors errors, Class<?> klass) {
     return errors.addMessage(
         "%s has more than one constructor annotated with @%s",

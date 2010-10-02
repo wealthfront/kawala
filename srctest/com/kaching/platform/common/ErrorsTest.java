@@ -12,6 +12,8 @@ package com.kaching.platform.common;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -43,6 +45,12 @@ public class ErrorsTest {
   @Test
   public void noErrorsShouldNotThrow() {
     new Errors().throwIfHasErrors();
+  }
+
+  @Test
+  public void hasErrors() {
+    assertFalse(new Errors().hasErrors());
+    assertTrue(new Errors().addMessage("").hasErrors());
   }
 
   @Test
