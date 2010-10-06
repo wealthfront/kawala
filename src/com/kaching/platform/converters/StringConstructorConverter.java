@@ -49,6 +49,7 @@ class StringConstructorConverter<T> implements Converter<T> {
   @SuppressWarnings("unchecked")
   public T fromString(String representation) {
     try {
+      constructor.setAccessible(true);
       return (T) constructor.newInstance(representation);
     } catch (IllegalArgumentException e) {
       throw new IllegalStateException(

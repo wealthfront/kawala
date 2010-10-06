@@ -54,6 +54,19 @@ public class StringConstructorConverterTest {
   }
 
   @Test
+  public void convertsProperlyWithPrivateConstructor() {
+    StringConstructorConverter<TakesPrivateSingleString> converter = converter(TakesPrivateSingleString.class);
+
+    // from string
+    TakesPrivateSingleString fromString = converter.fromString("hello world");
+    assertNotNull(fromString);
+    assertEquals("hello world", fromString.representation);
+
+    // to string
+    assertEquals("hello world", converter.toString(fromString));
+  }
+
+  @Test
   public void properlyBubblesException() {
     try {
       converter(TakesSingleStringAndThrows.class).fromString(null);
@@ -73,6 +86,17 @@ public class StringConstructorConverterTest {
   static class TakesSingleString {
     private final String representation;
     TakesSingleString(String representation) {
+      this.representation = representation;
+    }
+    @Override
+    public String toString() {
+      return representation;
+    }
+  }
+
+  static class TakesPrivateSingleString {
+    private final String representation;
+    private TakesPrivateSingleString(String representation) {
       this.representation = representation;
     }
     @Override
