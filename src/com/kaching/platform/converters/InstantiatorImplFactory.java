@@ -321,7 +321,12 @@ class InstantiatorImplFactory<T> {
         }
       }
     } else if (targetType instanceof ParameterizedType) {
-      // 7. Set, List, Collection
+      // 7. has <init>(Ljava/lang/String;)V;
+      for (Converter<?> converter : createConverterUsingStringConstructor(
+            (Class)((ParameterizedType) targetType).getRawType())) {
+        return Option.some(converter);
+      }
+      // 8. Set, List, Collection
       ParameterizedType parameterizedTargetType = (ParameterizedType) targetType;
       if (COLLECTION_KINDS.containsKey(parameterizedTargetType.getRawType()) &&
           parameterizedTargetType.getActualTypeArguments().length == 1) {

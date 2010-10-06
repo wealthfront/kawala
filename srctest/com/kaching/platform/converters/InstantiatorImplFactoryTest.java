@@ -148,6 +148,22 @@ public class InstantiatorImplFactoryTest {
   }
 
   @Test
+  public void createConverterDefaultIfHasStringConstructorParameterized() throws Exception {
+    Converter<?> converter = createFactory(actualErrors, null)
+        .createConverter(new TypeLiteral<HasStringConstructorParam<Double>>(){}.getType())
+        .getOrThrow();
+    assertNotNull(converter);
+    assertEquals(StringConstructorConverter.class, converter.getClass());
+  }
+
+  static class HasStringConstructorParam<T> {
+    final String representation;
+    public HasStringConstructorParam(String representation) {
+      this.representation = representation;
+    }
+  }
+
+  @Test
   public void createConverterForEnum() throws Exception {
     Converter<?> converter = createFactory(actualErrors, null).createConverter(AnEnum.class).getOrThrow();
     assertNotNull(converter);
