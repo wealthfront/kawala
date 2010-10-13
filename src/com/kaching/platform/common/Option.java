@@ -14,6 +14,7 @@ import static java.lang.String.format;
 
 import java.util.Iterator;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 
@@ -69,6 +70,11 @@ public abstract class Option<T> implements Iterable<T> {
     @Override
     public boolean isEmpty() {
       return true;
+    }
+
+    @Override
+    public <U> Option<U> transform(Function<Object, Option<U>> function) {
+      return Option.none();
     }
 
     @Override
@@ -151,6 +157,11 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public <V> Option<V> transform(Function<U, Option<V>> function) {
+      return function.apply(u);
+    }
+
+    @Override
     public int hashCode() {
       return u.hashCode();
     }
@@ -220,6 +231,8 @@ public abstract class Option<T> implements Iterable<T> {
   public boolean isDefined() {
     return !isEmpty();
   }
+
+  public abstract <U> Option<U> transform(Function<T, Option<U>> function);
 
   /**
    * Gets the none object for the given type.
