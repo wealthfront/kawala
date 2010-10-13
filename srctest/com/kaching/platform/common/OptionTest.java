@@ -13,6 +13,7 @@ package com.kaching.platform.common;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -39,6 +40,11 @@ public class OptionTest {
     assertTrue(reached);
   }
 
+  @Test
+  public void noneGetOrNull() throws Exception {
+    assertNull(Option.none().getOrNull());
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void noneGetOrThrowNoParam() {
     Option.none().getOrThrow();
@@ -63,6 +69,11 @@ public class OptionTest {
     } catch (IllegalArgumentException eCaught) {
       assertEquals("foo", eCaught.getMessage());
     }
+  }
+
+  @Test
+  public void someGetOrNull() throws Exception {
+    assertEquals(600, Option.some(600).getOrNull());
   }
 
   @Test
