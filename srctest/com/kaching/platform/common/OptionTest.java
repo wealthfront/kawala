@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+import com.google.common.base.Function;
 import com.kaching.platform.testing.EquivalenceTester;
 
 public class OptionTest {
@@ -72,6 +73,16 @@ public class OptionTest {
   }
 
   @Test
+  public void noneTransform() throws Exception {
+    Option.<Integer> none().transform(new Function<Integer, Option<String>>() {
+      @Override
+      public Option<String> apply(Integer from) {
+        return Option.some(String.valueOf(from));
+      }
+    });
+  }
+
+  @Test
   public void someGetOrNull() throws Exception {
     assertEquals(600, Option.some(600).getOrNull());
   }
@@ -89,6 +100,28 @@ public class OptionTest {
   @Test
   public void someGetOrThrowWithMessage() {
     assertEquals("", Option.some("").getOrThrow("foo"));
+  }
+
+  @Test
+  public void someTransform() throws Exception {
+    assertEquals(Option.some("1"), Option.some(1).transform(
+        new Function<Integer, Option<String>>() {
+          @Override
+          public Option<String> apply(Integer from) {
+            return Option.some(String.valueOf(from));
+          }
+        }));
+  }
+
+  @Test
+  public void someTransformReturnsNone() throws Exception {
+    assertFalse(Option.some(1).transform(
+        new Function<Integer, Option<String>>() {
+          @Override
+          public Option<String> apply(Integer from) {
+            return Option.none();
+          }
+        }).isDefined());
   }
 
   @Test
