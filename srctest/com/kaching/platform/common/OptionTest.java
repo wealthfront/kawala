@@ -74,12 +74,17 @@ public class OptionTest {
 
   @Test
   public void noneTransform() throws Exception {
-    Option.<Integer> none().transform(new Function<Integer, Option<String>>() {
+    Option.<Integer> none().transform(new Function<Integer, String>() {
       @Override
-      public Option<String> apply(Integer from) {
-        return Option.some(String.valueOf(from));
+      public String apply(Integer from) {
+        return String.valueOf(from);
       }
     });
+  }
+
+  @Test
+  public void noneToStringOr() throws Exception {
+    assertEquals("foo", Option.none().toStringOr("foo"));
   }
 
   @Test
@@ -105,23 +110,28 @@ public class OptionTest {
   @Test
   public void someTransform() throws Exception {
     assertEquals(Option.some("1"), Option.some(1).transform(
-        new Function<Integer, Option<String>>() {
+        new Function<Integer, String>() {
           @Override
-          public Option<String> apply(Integer from) {
-            return Option.some(String.valueOf(from));
+          public String apply(Integer from) {
+            return String.valueOf(from);
           }
         }));
   }
 
   @Test
-  public void someTransformReturnsNone() throws Exception {
+  public void someTransformReturnsNull() throws Exception {
     assertFalse(Option.some(1).transform(
-        new Function<Integer, Option<String>>() {
+        new Function<Integer, String>() {
           @Override
-          public Option<String> apply(Integer from) {
-            return Option.none();
+          public String apply(Integer from) {
+            return null;
           }
         }).isDefined());
+  }
+
+  @Test
+  public void someToStringOr() throws Exception {
+    assertEquals("1", Option.some(1).toStringOr("foo"));
   }
 
   @Test

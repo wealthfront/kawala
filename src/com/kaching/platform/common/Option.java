@@ -68,12 +68,17 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public String toStringOr(String defaultValue) {
+      return defaultValue;
+    }
+
+    @Override
     public boolean isEmpty() {
       return true;
     }
 
     @Override
-    public <U> Option<U> transform(Function<Object, Option<U>> function) {
+    public <U> Option<U> transform(Function<Object, U> function) {
       return Option.none();
     }
 
@@ -152,13 +157,18 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public String toStringOr(String defaultValue) {
+      return u.toString();
+    }
+
+    @Override
     public boolean isEmpty() {
       return false;
     }
 
     @Override
-    public <V> Option<V> transform(Function<U, Option<V>> function) {
-      return function.apply(u);
+    public <V> Option<V> transform(Function<U, V> function) {
+      return Option.of(function.apply(u));
     }
 
     @Override
@@ -220,6 +230,8 @@ public abstract class Option<T> implements Iterable<T> {
    */
   public abstract <E extends Throwable> T getOrThrow(E e) throws E;
 
+  public abstract String toStringOr(String defaultValue);
+
   /**
    * Returns {@code true} if the option is the {@code None} value.
    */
@@ -232,7 +244,7 @@ public abstract class Option<T> implements Iterable<T> {
     return !isEmpty();
   }
 
-  public abstract <U> Option<U> transform(Function<T, Option<U>> function);
+  public abstract <U> Option<U> transform(Function<T, U> function);
 
   /**
    * Gets the none object for the given type.
