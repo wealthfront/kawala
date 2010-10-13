@@ -37,6 +37,11 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public Object getOrNull() {
+      return null;
+    };
+
+    @Override
     public Object getOrElse(Object defaultValue) {
       return defaultValue;
     }
@@ -111,6 +116,11 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public U getOrNull() {
+      return u;
+    }
+
+    @Override
     public U getOrElse(U defaultValue) {
       return u;
     }
@@ -162,6 +172,12 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
   }
+
+  /**
+   * If the option is nonempty returns its value, otherwise returns
+   * {@code null}.
+   */
+  public abstract T getOrNull();
 
   /**
    * If the option is nonempty returns its value, otherwise returns
