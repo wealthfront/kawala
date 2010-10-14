@@ -35,6 +35,13 @@ public class Errors {
     return this;
   }
 
+  public Errors addErrors(Errors errors) {
+    for (String message : errors.messages) {
+      addMessage(message);
+    }
+    return this;
+  }
+
   public void throwIfHasErrors() {
     if (messages != null) {
       throw new RuntimeException(toString());
