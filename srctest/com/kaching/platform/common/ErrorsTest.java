@@ -54,6 +54,20 @@ public class ErrorsTest {
   }
 
   @Test
+  public void aggregate1() {
+    assertEquals(
+        2,
+        new Errors().addMessage("a").addErrors(new Errors().addMessage("b")).size());
+  }
+
+  @Test
+  public void aggregate2() {
+    assertEquals(
+        1,
+        new Errors().addMessage("a").addErrors(new Errors().addMessage("a")).size());
+  }
+
+  @Test
   public void equivalence() {
     EquivalenceTester.check(
         newArrayList(
