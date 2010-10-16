@@ -68,6 +68,11 @@ public class ErrorsTest {
   }
 
   @Test
+  public void aggregate3() {
+    assertFalse(new Errors().addErrors(new Errors()).hasErrors());
+  }
+
+  @Test
   public void equivalence() {
     EquivalenceTester.check(
         newArrayList(

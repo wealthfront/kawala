@@ -36,6 +36,9 @@ public class Errors {
   }
 
   public Errors addErrors(Errors errors) {
+    if (errors.messages == null) {
+      return this;
+    }
     for (String message : errors.messages) {
       addMessage(message);
     }
