@@ -38,6 +38,7 @@ import static com.kaching.platform.converters.NativeConverters.C_INT;
 import static com.kaching.platform.converters.NativeConverters.C_LONG;
 import static com.kaching.platform.converters.NativeConverters.C_SHORT;
 import static com.kaching.platform.converters.NativeConverters.C_STRING;
+import static com.kaching.platform.converters.Optional.VALUE_DEFAULT;
 import static java.lang.String.format;
 
 import java.io.IOException;
@@ -133,10 +134,10 @@ class InstantiatorImplFactory<T> {
 
             String defaultValue = optional.value();
             String defaultConstant = optional.constant();
-            if (!defaultValue.isEmpty() && !defaultConstant.isEmpty()) {
+            if (!defaultValue.equals(VALUE_DEFAULT) && !defaultConstant.isEmpty()) {
               cannotSpecifyDefaultValueAndConstant(errors, optional);
               continue next_parameter;
-            } else if (!defaultValue.isEmpty()) {
+            } else if (!defaultValue.equals(VALUE_DEFAULT)) {
               try {
                 converter.fromString(defaultValue);
                 if (defaultValues == null) {

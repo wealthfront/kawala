@@ -13,10 +13,12 @@ import java.lang.annotation.Target;
 @Target({ PARAMETER })
 public @interface Optional {
 
+  static final String VALUE_DEFAULT = "fba751a996cb6315d4fd41afacc2978b";
+
   /**
    * Used to provide a default value.
    */
-  String value() default "";
+  String value() default VALUE_DEFAULT;
 
   /**
    * Provides the reference to a constant ({@code static final} field). The
