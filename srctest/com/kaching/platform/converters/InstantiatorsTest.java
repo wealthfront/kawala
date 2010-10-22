@@ -182,7 +182,6 @@ public class InstantiatorsTest {
         instantiator.fromInstance(instance));
   }
 
-
   static class ArgumentAreNotSavedToFields {
     private final int is;
     private final int isToo;
@@ -412,6 +411,20 @@ public class InstantiatorsTest {
     assertEquals(
         new URI("www.kaching.com"),
         createConverter(URI.class).fromString("www.kaching.com"));
+  }
+
+  static class OptionalStringWithEmptyStringAsDefault {
+    private final String name;
+    OptionalStringWithEmptyStringAsDefault(@Optional("") String name) {
+      this.name = name;
+    }
+  }
+
+  @Test
+  public void optionalStringWithEmptyStringAsDefault() {
+    assertEquals(
+        "",
+        createInstantiator(OptionalStringWithEmptyStringAsDefault.class).newInstance((String) null).name);
   }
 
   @Test
