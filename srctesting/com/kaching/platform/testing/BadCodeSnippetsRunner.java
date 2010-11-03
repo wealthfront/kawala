@@ -67,7 +67,7 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
 
     public VerificationMode verificationMode() default BOTH;
 
-    public String rationale() default "(none provided)";
+    public String rationale() default "";
 
   }
 
@@ -138,9 +138,11 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
 
       uses.removeAll(exceptions);
       if (snippet.verificationMode().reportMatches && !uses.isEmpty()) {
+        String rationale = snippet.rationale().isEmpty() ? ""
+            : format("rationale: %s", snippet.rationale());
         error.addError(format(
-            "%s: found %s bad snippets in:\n    %s\nrationale: %s",
-            snippet.value(), uses.size(), Joiner.on("\n   ").join(uses), snippet.rationale()));
+            "%s: found %s bad snippets in:\n    %s\n%s",
+            snippet.value(), uses.size(), Joiner.on("\n   ").join(uses), rationale));
       }
     }
 
