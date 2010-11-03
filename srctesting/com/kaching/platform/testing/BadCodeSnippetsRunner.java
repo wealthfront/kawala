@@ -139,9 +139,9 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
       uses.removeAll(exceptions);
       if (snippet.verificationMode().reportMatches && !uses.isEmpty()) {
         String rationale = snippet.rationale().isEmpty() ? ""
-            : format("rationale: %s", snippet.rationale());
+            : format("\nrationale: %s", snippet.rationale());
         error.addError(format(
-            "%s: found %s bad snippets in:\n    %s\n%s",
+            "%s: found %s bad snippets in:\n    %s%s",
             snippet.value(), uses.size(), Joiner.on("\n   ").join(uses), rationale));
       }
     }
