@@ -67,6 +67,8 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
 
     public VerificationMode verificationMode() default BOTH;
 
+    public String rationale() default "(none provided)";
+
   }
 
   public enum VerificationMode {
@@ -126,17 +128,19 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
       Set<File> uses = snippetsToUses.get(snippet);
       List<File> spuriousExceptions = newArrayList(exceptions);
       spuriousExceptions.removeAll(uses);
+
       if (snippet.verificationMode().reportMissing && !spuriousExceptions.isEmpty()) {
         error.addError(format(
             "%s: marked as exception to snippet but didn't occur:\n    %s",
             snippet.value(), Joiner.on("\n   ").join(spuriousExceptions)));
         continue;
       }
+
       uses.removeAll(exceptions);
       if (snippet.verificationMode().reportMatches && !uses.isEmpty()) {
         error.addError(format(
-            "%s: found %s bad snippets in:\n    %s",
-            snippet.value(), uses.size(), Joiner.on("\n   ").join(uses)));
+            "%s: found %s bad snippets in:\n    %s\nrationale: %s",
+            snippet.value(), uses.size(), Joiner.on("\n   ").join(uses), snippet.rationale()));
       }
     }
 
