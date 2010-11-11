@@ -16,12 +16,19 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.kaching.platform.common.Option;
 import com.kaching.platform.testing.LessIOSecurityManager.CantDoItException;
 
 public class LessIOSecurityManagerTest extends LessIOSecurityManagerTestHelper {
+  LessIOSecurityManager sm;
+
+  @Before
+  public void setupSecurityManager() {
+    sm = new LessIOSecurityManager();
+  }
 
   @Test
   public void testNoSecurityManager() {
@@ -32,8 +39,8 @@ public class LessIOSecurityManagerTest extends LessIOSecurityManagerTestHelper {
           openSocket();
         } catch (Exception e) {
           assertTrue(String.format("Received %s (%s) instead of IOException",
-              System.getSecurityManager(), e.getClass().getCanonicalName(), e.getLocalizedMessage()),
-              e instanceof IOException);
+              System.getSecurityManager(), e.getClass().getCanonicalName(),
+              e.getLocalizedMessage()), e instanceof IOException);
         }
       }
     });
@@ -41,14 +48,15 @@ public class LessIOSecurityManagerTest extends LessIOSecurityManagerTestHelper {
 
   @Test
   public void testSecurityManager() {
-    withTemporarySM(SECURITY_MANAGER, new Runnable() {
+    withTemporarySM(sm, new Runnable() {
       @Override
       public void run() {
         try {
           openSocket();
         } catch (Exception e) {
-          assertTrue(String.format("Received %s (%s) instead of CantDoItException",
-              e.getClass().getCanonicalName(), e.getLocalizedMessage()),
+          assertTrue(String.format(
+              "Received %s (%s) instead of CantDoItException", e.getClass()
+                  .getCanonicalName(), e.getLocalizedMessage()),
               e instanceof CantDoItException);
         }
       }
@@ -58,16 +66,18 @@ public class LessIOSecurityManagerTest extends LessIOSecurityManagerTestHelper {
   @Test
   public void testAssertAllowed() {
     assertAllowed(
+        sm,
         new RunnableWithException() {
           @Override
           public void run() throws Exception {
             throw new UnsupportedOperationException();
           }
         },
-        Option.<Class<? extends Exception>> of(UnsupportedOperationException.class));
+        Option
+            .<Class<? extends Exception>> of(UnsupportedOperationException.class));
 
     try {
-      assertAllowed(new RunnableWithException() {
+      assertAllowed(sm, new RunnableWithException() {
         @Override
         public void run() throws Exception {
           throw new CantDoItException();
@@ -80,7 +90,7 @@ public class LessIOSecurityManagerTest extends LessIOSecurityManagerTestHelper {
 
   @Test
   public void testAssertDisallowed() {
-    assertDisallowed(new RunnableWithException() {
+    assertDisallowed(sm, new RunnableWithException() {
       @Override
       public void run() throws Exception {
         throw new CantDoItException();
@@ -88,7 +98,7 @@ public class LessIOSecurityManagerTest extends LessIOSecurityManagerTestHelper {
     });
 
     try {
-      assertDisallowed(new RunnableWithException() {
+      assertDisallowed(sm, new RunnableWithException() {
         @Override
         public void run() throws Exception {
           // Intentionally left empty.
