@@ -33,6 +33,12 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
           "com.google.inject.*",
           "com.kaching.platform.common.*"
       }),
+      @CheckPackage(name = "com.kaching.platform.common.logging", mayDependOn = {
+          "com.kaching.platform.common",
+          "org.perf4j.commonslog",
+          "org.apache.commons.logging",
+          "org.apache.log4j"
+      }),
       @CheckPackage(name = "com.kaching.platform.common.values", mayDependOn = {
           "com.kaching.platform.common"
       }),
@@ -53,7 +59,8 @@ import com.kaching.platform.testing.DependencyTestRunner.Dependencies;
           "org.junit.*",
 
           // internal
-          "com.kaching.platform.common"
+          "com.kaching.platform.common",
+          "com.kaching.platform.common.logging"
       }),
       @CheckPackage(name = "com.kaching.platform.util", mayDependOn = {
           // nothing
