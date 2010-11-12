@@ -1,3 +1,12 @@
+kawala is Wealthfront's software platform, containing a number of distinct sub-projects:
+
+  kawala-common - Common helper code
+  kawala-converters - Convert objects to and from Strings using Instantiators
+  kawala-guice - Guice helpers
+  kawala-hibernate - Hibernate helpers
+  kawala-testing - Advanced Testing techniques
+
+
 kawala uses Apache Ivy for dependency management, so first bootstrap ivy:
 
   $ ant ivy-init
