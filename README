@@ -6,6 +6,8 @@ kawala is Wealthfront's software platform, containing a number of distinct sub-p
   kawala-hibernate - Hibernate helpers
   kawala-testing - Advanced Testing techniques
 
+Please read http://code.google.com/p/kawala/wiki/Rationale for more details.
+
 
 kawala uses Apache Ivy for dependency management, so first bootstrap ivy:
 
