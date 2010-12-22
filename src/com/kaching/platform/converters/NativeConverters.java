@@ -77,7 +77,7 @@ class NativeConverters {
       if ("false".equalsIgnoreCase(trimmed)) {
         return false;
       }
-      throw new IllegalArgumentException("representation is not a valid boolean");
+      throw new IllegalArgumentException(String.format("representation is not a valid boolean : %s", representation));
     }
   };
 
