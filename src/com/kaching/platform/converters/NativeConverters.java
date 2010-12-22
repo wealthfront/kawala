@@ -15,6 +15,7 @@ import static java.lang.String.format;
 class NativeConverters {
 
   static abstract class ConverterWithToString<T> implements Converter<T> {
+    @Override
     public String toString(T value) {
       return value.toString();
     }
@@ -69,7 +70,14 @@ class NativeConverters {
   static final Converter<Boolean> C_BOOLEAN = new ConverterWithToString<Boolean>() {
     @Override
     public Boolean fromString(String representation) {
-      return Boolean.parseBoolean(representation);
+      String trimmed = representation.trim();
+      if ("true".equalsIgnoreCase(trimmed)) {
+        return true;
+      }
+      if ("false".equalsIgnoreCase(trimmed)) {
+        return false;
+      }
+      throw new IllegalArgumentException("representation is not a valid boolean");
     }
   };
 

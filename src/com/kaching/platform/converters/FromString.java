@@ -14,6 +14,7 @@ public interface FromString<T> {
 
   /**
    * Converts a textual representation into a value.
+   * Throws an {@link IllegalArgumentException} if the value cannot be converted.
    * @param the textual representation to convert.
    * @return the value represented by the textual representation.
    */
