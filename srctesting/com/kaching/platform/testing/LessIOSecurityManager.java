@@ -19,9 +19,6 @@ import java.security.Permission;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.internal.runners.BeforeAndAfterRunner;
-import org.junit.internal.runners.TestMethodRunner;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -485,13 +482,14 @@ public class LessIOSecurityManager extends SecurityManager {
   }
 
   private void checkClassContextPermissions(final Class<?>[] classContext, final Predicate<Class<?>> classAuthorized) throws CantDoItException {
+    // Only check permissions when we're running in the context of a JUnit test.
     boolean encounteredTestMethodRunner = false;
     for (Class<?> clazz : classContext) {
-      if (clazz.equals(org.junit.internal.runners.TestMethodRunner.class)) {
+      String className = clazz.getName();
+      if (null != className && className.startsWith("org.junit.") && className.contains(".runners.")) {
         encounteredTestMethodRunner = true;
       }
     }
-
     if (!encounteredTestMethodRunner) {
       return;
     }
@@ -525,9 +523,11 @@ public class LessIOSecurityManager extends SecurityManager {
     // array is the class that contains our test.
     Class<?> testClass = null;
     for (Class<?> cl : classContext) {
-      if (cl.equals(TestMethodRunner.class) || cl.equals(BeforeAndAfterRunner.class)) {
+      String className = cl.getName();
+      if (null != className && className.startsWith("org.junit.") && className.contains(".runners.")) {
         break;
       }
+
       testClass = cl;
     }
 
