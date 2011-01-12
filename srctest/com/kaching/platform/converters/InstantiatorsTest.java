@@ -138,7 +138,7 @@ public class InstantiatorsTest {
         .createInstantiator(ConstructMe5OptionalityWithDefaultValue.class)
         .newInstance((String) null);
     assertNotNull(instance);
-    assertEquals(90, instance.number);
+    assertEquals((Integer) 90, instance.number);
   }
 
   static class ConstructMe6OptionalType {
@@ -354,7 +354,7 @@ public class InstantiatorsTest {
     ObjectUsesValueWithConverterAsInnerClass instance = instantiator
         .newInstance("5");
     assertNotNull(instance);
-    assertEquals(5, instance.value.getId());
+    assertEquals((Integer) 5, instance.value.getId());
   }
 
   private void checkObjectWithListOfIntAndListOfBoolean(
