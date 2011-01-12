@@ -29,8 +29,8 @@ public class FiniteConverterTest {
 
   @Test
   public void fromAndTo() throws Exception {
-    assertEquals(1, converter.fromString("a"));
-    assertEquals(2, converter.fromString("b"));
+    assertEquals((Integer) 1, converter.fromString("a"));
+    assertEquals((Integer) 2, converter.fromString("b"));
     assertEquals("a", converter.toString(1));
     assertEquals("b", converter.toString(2));
   }

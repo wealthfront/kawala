@@ -612,7 +612,9 @@ public class InstantiatorImplFactoryTest {
 
   @Test
   public void createConverter_double() {
-    testConverter(double.class, "3", 3, "3");
+    testConverter(double.class, "3", 3.0d, "3.0");
+    testConverter(double.class, "3.0", 3.0d, "3.0");
+    testConverter(double.class, "3.110", 3.11d, "3.11");
   }
 
   @Test

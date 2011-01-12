@@ -227,12 +227,12 @@ public class InstantiatorImplTest {
         .newInstance("1", "2.6", "3", "c", "4", "true", "5.5", "6");
     assertNotNull(instance);
     assertEquals(1, instance.i);
-    assertEquals(2.6d, instance.d);
+    assertEquals(2.6d, instance.d, 0.0);
     assertEquals(3, instance.s);
     assertEquals('c', instance.c);
     assertEquals(4L, instance.l);
     assertEquals(true, instance.b);
-    assertEquals(5.5f, instance.f);
+    assertEquals(5.5f, instance.f, 0.0);
     assertEquals(6, instance.y);
   }
 
