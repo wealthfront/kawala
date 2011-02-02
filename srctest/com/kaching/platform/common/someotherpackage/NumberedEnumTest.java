@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.kaching.platform.common.Option;
 import com.kaching.platform.common.values.NumberedEnum;
 
 public class NumberedEnumTest {
@@ -21,7 +22,7 @@ public class NumberedEnumTest {
   @Test
   public void valueOfHit1() {
     assertEquals(
-        SomeClass.MySuperEnum.YO,
+        Option.some(SomeClass.MySuperEnum.YO),
         NumberedEnum.valueOf(SomeClass.MySuperEnum.class, 1));
   }
 

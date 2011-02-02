@@ -11,7 +11,6 @@
 package com.kaching.platform.common.values;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -19,8 +18,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.MapMaker;
+import com.kaching.platform.common.Option;
 
 /**
  * Utility class to help with numbered enums. A numbered enum is one that
@@ -52,17 +52,12 @@ public class NumberedEnum {
    * Returns the enum constant of the specified enum type with the specified
    * number. (This function is similar to {@link Enum#valueOf(Class, String)}.)
    *
-   * @throws IllegalArgumentException if no enum match the provided number
    * @throws NullPointerException if the {@code value} is {@code null}
    */
   @SuppressWarnings("unchecked")
-  public static <E extends Enum<E> & NumberedValue> E valueOf(final Class<E> type, int number) {
+  public static <E extends Enum<E> & NumberedValue> Option<E> valueOf(final Class<E> type, int number) {
     checkNotNull(type);
     E value = (E) mappings.get(type).get(number);
-    if (value == null) {
-      throw new IllegalArgumentException(format(
-          "Unknown mapping %d for enum class %s", number, type));
-    }
-    return value;
+    return Option.of(value);
   }
 }
