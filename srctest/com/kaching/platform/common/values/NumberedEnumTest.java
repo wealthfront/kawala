@@ -11,6 +11,7 @@
 package com.kaching.platform.common.values;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -28,17 +29,17 @@ public class NumberedEnumTest {
     NumberedEnum.valueOf((Class<TestMe>) null, 89);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void valueOfUnknownNumber() {
-    NumberedEnum.valueOf(TestMe.class, 89);
+    assertFalse(NumberedEnum.valueOf(TestMe.class, 89).isDefined());
   }
 
   private TestMe get(int number) {
-    return NumberedEnum.valueOf(TestMe.class, number);
+    return NumberedEnum.valueOf(TestMe.class, number).getOrThrow();
   }
-  
+
   enum TestMe implements NumberedValue {
-    
+
     A(1),
     B(2),
     C(3);
@@ -48,12 +49,12 @@ public class NumberedEnumTest {
     private TestMe(int number) {
       this.number = number;
     }
-    
+
     @Override
     public int getNumber() {
       return number;
     }
-    
+
   }
-  
+
 }
