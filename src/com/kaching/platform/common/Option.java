@@ -15,7 +15,6 @@ import static java.lang.String.format;
 import java.util.Iterator;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 
 /**
@@ -106,7 +105,6 @@ public abstract class Option<T> implements Iterable<T> {
     private final U u;
 
     private Some(U u) {
-      Preconditions.checkNotNull(u);
       this.u = u;
     }
 
