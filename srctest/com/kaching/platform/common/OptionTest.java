@@ -42,6 +42,11 @@ public class OptionTest {
   }
 
   @Test
+  public void someTakesNull() {
+    assertNull(Option.some(null).getOrThrow());
+  }
+
+  @Test
   public void noneGetOrNull() throws Exception {
     assertNull(Option.none().getOrNull());
   }
@@ -89,12 +94,12 @@ public class OptionTest {
 
   @Test
   public void someGetOrNull() throws Exception {
-    assertEquals((Integer) 600, Option.some(600).getOrNull());
+    assertEquals(600, Option.some(600).getOrNull());
   }
 
   @Test
   public void someGetOrThrowNoParam() {
-    assertEquals((Integer) 600, Option.some(600).getOrThrow());
+    assertEquals(600, Option.some(600).getOrThrow());
   }
 
   @Test
@@ -136,7 +141,7 @@ public class OptionTest {
 
   @Test
   public void getOrElseEager() {
-    assertEquals((Integer) 3, Option.some(3).getOrElse(2));
+    assertEquals(3, Option.some(3).getOrElse(2));
     assertEquals(2, Option.none().getOrElse(2));
   }
 
@@ -149,7 +154,7 @@ public class OptionTest {
       }
     };
 
-    assertEquals((Integer) 3, Option.some(3).getOrElse(defaultValue));
+    assertEquals(3, Option.some(3).getOrElse(defaultValue));
     assertFalse(defaultValue.isEvaluated());
 
     /* Note: Parameterizing the none call is required otherwise Object is
@@ -158,7 +163,7 @@ public class OptionTest {
      * such an expression but rather key off a properly parameterized optional
      * value.
      */
-    assertEquals((Integer) 2, Option.<Integer>none().getOrElse(defaultValue));
+    assertEquals(2, Option.<Integer>none().getOrElse(defaultValue));
     assertTrue(defaultValue.isEvaluated());
   }
 
