@@ -125,7 +125,7 @@ public class OptionTest {
 
   @Test
   public void someTransformReturnsNull() throws Exception {
-    assertTrue(Option.some(1).transform(
+    assertFalse(Option.some(1).transform(
         new Function<Integer, String>() {
           @Override
           public String apply(Integer from) {
