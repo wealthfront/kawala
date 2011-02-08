@@ -166,7 +166,7 @@ public abstract class Option<T> implements Iterable<T> {
 
     @Override
     public <V> Option<V> transform(Function<U, V> function) {
-      return Option.some(function.apply(u));
+      return Option.of(function.apply(u));
     }
 
     @Override
