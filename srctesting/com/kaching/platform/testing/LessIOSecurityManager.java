@@ -481,12 +481,14 @@ public class LessIOSecurityManager extends SecurityManager {
     return true;
   }
 
-  private void checkClassContextPermissions(final Class<?>[] classContext, final Predicate<Class<?>> classAuthorized) throws CantDoItException {
+  private void checkClassContextPermissions(final Class<?>[] classContext,
+		  final Predicate<Class<?>> classAuthorized) throws CantDoItException {
     // Only check permissions when we're running in the context of a JUnit test.
     boolean encounteredTestMethodRunner = false;
     for (Class<?> clazz : classContext) {
-      String className = clazz.getName();
-      if (null != className && className.startsWith("org.junit.") && className.contains(".runners.")) {
+      if (clazz.equals(org.junit.runners.ParentRunner.class)
+          || clazz.equals(org.junit.internal.runners.statements.RunAfters.class)
+          || clazz.equals(org.junit.internal.runners.statements.RunBefores.class)) {
         encounteredTestMethodRunner = true;
       }
     }
@@ -513,8 +515,8 @@ public class LessIOSecurityManager extends SecurityManager {
       for (Class<?> cl : classContext) {
         log.debug("%s: Class Context: %s %s", testName, cl.getCanonicalName(), cl);
       }
-
     }
+
     throw e;
   }
 
@@ -522,13 +524,13 @@ public class LessIOSecurityManager extends SecurityManager {
     // The first class right before TestMethodRunner in the class context
     // array is the class that contains our test.
     Class<?> testClass = null;
-    for (Class<?> cl : classContext) {
-      String className = cl.getName();
-      if (null != className && className.startsWith("org.junit.") && className.contains(".runners.")) {
+    for (Class<?> clazz : classContext) {
+      if (clazz == org.junit.runners.ParentRunner.class
+          || clazz == org.junit.internal.runners.statements.RunAfters.class
+          || clazz == org.junit.internal.runners.statements.RunBefores.class) {
         break;
       }
-
-      testClass = cl;
+      testClass = clazz;
     }
 
     final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
