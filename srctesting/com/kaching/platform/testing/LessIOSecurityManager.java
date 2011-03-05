@@ -507,7 +507,10 @@ public class LessIOSecurityManager extends SecurityManager {
 
     if (this.reporting) {
       StackTraceElement testClassStackFrame = currentTest(classContext);
-      String testName = format("%s.%s():%d", testClassStackFrame.getClassName(), testClassStackFrame.getMethodName(), testClassStackFrame.getLineNumber());
+      String testName = "unknown test";
+      if (testClassStackFrame != null) {
+        testName = format("%s.%s():%d", testClassStackFrame.getClassName(), testClassStackFrame.getMethodName(), testClassStackFrame.getLineNumber());
+      }
       log.error("%s: No %s at %s", testName, classAuthorized, testName);
       for (StackTraceElement el : currentThread().getStackTrace()) {
         log.debug("%s: Stack: %s.%s():%d", testName, el.getClassName(), el.getMethodName(), el.getLineNumber());
