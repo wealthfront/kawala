@@ -167,7 +167,7 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
-    public <V> Option<V> transform(Function<U, V> function) {
+    public <V> Option<V> transform(Function<? super U, V> function) {
       return Option.of(function.apply(u));
     }
 
@@ -244,7 +244,7 @@ public abstract class Option<T> implements Iterable<T> {
     return !isEmpty();
   }
 
-  public abstract <U> Option<U> transform(Function<T, U> function);
+  public abstract <U> Option<U> transform(Function<? super T, U> function);
 
   /**
    * Gets the none object for the given type.
