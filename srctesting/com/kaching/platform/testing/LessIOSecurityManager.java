@@ -250,9 +250,9 @@ public class LessIOSecurityManager extends SecurityManager {
         return;
       }
 
-      // Ant's JUnit task writes
-      if (file.startsWith("/tmp/junit")) {
-        return;
+      // Ant's JUnit task writes to /tmp/junitXXX
+      if (file.startsWith("/dev/random") || file.startsWith("/dev/urandom") || file.startsWith("/tmp/junit")) {
+         return;
       }
 
       /*
