@@ -75,6 +75,7 @@ public class LessIOSecurityManager extends SecurityManager {
   protected static final String JAVA_HOME = System.getProperty("java.home");
   protected static final String PATH_SEPARATOR = System.getProperty("path.separator");
   protected static final List<String> CP_PARTS = ImmutableList.of(System.getProperty("java.class.path").split(PATH_SEPARATOR));
+  protected static final String TMP_DIR = System.getProperty("java.io.tmpdir").replaceFirst("/$", "");
   private static final Set<Class<?>> whitelistedClasses = ImmutableSet.<Class<?>>of(
                                                             java.lang.ClassLoader.class,
                                                             java.net.URLClassLoader.class);
@@ -280,7 +281,7 @@ public class LessIOSecurityManager extends SecurityManager {
             for (String p : a.paths()) {
               if ((p.equals("*"))
                   || (p.equals(file))
-                  || (p.equals("%TMP_DIR%") && (file.startsWith(System.getProperty("java.io.tmpdir"))))
+                  || (p.contains("%TMP_DIR%") && (file.startsWith(p.replaceAll("%TMP_DIR%", TMP_DIR))))
                   || (p.startsWith("*") && p.endsWith("*") && file.contains(p.split("\\*")[1]))
                   || (p.startsWith("*") && file.endsWith(p.replaceFirst("^\\*", "")))
                   || (p.endsWith("*") && file.startsWith(p.replaceFirst("\\*$", "")))) {
