@@ -438,7 +438,7 @@ public class ConstructorAnalysisTest {
 
   @Test
   public void regression1() throws IOException {
-    InputStream classInputStream = this.getClass().getResourceAsStream("/com/kaching/platform/converters/example_scala_class01.bin");
+    InputStream classInputStream = this.getClass().getResourceAsStream("example_scala_class01.bin");
     assertNotNull(classInputStream);
     Map<String, FormalParameter> assignements =
       analyse(classInputStream,
@@ -450,7 +450,7 @@ public class ConstructorAnalysisTest {
 
   @Test
   public void regression2() throws IOException {
-    InputStream classInputStream = this.getClass().getResourceAsStream("/com/kaching/platform/converters/example_scala_class02.bin");
+    InputStream classInputStream = this.getClass().getResourceAsStream("example_scala_class02.bin");
     assertNotNull(classInputStream);
     Map<String, FormalParameter> assignements =
       analyse(classInputStream,
