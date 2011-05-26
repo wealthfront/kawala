@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>kawala</artifactId>
+		<groupId>com.kaching.platform</groupId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<groupId>com.kaching.platform</groupId>
+	<artifactId>kawala-guice</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<name>kawala-guice</name>
+	<url>http://maven.apache.org</url>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.kaching.platform</groupId>
+			<artifactId>kawala-common</artifactId>
+			<version>0.0.1-bootstrapping</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kaching.platform</groupId>
+			<artifactId>kawala-testing</artifactId>
+			<version>0.0.1-bootstrapping</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kaching.platform</groupId>
+			<artifactId>libs-in-jars</artifactId>
+			<version>2.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kaching.platform.libs-in-jars</groupId>
+			<artifactId>guice</artifactId>
+			<version>2.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kaching.platform.libs-in-jars</groupId>
+			<artifactId>javax-inject</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+</project>

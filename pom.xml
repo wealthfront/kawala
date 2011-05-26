@@ -17,6 +17,7 @@
 		<module>libs-in-jars</module>
 		<module>kawala-common</module>
 		<module>kawala-testing</module>
+		<module>kawala-guice</module>
 	</modules>
 
 	<licenses>
