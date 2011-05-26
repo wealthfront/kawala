@@ -14,6 +14,7 @@
 	<url>http://eng.wealthfront.com/</url>
 
 	<modules>
+		<module>libs-in-jars</module>
 		<module>kawala-common</module>
 	</modules>
 
