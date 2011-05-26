@@ -19,6 +19,7 @@
 		<module>kawala-testing</module>
 		<module>kawala-guice</module>
 		<module>kawala-hibernate</module>
+		<module>kawala-converters</module>
 	</modules>
 
 	<licenses>
