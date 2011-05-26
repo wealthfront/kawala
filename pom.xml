@@ -18,6 +18,7 @@
 		<module>kawala-common</module>
 		<module>kawala-testing</module>
 		<module>kawala-guice</module>
+		<module>kawala-hibernate</module>
 	</modules>
 
 	<licenses>
