@@ -10,7 +10,7 @@
  */
 package com.kaching.platform.common.logging;
 
-import static java.lang.String.format;
+import static com.kaching.platform.common.Strings.format;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
