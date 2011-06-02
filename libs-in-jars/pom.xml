@@ -6,12 +6,11 @@
 	<parent>
 		<artifactId>kawala</artifactId>
 		<groupId>com.kaching.platform</groupId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>libs-in-jars</artifactId>
-	<version>2.0-SNAPSHOT</version>
-	<name>guice-fork</name>
+	<version>1.0.0-SNAPSHOT</version>
 	<url>http://maven.apache.org</url>
 	<build>
 		<plugins>
@@ -44,7 +43,7 @@
 							<file>${project.basedir}/src/main/jar/javax.inject.jar</file>
 							<groupId>com.kaching.platform.libs-in-jars</groupId>
 							<artifactId>javax-inject</artifactId>
-							<version>1.0-SNAPSHOT</version>
+							<version>1.0.0-SNAPSHOT</version>
 							<packaging>jar</packaging>
 						</configuration>
 					</execution>

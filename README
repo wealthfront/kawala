@@ -8,15 +8,10 @@ kawala is Wealthfront's software platform, containing a number of distinct sub-p
 
 Please read http://code.google.com/p/kawala/wiki/Rationale for more details.
 
+Kawala uses Maven 3 for dependency management.
 
-kawala uses Apache Ivy for dependency management, so first bootstrap ivy:
+To build all Kawala components, test, and install them to your local Maven repository,
+  $ mvn install
 
-  $ ant ivy-init
-
-Then build kawala:
-
-  $ ant
-
-To generate Eclipse .project and .classpath files: 
-
-  * ant eclipse
+To open Kawala in Eclipse, use the m2eclipse plugin (http://m2eclipse.sonatype.org/installing-m2eclipse.html).
+Then, in Eclipse, File > Import > Existing Maven Projects.
