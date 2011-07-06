@@ -8,13 +8,14 @@
 		<groupId>com.kaching.platform</groupId>
 		<artifactId>kawala-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../kawala-parent/pom.xml</relativePath>
 	</parent>
 	
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>kawala-converters</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
-	<name>Kawala Converters</name>
+	<name>Kawala - Converters</name>
 	
 	<dependencies>
 		<dependency>

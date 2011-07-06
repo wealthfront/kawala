@@ -8,13 +8,14 @@
 		<groupId>com.kaching.platform</groupId>
 		<artifactId>kawala-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../kawala-parent/pom.xml</relativePath>		
 	</parent>
 	
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>kawala-guice</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	
-	<name>kawala-guice</name>
+	<name>Kawala - Guice</name>
 	
 	<dependencies>
 		<dependency>

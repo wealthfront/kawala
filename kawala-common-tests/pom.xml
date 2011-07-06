@@ -8,45 +8,53 @@
 		<groupId>com.kaching.platform</groupId>
 		<artifactId>kawala-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../kawala-parent/pom.xml</relativePath>
 	</parent>
 	
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>kawala-common-tests</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	
-	<name>Kawala Common - Test Suite</name>
-	<description>This is the test suite for com.kaching.platform:kawala-common.</description>
-
+	<name>Kawala - Common - Tests</name>
+	<description>This module contains the unit tests for com.kaching.platform:kawala-common.
+		It is required because the tests, com.kaching.platform:kawala-common test scope,
+		introduces a cycle in the dependency graph between [...]:kawala-common and [...]:kawala-testing.</description>
 	<dependencies>
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-common</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-converters</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-testing</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
+			<scope>test</scope>			
 		</dependency>
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>libs-in-jars</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.google.collections</groupId>
 			<artifactId>google-collections</artifactId>
 			<version>1.0-rc2</version>
+			<scope>test</scope>			
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 			<version>1.1.1</version>
+			<scope>test</scope>			
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -66,11 +74,13 @@
 					<artifactId>jms</artifactId>
 				</exclusion>
 			</exclusions>
+			<scope>test</scope>			
 		</dependency>
 		<dependency>
 			<groupId>org.perf4j</groupId>
 			<artifactId>perf4j</artifactId>
 			<version>0.9.14</version>
+			<scope>test</scope>			
 		</dependency>
 	</dependencies>
 </project>
