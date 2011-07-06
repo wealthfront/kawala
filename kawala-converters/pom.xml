@@ -3,35 +3,29 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
+	
 	<parent>
-		<artifactId>kawala</artifactId>
 		<groupId>com.kaching.platform</groupId>
+		<artifactId>kawala-parent</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
+	
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>kawala-converters</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
-	<name>kawala-converters</name>
-	<url>http://maven.apache.org</url>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+
+	<name>Kawala Converters</name>
+	
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-common</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-                        <groupId>com.kaching.platform</groupId>
-                        <artifactId>kawala-guice</artifactId>
-                        <version>1.0.0-SNAPSHOT</version>
+            <groupId>com.kaching.platform</groupId>
+            <artifactId>kawala-guice</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>asm</groupId>
@@ -43,6 +37,8 @@
 			<artifactId>asm-commons</artifactId>
 			<version>3.2</version>
 		</dependency>
+		
+		
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>libs-in-jars</artifactId>

@@ -16,7 +16,7 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Wealthfront Kawala</name>
+	<name>Wealthfront Kawala - Aggregator Module</name>
 	<description>Kawala: Wealthfront's Modern Platform</description>
 	<url>http://code.google.com/p/kawala</url>
 
