@@ -18,6 +18,7 @@ import java.net.InetAddress;
 import java.security.Permission;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -74,7 +75,11 @@ public class LessIOSecurityManager extends SecurityManager {
   private static final Log log = Log.getLog(LessIOSecurityManager.class);
   protected static final String JAVA_HOME = System.getProperty("java.home");
   protected static final String PATH_SEPARATOR = System.getProperty("path.separator");
-  protected static final List<String> CP_PARTS = ImmutableList.of(System.getProperty("java.class.path").split(PATH_SEPARATOR));
+  
+  // Updated at SecurityManager init and again at every ClassLoader init.
+  protected static final AtomicReference<List<String>> CP_PARTS = 
+          new AtomicReference<List<String>>(getClassPath());
+  
   protected static final String TMP_DIR = System.getProperty("java.io.tmpdir").replaceFirst("/$", "");
   private static final Set<Class<?>> whitelistedClasses = ImmutableSet.<Class<?>>of(
                                                             java.lang.ClassLoader.class,
@@ -107,6 +112,10 @@ public class LessIOSecurityManager extends SecurityManager {
 
   protected LessIOSecurityManager(boolean reporting) {
     this.reporting = reporting;
+  }
+  
+  private static ImmutableList<String> getClassPath() {
+      return ImmutableList.of(System.getProperty("java.class.path").split(PATH_SEPARATOR));
   }
 
   // {{ Allowed only via {@link @AllowNetworkAccess}, {@link @AllowDNSResolution}, or {@link @AllowNetworkMulticast})
@@ -261,7 +270,7 @@ public class LessIOSecurityManager extends SecurityManager {
        * suboptimal location to avoid ClassCircularityErrors that can occur when
        * attempting to load an anonymous class.
        */
-      for (String part : CP_PARTS) {
+      for (String part : CP_PARTS.get()) {
         if (file.startsWith(part)) {
           // Files in the CLASSPATH are always allowed
           return;
@@ -443,7 +452,12 @@ public class LessIOSecurityManager extends SecurityManager {
 
   @Override public void checkSetFactory() {}
 
-  @Override public void checkCreateClassLoader() {}
+  @Override public void checkCreateClassLoader() {
+      // This is re-set on classloader creation in case the classpath has changed.
+      // In particular, Maven's Surefire booter changes the classpath after the security
+      // manager has been initialized.
+      CP_PARTS.set(getClassPath());
+  }
 
   @Override public void checkPropertiesAccess() {}
 
