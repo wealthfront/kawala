@@ -20,7 +20,6 @@
 
 	<modules>
 		<module>kawala-parent</module>
-		<module>libs-in-jars</module>
 		<module>kawala-common</module>
 		<module>kawala-common-tests</module>
 		<module>kawala-testing</module>

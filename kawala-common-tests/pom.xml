@@ -38,12 +38,7 @@
 			<version>1.0.0-SNAPSHOT</version>
 			<scope>test</scope>			
 		</dependency>
-		<dependency>
-			<groupId>com.kaching.platform</groupId>
-			<artifactId>libs-in-jars</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>

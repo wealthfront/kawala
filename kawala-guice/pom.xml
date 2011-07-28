@@ -29,20 +29,11 @@
 			<version>1.0.0-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
-			<groupId>com.kaching.platform</groupId>
-			<artifactId>libs-in-jars</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.kaching.platform.libs-in-jars</groupId>
+			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
-			<version>2.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.kaching.platform.libs-in-jars</groupId>
-			<artifactId>javax-inject</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>2.0</version>
 		</dependency>
 	</dependencies>
 </project>
