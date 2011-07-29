@@ -115,7 +115,7 @@ public class LessIOSecurityManager extends SecurityManager {
   }
   
   private static ImmutableList<String> getClassPath() {
-      return ImmutableList.of(System.getProperty("java.class.path").split(PATH_SEPARATOR));
+      return ImmutableList.copyOf(System.getProperty("java.class.path").split(PATH_SEPARATOR));
   }
 
   // {{ Allowed only via {@link @AllowNetworkAccess}, {@link @AllowDNSResolution}, or {@link @AllowNetworkMulticast})
