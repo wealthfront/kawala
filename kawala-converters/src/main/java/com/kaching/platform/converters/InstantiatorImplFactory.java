@@ -45,10 +45,13 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +61,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.TypeLiteral;
-import com.google.inject.internal.MoreTypes;
 import com.kaching.platform.common.Errors;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.common.types.Unification;
@@ -261,14 +263,14 @@ class InstantiatorImplFactory<T> {
     List<Function<Type, Option<? extends Converter<?>>>> functions = binder.getFunctions();
     if (instances != null) {
       for (Entry<TypeLiteral<?>, Converter<?>> entry : instances.entrySet()) {
-        if (MoreTypes.isInstance(entry.getKey().getType(), targetType)) {
+        if (isInstance(entry.getKey().getType(), targetType)) {
           return Option.some(entry.getValue());
         }
       }
     }
     if (bindings != null) {
       for (Entry<TypeLiteral<?>, Class<? extends Converter<?>>> entry : bindings.entrySet()) {
-        if (MoreTypes.isInstance(entry.getKey().getType(), targetType)) {
+        if (isInstance(entry.getKey().getType(), targetType)) {
           for (Converter<?> converter : instantiateConverter(entry.getValue(), targetType)) {
             return Option.some(converter);
           }
@@ -421,7 +423,7 @@ class InstantiatorImplFactory<T> {
     try {
       Type producedType =
           Unification.getActualTypeArgument(converterClass, Converter.class, 0);
-      if (MoreTypes.isInstance(producedType, targetType)) {
+      if (isInstance(producedType, targetType)) {
         Constructor<? extends Converter<?>> ctor = converterClass.getDeclaredConstructor();
         ctor.setAccessible(true);
         return Option.some(ctor.newInstance());
@@ -479,4 +481,143 @@ class InstantiatorImplFactory<T> {
     return errors;
   }
 
+  /**
+   * Verifies that {@code b} is an instance of the type scheme {@code a}.
+   * 
+   * Formerly part of the Guice internal MoreTypes helper class; since the class
+   * is internal and has since vanished the code is replaced from
+   * <a href="https://github.com/pascallouisperez/guice-jit-providers/blob/fca95d48b9536f5429c991e1e81b07aaa51cceae/src/com/google/inject/internal/MoreTypes.java">the original source</a>
+   */
+  private static boolean isInstance(Type a, Type b) {
+    if (a instanceof Class<?>) {
+      return a.equals(b);
+    } else if (a instanceof GenericArrayType) {
+      if (b instanceof GenericArrayType) {
+        return isInstance(
+            ((GenericArrayType) a).getGenericComponentType(),
+            ((GenericArrayType) b).getGenericComponentType());
+      } else {
+        return false;
+      }
+    } else if (a instanceof ParameterizedType) {
+      if (!(b instanceof ParameterizedType)) {
+        return false;
+      }
+      ParameterizedType parameterizedTypeA = (ParameterizedType) a;
+      ParameterizedType parameterizedTypeB = (ParameterizedType) b;
+      Type[] actualTypeArgumentsA = parameterizedTypeA.getActualTypeArguments();
+      Type[] actualTypeArgumentsB = parameterizedTypeB.getActualTypeArguments();
+      if (!parameterizedTypeA.getRawType().equals(parameterizedTypeB.getRawType()) ||
+          actualTypeArgumentsA.length != actualTypeArgumentsB.length) {
+        return false;
+      }
+      for (int i = 0; i < actualTypeArgumentsA.length; i++) {
+        if (!isInstance(actualTypeArgumentsA[i], actualTypeArgumentsB[i])) {
+          return false;
+        }
+      }
+      return true;
+    } else if (a instanceof TypeVariable<?>) {
+      TypeVariable<?> typeVariable = (TypeVariable<?>) a;
+      for (Type bound : typeVariable.getBounds()) {
+        return isAssignableFrom(bound, b);
+      }
+      return true;
+    } else if (a instanceof WildcardType) {
+      WildcardType wildcardType = (WildcardType) a;
+      for (Type lowerBound : wildcardType.getLowerBounds()) {
+        if (!isAssignableFrom(b, lowerBound)) {
+          return false;
+        }
+      }
+      for (Type upperBound : wildcardType.getUpperBounds()) {
+        if (!isAssignableFrom(upperBound, b)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    throw new IllegalStateException();
+  }
+  
+  /**
+   * Equivalent of {@link Class#isAssignableFrom(Class)} at the {@link Type}
+   * level.
+   * 
+   * Formerly part of the Guice internal MoreTypes helper class; since the class
+   * is internal and has since vanished the code is replaced from
+   * <a href="https://github.com/pascallouisperez/guice-jit-providers/blob/fca95d48b9536f5429c991e1e81b07aaa51cceae/src/com/google/inject/internal/MoreTypes.java">the original source</a>
+   */
+  private static boolean isAssignableFrom(Type a, Type b) {
+    if (a instanceof Class<?>) {
+      Class<?> classA = (Class<?>) a;
+      if (b instanceof Class<?>) {
+        return classA.isAssignableFrom((Class<?>) b);
+      } else if (b instanceof GenericArrayType) {
+        return classA.isArray() && isAssignableFrom(
+            classA.getComponentType(), ((GenericArrayType) b).getGenericComponentType());
+      } else if (b instanceof ParameterizedType) {
+        return classA.isAssignableFrom((Class<?>) ((ParameterizedType) b).getRawType());
+      } else if (b instanceof TypeVariable<?>) {
+        TypeVariable<?> typeVariableB = (TypeVariable<?>) b;
+        for (Type upperBound : typeVariableB.getBounds()) {
+          if (!isAssignableFrom(a, upperBound)) {
+            return false;
+          }
+        }
+        return true;
+      } else if (b instanceof WildcardType) {
+        WildcardType wildcardTypeB = (WildcardType) b;
+        for (Type upperBound : wildcardTypeB.getUpperBounds()) {
+          if (!isAssignableFrom(a, upperBound)) {
+            return false;
+          }
+        }
+        return true;
+      }
+    } else if (a instanceof GenericArrayType) {
+      if (b instanceof GenericArrayType) {
+        return isAssignableFrom(
+            ((GenericArrayType) a).getGenericComponentType(),
+            ((GenericArrayType) b).getGenericComponentType());
+      }
+    } else if (a instanceof ParameterizedType) {
+      ParameterizedType parameterizedTypeA = (ParameterizedType) a;
+      if (b instanceof Class<?>) {
+        return isAssignableFrom(parameterizedTypeA.getRawType(), b);
+      } else if (b instanceof ParameterizedType) {
+        ParameterizedType parameterizedTypeB = (ParameterizedType) b;
+        Type[] actualTypeArgumentsA = parameterizedTypeA.getActualTypeArguments();
+        Type[] actualTypeArgumentsB = parameterizedTypeB.getActualTypeArguments();
+        if (actualTypeArgumentsA.length != actualTypeArgumentsB.length) {
+          return false;
+        }
+        for (int i = 0; i < actualTypeArgumentsA.length; i++) {
+          if (!isInstance(actualTypeArgumentsA[i], actualTypeArgumentsB[i])) {
+            return false;
+          }
+        }
+        return isAssignableFrom(
+            parameterizedTypeA.getRawType(),
+            parameterizedTypeB.getRawType());
+      }
+    } else if (a instanceof TypeVariable<?>) {
+      for (Type bound : ((TypeVariable<?>) a).getBounds()) {
+        if (!isAssignableFrom(bound, b)) {
+          return false;
+        }
+      }
+      return true;
+    } else if (a instanceof WildcardType) {
+      WildcardType wildcardType = (WildcardType) a;
+      Type[] lowerBounds = wildcardType.getLowerBounds();
+      for (Type lowerBound : lowerBounds) {
+        if (!isAssignableFrom(lowerBound, b)) {
+          return false;
+        }
+      }
+      return lowerBounds.length != 0;
+    }
+    return false;
+  }
 }

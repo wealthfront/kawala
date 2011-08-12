@@ -11,7 +11,7 @@
 package com.kaching.platform.converters;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.inject.internal.Maps.newHashMap;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.kaching.platform.converters.InstantiatorErrors.duplicateConverterBindingForType;
 
 import java.lang.reflect.Type;
