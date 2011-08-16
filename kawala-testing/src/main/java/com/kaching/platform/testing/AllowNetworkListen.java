@@ -19,7 +19,9 @@ import java.lang.annotation.Target;
 /**
  * Under the regime of {@link LessIOSecurityManager}, only classes annotated
  * with this annotation may listen to an IP port. {@link #ports()} is the list
- * of allowed ports.
+ * of allowed ports.  0 stands for "any ephemeral port" which defaults to
+ * <code>32768 - 65535</code>, inclusive.  This may be adjusted via the Java properties
+ * <code>kawala.testing.low-ephemeral-port</code> and <code>kawala.testing.high-ephemeral-port</code>
  */
 @Retention(RUNTIME)
 @Target(TYPE)

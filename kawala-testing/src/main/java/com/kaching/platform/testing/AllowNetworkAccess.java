@@ -21,7 +21,10 @@ import java.lang.annotation.Target;
  * with this annotation may manipulate network sockets. {@link #endpoints()} is
  * the list of allowed IP endpoints (both local and remote) in the
  * "[hostname]:[port]" format (sans-quotes). [hostname] or [port] may be "*",
- * indicating that accessing any hostname, or port, is allowed.
+ * indicating that accessing any hostname, or port, is allowed.  Port may be 0,
+ * which indicates that connections may be made to ephemeral ports from the same
+ * process.  These ports must have been checked via {@link AllowNetworkListen} with
+ * a port of 0 to be considered.
  *
  * This annotation is used to express both:
  * <ul>
