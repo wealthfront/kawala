@@ -332,8 +332,9 @@ public class LessIOSecurityManager extends SecurityManager {
       checkClassContextPermissions(classContext, new Predicate<Class<?>>() {
         @Override
         public boolean apply(Class<?> input) {
-          if (input.getAnnotation(AllowExternalProcess.class) != null) {
-            // AllowExternalProcess implies @AllowLocalFileAccess({"%FD%"}),
+          if (input.getAnnotation(AllowExternalProcess.class) != null
+              || input.getAnnotation(AllowNetworkAccess.class) != null) {
+            // AllowExternalProcess and AllowNetworkAccess imply @AllowLocalFileAccess({"%FD%"}),
             // since it's required.
             return true;
           }
