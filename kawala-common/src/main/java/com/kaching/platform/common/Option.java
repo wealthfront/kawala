@@ -76,6 +76,11 @@ public abstract class Option<T> implements Iterable<T> {
     public boolean isEmpty() {
       return true;
     }
+    
+    @Override
+    public <U> U visit(OptionVisitor<Object, U> visitor) {
+      return visitor.caseNone();
+    }
 
     @Override
     public <U> Option<U> transform(Function<Object, U> function) {
@@ -167,6 +172,11 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public <V> V visit(OptionVisitor<? super U, V> visitor) {
+      return visitor.caseSome(u);
+    }
+    
+    @Override
     public <V> Option<V> transform(Function<? super U, V> function) {
       return Option.of(function.apply(u));
     }
@@ -244,8 +254,13 @@ public abstract class Option<T> implements Iterable<T> {
     return !isEmpty();
   }
 
-  public abstract <U> Option<U> transform(Function<? super T, U> function);
+  /**
+   * Visits the {@code Option} using the {@code visitor}.
+   */
+  public abstract <U> U visit(OptionVisitor<? super T, U> visitor);
 
+  public abstract <U> Option<U> transform(Function<? super T, U> function);
+  
   /**
    * Gets the none object for the given type.
    *

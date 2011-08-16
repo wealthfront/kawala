@@ -208,4 +208,34 @@ public class OptionTest {
             Option.some("foo"),
             Option.of("foo")));
   }
+
+  @Test
+  public void visitNone() {
+    assertTrue(Option.none().visit(new OptionVisitor<Object, Boolean>() {
+      @Override
+      public Boolean caseNone() {
+        return true;
+      }
+      @Override
+      public Boolean caseSome(Object t) {
+        return false;
+      }
+	  }));
+  }
+
+  @Test
+  public void visitSome() {
+    assertTrue(Option.some(10).visit(new OptionVisitor<Integer, Boolean>() {
+      @Override
+      public Boolean caseNone() {
+        return false;
+      }
+      @Override
+      public Boolean caseSome(Integer t) {
+        assertEquals(10, (int) t);
+        return true;
+      }
+    }));
+  }
+  
 }
