@@ -73,13 +73,17 @@ public class OptionTest {
   }
 
   @Test
-  public void noneTransform() throws Exception {
+  public void noneTransformDoesNothing() throws Exception {
+    final boolean[] workWasDone = new boolean[1];
+    
     Option.<Integer> none().transform(new Function<Integer, String>() {
       @Override
       public String apply(Integer from) {
+      	workWasDone[0] = true;
         return String.valueOf(from);
       }
     });
+    assertFalse(workWasDone[0]);
   }
 
   @Test
