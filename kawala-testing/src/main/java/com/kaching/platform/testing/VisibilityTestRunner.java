@@ -279,7 +279,7 @@ public class VisibilityTestRunner
         if (name.equals("<clinit>")) {
           // interface initialization method
         } else if (name.equals("<init>")) {
-          currentConstructor = new ParsedConstructor(currentClass, desc);
+          currentConstructor = new ParsedConstructor();
         } else {
           currentMethod = new ParsedMethod(currentClass, name, desc);
         }
