@@ -16,8 +16,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
 import org.perf4j.commonslog.CommonsLogStopWatch;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.kaching.platform.common.Pair;
-import com.kaching.platform.testing.VisibleForTesting;
 
 /**
  * A convenient interface on top of Log4J that makes using log4j along with
