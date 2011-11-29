@@ -49,14 +49,13 @@ public class ParsedElementsTest {
     assertEquals("com.google.protobuf.RpcUtil", parsed.getOwner());
     assertEquals("com.google.protobuf", parsed.getPackageName());
   }
-
+  
   @Test
   public void parseField() {
     ParsedElements.ParsedClass owner = new ParsedElements.ParsedClass("java/lang/System");
     ParsedField parsed = new ParsedElements.ParsedField(owner, "out");
     assertEquals("java.lang.System#out", parsed.toString());
     assertEquals(owner, parsed.getOwner());
-    assertEquals("out", parsed.getName());
     assertNotNull(parsed.load());
   }
 
@@ -64,10 +63,8 @@ public class ParsedElementsTest {
   public void parseMethod() {
     ParsedElements.ParsedClass owner = new ParsedElements.ParsedClass("java.util.Map");
     ParsedMethod parsed = new ParsedElements.ParsedMethod(owner, "size", "()I");
-    assertEquals("java.util.Map#size()I", parsed.toString());
+    assertEquals("java.util.Map#size()", parsed.toString());
     assertEquals(owner, parsed.getOwner());
-    assertEquals("size", parsed.getName());
-    assertEquals("()I", parsed.getSignature());
     assertNotNull(parsed.load());
   }
 
@@ -76,13 +73,8 @@ public class ParsedElementsTest {
     ParsedElements.ParsedClass owner = new ParsedElements.ParsedClass("java.lang.String");
     ParsedMethod parsed = new ParsedElements.ParsedMethod(owner, "format",
         "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;");
-    assertEquals(
-        "java.lang.String#format(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;",
-        parsed.toString());
+    assertEquals("java.lang.String#format(java.lang.String,java.lang.Object[])", parsed.toString());
     assertEquals(owner, parsed.getOwner());
-    assertEquals("format", parsed.getName());
-    assertEquals(
-        "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;", parsed.getSignature());
     assertNotNull(parsed.load());
   }
 

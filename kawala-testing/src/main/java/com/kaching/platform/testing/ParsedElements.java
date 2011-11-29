@@ -10,12 +10,18 @@
  */
 package com.kaching.platform.testing;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.transform;
 import static com.kaching.platform.common.Strings.format;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.objectweb.asm.Type;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 
 class ParsedElements {
@@ -28,12 +34,12 @@ class ParsedElements {
       this.name = name.replace("/", ".");
     }
 
-    String getName() {
-      return name;
-    }
-
     String getPackageName() {
       return name.substring(0, name.split("\\$")[0].lastIndexOf('.'));
+    }
+
+    String getOwner() {
+      return name.split("\\$")[0];
     }
 
     Class<?> load() {
@@ -51,11 +57,7 @@ class ParsedElements {
       }
       return clazz.getAnnotation(annotation);
     }
-
-    String getOwner() {
-      return name.split("\\$")[0];
-    }
-
+    
     @Override
     public String toString() {
       return name;
@@ -118,10 +120,6 @@ class ParsedElements {
       return owner;
     }
 
-    String getName() {
-      return name;
-    }
-
     Field load() {
       Class<?> clazz = owner.load();
       Field[] fields = clazz.getDeclaredFields();
@@ -168,24 +166,16 @@ class ParsedElements {
 
     private final ParsedClass owner;
     private final String name;
-    private final String signature;
+    private final String description;
 
-    ParsedMethod(ParsedClass owner, String name, String signature) {
+    ParsedMethod(ParsedClass owner, String name, String description) {
       this.owner = owner;
       this.name = name;
-      this.signature = signature;
+      this.description = description;
     }
 
     ParsedClass getOwner() {
       return owner;
-    }
-
-    String getName() {
-      return name;
-    }
-
-    String getSignature() {
-      return signature;
     }
 
     Method load() {
@@ -204,14 +194,25 @@ class ParsedElements {
       Method method = load();
       if (method == null) {
         throw new NullPointerException(
-            format("method %s with signature %s not found in %s", name, signature, owner));
+            format("method %s with signature %s not found in %s", name, description, owner));
       }
       return method.getAnnotation(annotation);
     }
 
     @Override
     public String toString() {
-      return owner + "#" + name + signature;
+      return format(
+          "%s#%s(%s)",
+          owner.toString(),
+          name,
+          Joiner.on(",").join(transform(
+              newArrayList(Type.getArgumentTypes(description)),
+              new Function<Type, String>() {
+                @Override
+                public String apply(Type from) {
+                  return from.getClassName();
+                }
+              })));
     }
 
     @Override
@@ -221,7 +222,7 @@ class ParsedElements {
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(owner, name, signature);
+      return Objects.hashCode(owner, name, description);
     }
 
     @Override
@@ -236,7 +237,7 @@ class ParsedElements {
       return
           owner.equals(that.owner) &&
           name.equals(that.name) &&
-          signature.equals(that.signature);
+          description.equals(that.description);
     }
 
   }

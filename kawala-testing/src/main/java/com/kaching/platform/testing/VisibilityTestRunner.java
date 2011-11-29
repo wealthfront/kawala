@@ -39,6 +39,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.commons.EmptyVisitor;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.kaching.platform.testing.ParsedElements.ParsedClass;
@@ -105,7 +106,7 @@ public class VisibilityTestRunner
   }
 
   public enum Intent {
-    PRIVATE, DEFAULT
+    PRIVATE, DEFAULT, PROTECTED
   }
 
   /**
@@ -150,8 +151,40 @@ public class VisibilityTestRunner
                   }
                 })));
   }
+  
+  /**
+   * Is {@code location} visible by {@code currentClass}?
+   */
+  @VisibleForTesting
+  boolean isVisible(ParsedElement location, final ParsedClass currentClass, Intent intent) {
+    switch (intent) {
+      case PRIVATE:
+        return location.visit(new DefaultParsedElementVisitor<Boolean>(true) {
+          @Override
+          public Boolean caseMethod(ParsedMethod location) {
+            String name = location.getOwner().getOwner();
+            String className = currentClass.getOwner();
+            return name.equals(className);
+          }
+          @Override
+          public Boolean caseField(ParsedField location) {
+            String name = location.getOwner().getOwner();
+            String className = currentClass.getOwner();
+            return name.equals(className);
+          }
+          @Override
+          public Boolean caseClass(ParsedClass location) {
+            String name = location.getOwner();
+            String className = currentClass.getOwner();
+            return name.equals(className);
+          }
+        });
+      default:
+        throw new UnsupportedOperationException("PRIVATE is the only supported intent");
+    }
+  }
 
-  private static class Tester {
+  private class Tester {
 
     private final Class<? extends Annotation> annotationClass;
     private final Intent intent;
@@ -205,41 +238,18 @@ public class VisibilityTestRunner
 
     private class AnnotatedElements {
 
-      private final Map<ParsedElement, Annotation> map = newHashMap();
+      private final Map<ParsedElement, Annotation> annotations = newHashMap();
 
       void add(ParsedElement location, Annotation annotation) {
-        map.put(location, annotation);
+        annotations.put(location, annotation);
       }
 
       boolean isVisibleBy(ParsedElement location, final ParsedClass currentClass) {
-        Annotation annotation = map.get(location);
+        Annotation annotation = annotations.get(location);
         if (annotation == null) {
           return true; // let's trust the compiler :)
         } else {
-          switch (intent) {
-            case PRIVATE:
-              return location.visit(new DefaultParsedElementVisitor<Boolean>(true) {
-                @Override
-                public Boolean caseMethod(ParsedMethod location) {
-                  String name = location.getOwner().getOwner();
-                  String className = currentClass.getOwner();
-                  return name.equals(className);
-                }
-                @Override
-                public Boolean caseField(ParsedField location) {
-                  String name = location.getOwner().getOwner();
-                  String className = currentClass.getOwner();
-                  return name.equals(className);
-                }
-                @Override
-                public Boolean caseClass(ParsedClass parsedClass) {
-                  // TODO handle annotated classes
-                  return false;
-                }
-              });
-            default:
-              throw new UnsupportedOperationException("PRIVATE is the only supported intent");
-          }
+          return isVisible(location, currentClass, intent);
         }
       }
 
@@ -269,7 +279,7 @@ public class VisibilityTestRunner
         if (name.equals("<clinit>")) {
           // interface initialization method
         } else if (name.equals("<init>")) {
-          currentConstructor = new ParsedConstructor();
+          currentConstructor = new ParsedConstructor(currentClass, desc);
         } else {
           currentMethod = new ParsedMethod(currentClass, name, desc);
         }
