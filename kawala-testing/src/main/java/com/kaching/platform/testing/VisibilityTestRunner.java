@@ -34,13 +34,11 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import com.kaching.platform.testing.ParsedElements.ParsedClass;
 import com.kaching.platform.testing.ParsedElements.ParsedConstructor;
 import com.kaching.platform.testing.ParsedElements.ParsedField;

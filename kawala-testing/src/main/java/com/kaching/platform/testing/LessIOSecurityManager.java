@@ -74,7 +74,7 @@ public class LessIOSecurityManager extends SecurityManager {
   private static final Log log = Log.getLog(LessIOSecurityManager.class);
   protected static final String JAVA_HOME = System.getProperty("java.home");
   protected static final String PATH_SEPARATOR = System.getProperty("path.separator");
-  protected static final List<String> CP_PARTS = ImmutableList.of(System.getProperty("java.class.path").split(PATH_SEPARATOR));
+  protected static final List<String> CP_PARTS = ImmutableList.copyOf(System.getProperty("java.class.path").split(PATH_SEPARATOR));
   protected static final String TMP_DIR = System.getProperty("java.io.tmpdir").replaceFirst("/$", "");
   private static final Set<Class<?>> whitelistedClasses = ImmutableSet.<Class<?>>of(
                                                             java.lang.ClassLoader.class,

@@ -70,11 +70,10 @@ public class ConstructorAnalysis {
         parameterTypes);
   }
 
-  @SuppressWarnings("unchecked")
   @VisibleForTesting
   static AnalysisResult analyse(InputStream classInputStream,
       String owner, String superclass,
-      Class... parameterTypes) throws IOException {
+      Class<?>... parameterTypes) throws IOException {
     Type[] types = new Type[parameterTypes.length];
     for (int i = 0; i < types.length; i++) {
       types[i] = Type.getType(parameterTypes[i]);

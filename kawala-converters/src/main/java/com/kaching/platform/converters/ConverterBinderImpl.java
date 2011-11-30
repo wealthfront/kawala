@@ -27,7 +27,7 @@ class ConverterBinderImpl implements ConverterBinder {
 
   private final Errors errors;
   private final Map<TypeLiteral<?>, Converter<?>> instances = newHashMap();
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   private final Map<TypeLiteral<?>, Class<? extends Converter>> bindings = newHashMap();
   private final List<Function<Type, Option<? extends Converter<?>>>> functions = newArrayList();
 
@@ -54,7 +54,7 @@ class ConverterBinderImpl implements ConverterBinder {
     return instances;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   Map<TypeLiteral<?>, Class<? extends Converter<?>>> getBindings() {
     return (Map) bindings;
   }
@@ -75,7 +75,7 @@ class ConverterBinderImpl implements ConverterBinder {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void converter(Class<? extends Converter> type) {
       bindings.put(key, type);
     }

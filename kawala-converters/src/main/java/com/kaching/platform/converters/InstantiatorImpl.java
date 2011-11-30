@@ -28,7 +28,7 @@ class InstantiatorImpl<T> implements Instantiator<T> {
 
   private final Constructor<T> constructor;
   private final Field[] fields;
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   private final Converter[] converters;
   private final BitSet optionality;
   private final BitSet wrapInOption;

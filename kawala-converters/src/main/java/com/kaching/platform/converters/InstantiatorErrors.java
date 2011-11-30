@@ -21,7 +21,7 @@ import com.kaching.platform.common.Errors;
  */
 class InstantiatorErrors {
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   static Errors incorrectBoundForConverter(
       Errors errors,
       Type targetType,

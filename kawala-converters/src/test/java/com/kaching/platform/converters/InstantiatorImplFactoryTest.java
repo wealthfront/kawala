@@ -238,7 +238,7 @@ public class InstantiatorImplFactoryTest {
       @Override
       protected void configure() {
         register(new Function<Type, Option<? extends Converter<?>>>() {
-          @SuppressWarnings("unchecked")
+          @SuppressWarnings({ "unchecked", "rawtypes" })
           @Override
           public Option<? extends Converter<?>> apply(Type type) {
             if (type instanceof Class &&
@@ -267,7 +267,7 @@ public class InstantiatorImplFactoryTest {
       protected void configure() {
         Function<Type, Option<? extends Converter<?>>> function =
             new Function<Type, Option<? extends Converter<?>>>() {
-              @SuppressWarnings("unchecked")
+              @SuppressWarnings({ "unchecked", "rawtypes" })
               @Override
               public Option<? extends Converter<?>> apply(Type type) {
                 if (type instanceof Class &&
@@ -622,7 +622,7 @@ public class InstantiatorImplFactoryTest {
     testConverter(new TypeLiteral<List<Integer>>() {}.getType(), "3", newArrayList(3), "3");
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   private void testConverter(Type type, String actual,
       Object expectedFromString, String expectedToString) {
     Option<? extends Converter<?>> maybeConverter = createFactory(actualErrors, null).createConverter(type);

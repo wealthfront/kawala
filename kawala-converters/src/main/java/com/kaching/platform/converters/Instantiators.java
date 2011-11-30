@@ -44,7 +44,7 @@ public class Instantiators {
    * This factory method is mostly useful when instantiators are used as a piece
    * in larger framework and allows errors aggregation to be done hollisticly.
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public static <T> Option<Instantiator<T>> createInstantiator(
       Errors errors, Class<T> klass, InstantiatorModule... modules) {
     // we do not want to expose the covariant option

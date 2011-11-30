@@ -21,7 +21,7 @@ public interface ConverterSpecifier<T> {
    * Specifies the type of converter to use.
    * @param type the converter's type to use
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   void converter(Class<? extends Converter> type);
 
   /**

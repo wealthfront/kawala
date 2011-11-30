@@ -59,13 +59,12 @@ public abstract class AbstractIdentifier<I extends Comparable<I>> implements
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public boolean equals(Object that) {
     return
         this == that ||
         (that != null &&
          this.getClass().equals(that.getClass())) &&
-         id.equals(((AbstractIdentifier) that).id);
+         id.equals(((AbstractIdentifier<?>) that).id);
   }
 
   @Override

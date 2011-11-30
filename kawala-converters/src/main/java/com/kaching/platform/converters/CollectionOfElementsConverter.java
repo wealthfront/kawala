@@ -28,7 +28,7 @@ import com.google.inject.Provider;
  */
 class CollectionOfElementsConverter<T extends Collection<?>> implements Converter<T> {
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("rawtypes")
   static final Map<Class<?>, Provider<Collection<?>>> COLLECTION_KINDS =
       ImmutableMap.<Class<?>, Provider<Collection<?>>> builder()
       .put(List.class, new Provider<Collection<?>>() {
@@ -64,7 +64,7 @@ class CollectionOfElementsConverter<T extends Collection<?>> implements Converte
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public T fromString(String representation) {
     if (representation == null) {
       return null;

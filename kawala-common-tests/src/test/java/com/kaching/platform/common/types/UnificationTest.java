@@ -85,6 +85,7 @@ public class UnificationTest {
   }
 
   @Test
+  @SuppressWarnings("rawtypes")
   public void instanceOfManyTypeParams2() throws Exception {
     assertEquals(
         new TypeLiteral<Map>() {}.getType(),
@@ -206,6 +207,7 @@ public class UnificationTest {
   static class SupSup2 {}
   static class Sup2<T> extends SupSup2 {}
   static class Sub2 extends Sup2<String> {}
+  @SuppressWarnings("rawtypes")
   static class SubNoParam2 extends Sup2 {}
   static class SubSub2 extends Sub2 {}
 
@@ -232,6 +234,7 @@ public class UnificationTest {
     }
   }
 
+  @SuppressWarnings("rawtypes")
   static class MultipleInterfacesSomeWithNoParametrization
       implements TopLevel, ManyTypeParams<String, Double, Integer> {}
 
@@ -281,6 +284,7 @@ public class UnificationTest {
 
   private interface ManyTypeParams<A, B, C> {}
 
+  @SuppressWarnings("rawtypes")
   private static class InstanceOfManyTypeParams implements ManyTypeParams<Short, Map, List> {}
 
   private interface TopLevel<T> {}

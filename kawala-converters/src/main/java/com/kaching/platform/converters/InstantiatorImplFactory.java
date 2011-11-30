@@ -252,7 +252,7 @@ class InstantiatorImplFactory<T> {
   }
 
   @VisibleForTesting
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   Option<? extends Converter<?>> createConverter(Type targetType) {
     int sizeBefore = errors.size();
     // 1. explicit binding

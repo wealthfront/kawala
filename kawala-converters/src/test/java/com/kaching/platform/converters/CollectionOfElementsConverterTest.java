@@ -34,14 +34,14 @@ public class CollectionOfElementsConverterTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public void createsRightKindOfCollection() {
     assertEquals(
         HashSet.class,
         new CollectionOfElementsConverter(Set.class, C_BOOLEAN).fromString("").getClass());
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   private void check(List<Object> list, String representation) {
     CollectionOfElementsConverter converter = new CollectionOfElementsConverter(List.class, C_BOOLEAN);
     assertEquals(representation, converter.toString(list));
