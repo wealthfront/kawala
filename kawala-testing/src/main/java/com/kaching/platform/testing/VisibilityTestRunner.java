@@ -12,7 +12,6 @@ package com.kaching.platform.testing;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Lists.transform;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.io.Closeables.closeQuietly;
 import static com.kaching.platform.testing.VisibilityTestRunner.Intent.PRIVATE;
@@ -29,19 +28,18 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.commons.EmptyVisitor;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.kaching.platform.testing.ParsedElements.ParsedClass;
 import com.kaching.platform.testing.ParsedElements.ParsedConstructor;
 import com.kaching.platform.testing.ParsedElements.ParsedField;
@@ -151,7 +149,7 @@ public class VisibilityTestRunner
                   }
                 })));
   }
-  
+
   /**
    * Is {@code location} visible by {@code currentClass}?
    */
@@ -238,18 +236,17 @@ public class VisibilityTestRunner
 
     private class AnnotatedElements {
 
-      private final Map<ParsedElement, Annotation> annotations = newHashMap();
+      private final Set<ParsedElement> annotations = Sets.newHashSet();
 
-      void add(ParsedElement location, Annotation annotation) {
-        annotations.put(location, annotation);
+      void add(ParsedElement location) {
+        annotations.add(location);
       }
 
       boolean isVisibleBy(ParsedElement location, final ParsedClass currentClass) {
-        Annotation annotation = annotations.get(location);
-        if (annotation == null) {
-          return true; // let's trust the compiler :)
-        } else {
+        if (annotations.contains(location)) {
           return isVisible(location, currentClass, intent);
+        } else {
+          return true; // let's trust the compiler :)
         }
       }
 
@@ -300,18 +297,15 @@ public class VisibilityTestRunner
         if (annotationDescription.equals(desc)) {
           if (currentField != null) {
             // annotated field
-            Annotation annotation = currentField.loadAnnotation(annotationClass);
-            annotatedElements.add(currentField, annotation);
+            annotatedElements.add(currentField);
           } else if (currentMethod != null) {
             // annotated method
-            Annotation annotation = currentMethod.loadAnnotation(annotationClass);
-            annotatedElements.add(currentMethod, annotation);
+            annotatedElements.add(currentMethod);
+          } else if (currentConstructor != null) {
+            // TODO annotated constructors are not supported
           } else if (currentClass != null) {
             // annotated class
-            Annotation annotation = currentClass.loadAnnotation(annotationClass);
-            annotatedElements.add(currentClass, annotation);
-          } else if (currentConstructor != null) {
-            throw new UnsupportedOperationException("annotated constructors are not supported");
+            annotatedElements.add(currentClass);
           }
         }
         return this;
@@ -323,7 +317,6 @@ public class VisibilityTestRunner
 
       private String currentMethodName;
       private ParsedClass currentClass;
-      private int currentLine;
 
       @Override
       public void visit(int version, int access, String name, String signature,
@@ -339,12 +332,8 @@ public class VisibilityTestRunner
       }
 
       @Override
-      public void visitLineNumber(int line, Label start) {
-        this.currentLine = line;
-      }
-
-      @Override
       public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+        check(new ParsedClass(owner));
         if (name.equals("<clinit>")) {
           // interface initialization method
         } else if (name.equals("<init>")) {
@@ -356,6 +345,7 @@ public class VisibilityTestRunner
 
       @Override
       public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+        check(new ParsedClass(owner));
         check(new ParsedField(new ParsedClass(owner), name));
       }
 
@@ -364,9 +354,7 @@ public class VisibilityTestRunner
           if (exceptions.contains(currentClass.toString())) {
             spuriousExceptions.remove(currentClass.toString());
           } else {
-            error.addError(
-                format("%s.%s(line %s) uses %s, while it is not visible for %s",
-                    currentClass, currentMethodName, currentLine, location, currentClass));
+            error.addError(format("%s.%s uses %s", currentClass, currentMethodName, location));
           }
         }
       }
