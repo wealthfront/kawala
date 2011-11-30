@@ -166,12 +166,12 @@ class ParsedElements {
 
     private final ParsedClass owner;
     private final String name;
-    private final String description;
+    private final String descriptor;
 
-    ParsedMethod(ParsedClass owner, String name, String description) {
+    ParsedMethod(ParsedClass owner, String name, String descriptor) {
       this.owner = owner;
       this.name = name;
-      this.description = description;
+      this.descriptor = descriptor;
     }
 
     ParsedClass getOwner() {
@@ -194,7 +194,7 @@ class ParsedElements {
       Method method = load();
       if (method == null) {
         throw new NullPointerException(
-            format("method %s with signature %s not found in %s", name, description, owner));
+            format("method %s with signature %s not found in %s", name, descriptor, owner));
       }
       return method.getAnnotation(annotation);
     }
@@ -206,7 +206,7 @@ class ParsedElements {
           owner.toString(),
           name,
           Joiner.on(",").join(transform(
-              newArrayList(Type.getArgumentTypes(description)),
+              newArrayList(Type.getArgumentTypes(descriptor)),
               new Function<Type, String>() {
                 @Override
                 public String apply(Type from) {
@@ -220,9 +220,8 @@ class ParsedElements {
       return visitor.caseMethod(this);
     }
 
-    @Override
     public int hashCode() {
-      return Objects.hashCode(owner, name, description);
+      return Objects.hashCode(owner, name, descriptor);
     }
 
     @Override
@@ -237,7 +236,7 @@ class ParsedElements {
       return
           owner.equals(that.owner) &&
           name.equals(that.name) &&
-          description.equals(that.description);
+          descriptor.equals(that.descriptor);
     }
 
   }

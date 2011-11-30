@@ -34,6 +34,7 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.EmptyVisitor;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -151,28 +152,28 @@ public class VisibilityTestRunner
   }
 
   /**
-   * Is {@code location} visible by {@code currentClass}?
+   * Is {@code element} visible by {@code currentClass}?
    */
   @VisibleForTesting
-  boolean isVisible(ParsedElement location, final ParsedClass currentClass, Intent intent) {
+  boolean isVisible(ParsedElement element, final ParsedClass currentClass, Intent intent) {
     switch (intent) {
       case PRIVATE:
-        return location.visit(new DefaultParsedElementVisitor<Boolean>(true) {
+        return element.visit(new DefaultParsedElementVisitor<Boolean>(true) {
           @Override
-          public Boolean caseMethod(ParsedMethod location) {
-            String name = location.getOwner().getOwner();
+          public Boolean caseMethod(ParsedMethod element) {
+            String name = element.getOwner().getOwner();
             String className = currentClass.getOwner();
             return name.equals(className);
           }
           @Override
-          public Boolean caseField(ParsedField location) {
-            String name = location.getOwner().getOwner();
+          public Boolean caseField(ParsedField element) {
+            String name = element.getOwner().getOwner();
             String className = currentClass.getOwner();
             return name.equals(className);
           }
           @Override
-          public Boolean caseClass(ParsedClass location) {
-            String name = location.getOwner();
+          public Boolean caseClass(ParsedClass element) {
+            String name = element.getOwner();
             String className = currentClass.getOwner();
             return name.equals(className);
           }
@@ -191,7 +192,7 @@ public class VisibilityTestRunner
 
     private final Set<String> spuriousExceptions;
     private final String annotationDescription;
-    private final AnnotatedElements annotatedElements;
+    private final Set<ParsedElement> annotatedElements;
 
     Tester(Visibility visibility, CombinedAssertionFailedError error) {
       this.annotationClass = visibility.value();
@@ -200,7 +201,7 @@ public class VisibilityTestRunner
       this.error = error;
 
       this.spuriousExceptions = newHashSet(exceptions);
-      this.annotatedElements = new AnnotatedElements();
+      this.annotatedElements = newHashSet();
       this.annotationDescription = format("L%s;", annotationClass.getName().replace(".", "/"));
     }
 
@@ -234,24 +235,6 @@ public class VisibilityTestRunner
       }
     }
 
-    private class AnnotatedElements {
-
-      private final Set<ParsedElement> annotations = Sets.newHashSet();
-
-      void add(ParsedElement location) {
-        annotations.add(location);
-      }
-
-      boolean isVisibleBy(ParsedElement location, final ParsedClass currentClass) {
-        if (annotations.contains(location)) {
-          return isVisible(location, currentClass, intent);
-        } else {
-          return true; // let's trust the compiler :)
-        }
-      }
-
-    }
-
     private class FindAnnotatedElements extends EmptyVisitor {
 
       private ParsedClass currentClass;
@@ -266,7 +249,7 @@ public class VisibilityTestRunner
       }
 
       @Override
-      public MethodVisitor visitMethod(int access, String name, String desc,
+      public MethodVisitor visitMethod(int access, String name, String descriptor,
           String signature, String[] exceptions) {
 
         currentConstructor = null;
@@ -278,13 +261,13 @@ public class VisibilityTestRunner
         } else if (name.equals("<init>")) {
           currentConstructor = new ParsedConstructor();
         } else {
-          currentMethod = new ParsedMethod(currentClass, name, desc);
+          currentMethod = new ParsedMethod(currentClass, name, descriptor);
         }
         return this;
       }
 
       @Override
-      public FieldVisitor visitField(int access, String name, String desc,
+      public FieldVisitor visitField(int access, String name, String descriptor,
           String signature, Object value) {
         currentField = new ParsedField(currentClass, name);
         currentMethod = null;
@@ -293,8 +276,8 @@ public class VisibilityTestRunner
       }
 
       @Override
-      public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        if (annotationDescription.equals(desc)) {
+      public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+        if (annotationDescription.equals(descriptor)) {
           if (currentField != null) {
             // annotated field
             annotatedElements.add(currentField);
@@ -325,36 +308,38 @@ public class VisibilityTestRunner
       }
 
       @Override
-      public MethodVisitor visitMethod(int access, String name, String desc,
+      public MethodVisitor visitMethod(int access, String name, String descriptor,
           String signature, String[] exceptions) {
         currentMethodName = name;
         return this;
       }
 
       @Override
-      public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+      public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
         check(new ParsedClass(owner));
         if (name.equals("<clinit>")) {
           // interface initialization method
         } else if (name.equals("<init>")) {
           // TODO handle constructors
         } else {
-          check(new ParsedMethod(new ParsedClass(owner), name, desc));
+          check(new ParsedMethod(new ParsedClass(owner), name, descriptor));
         }
       }
 
       @Override
-      public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+      public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
         check(new ParsedClass(owner));
         check(new ParsedField(new ParsedClass(owner), name));
       }
 
-      private void check(ParsedElement location) {
-        if (!annotatedElements.isVisibleBy(location, currentClass)) {
-          if (exceptions.contains(currentClass.toString())) {
-            spuriousExceptions.remove(currentClass.toString());
-          } else {
-            error.addError(format("%s.%s uses %s", currentClass, currentMethodName, location));
+      private void check(ParsedElement element) {
+        if (annotatedElements.contains(element)) {
+          if (!isVisible(element, currentClass, intent)) {
+            if (exceptions.contains(currentClass.toString())) {
+              spuriousExceptions.remove(currentClass.toString());
+            } else {
+              error.addError(format("%s.%s uses %s", currentClass, currentMethodName, element));
+            }
           }
         }
       }
