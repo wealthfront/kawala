@@ -26,6 +26,7 @@ import org.junit.ComparisonFailure;
  * Extension of JUnit assertions.
  */
 public class Assert extends org.junit.Assert {
+  protected Assert() {}
 
   public static void assertBigDecimalEquals(double d1, BigDecimal d2) {
     assertBigDecimalEquals(null, d1, d2);

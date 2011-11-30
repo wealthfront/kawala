@@ -12,7 +12,8 @@ package com.kaching.platform.common.reflect;
 
 import java.lang.reflect.Field;
 
-public class ReflectUtils {
+public final class ReflectUtils {
+  private ReflectUtils() {}
 
   /* Goal for this utility class:
    * - for every method producing a T, have one which takes an Errors and return Option<T> and fills

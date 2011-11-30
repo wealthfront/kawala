@@ -29,8 +29,9 @@ import java.util.List;
  * equality between two objects implies hash code equality, as required by the
  * {@link #hashCode()} contract.
  */
-public class EquivalenceTester {
-
+public final class EquivalenceTester {
+  private EquivalenceTester() {}
+  
   public static void check(Collection<?>... equivalenceClasses) {
     List<List<Object>> ec =
         newArrayListWithExpectedSize(equivalenceClasses.length);

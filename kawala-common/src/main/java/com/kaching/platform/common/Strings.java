@@ -10,7 +10,8 @@
  */
 package com.kaching.platform.common;
 
-public class Strings {
+public final class Strings {
+  private Strings() {}
 
   /**
    * From {@link com.google.common.base.Preconditions#format} but made public

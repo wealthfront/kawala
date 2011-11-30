@@ -19,8 +19,9 @@ import com.kaching.platform.common.types.ParameterizedTypeImpl;
 /**
  * Factory methods to construct {@link TypeLiteral}s.
  */
-public class TypeLiterals {
-
+public final class TypeLiterals {
+  private TypeLiterals() {}
+  
   /**
    * Creates a new {@link TypeLiteral} for {@code type} parameterized by
    * {@code parameters}.
@@ -30,7 +31,7 @@ public class TypeLiterals {
    */
   @SuppressWarnings("unchecked")
   public static <T> TypeLiteral<T> get(Class<T> type, Type... parameters) {
-    return (TypeLiteral) TypeLiteral.get(new ParameterizedTypeImpl(type, parameters));
+    return (TypeLiteral<T>) TypeLiteral.get(new ParameterizedTypeImpl(type, parameters));
   }
 
   /**

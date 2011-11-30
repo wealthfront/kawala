@@ -26,7 +26,8 @@ import java.util.Map;
  * Unification for Java made easy. See
  * {@link http://blog.kaching.com/index.php/2009/01/16/unifying-type-parameters-in-java/}.
  */
-public class Unification {
+public final class Unification {
+  private Unification() {}
 
   public static Type getActualTypeArgument(
       Class<?> subClass, Class<?> superClass, int typeParameterIndex) {
