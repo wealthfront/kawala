@@ -17,6 +17,7 @@ import static com.kaching.platform.common.Strings.format;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.objectweb.asm.Type;
 
@@ -183,8 +184,9 @@ class ParsedElements {
       Method[] methods = clazz.getDeclaredMethods();
       for (Method method : methods) {
         if (method.getName().equals(name)) {
-          // TODO check signature, otherwise we don't distinguish between overloaded methods
-          return method;
+          if (Arrays.equals(Type.getArgumentTypes(method), Type.getArgumentTypes(descriptor))) {
+            return method;
+          }
         }
       }
       return null;
