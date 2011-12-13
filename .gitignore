@@ -3,6 +3,7 @@ bin-test/
 bin-testing/
 bin/
 target/
+.settings/
 .project
 .classpath
 *.iws
