@@ -27,6 +27,7 @@
 		<module>kawala-guice</module>
 		<module>kawala-hibernate</module>
 		<module>kawala-converters</module>
+		<module>kawala-pdf</module>
 		<module>kawala-jar</module>
 	</modules>
 
