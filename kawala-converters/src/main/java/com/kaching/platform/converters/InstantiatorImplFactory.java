@@ -251,7 +251,6 @@ class InstantiatorImplFactory<T> {
     return Option.none();
   }
 
-  @VisibleForTesting
   @SuppressWarnings({ "unchecked", "rawtypes" })
   Option<? extends Converter<?>> createConverter(Type targetType) {
     int sizeBefore = errors.size();
