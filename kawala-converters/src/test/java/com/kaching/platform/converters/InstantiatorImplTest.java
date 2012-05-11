@@ -87,7 +87,7 @@ public class InstantiatorImplTest {
       instantiator.newInstance();
       fail();
     } catch (IllegalArgumentException e) {
-      assertEquals("wrong number of arguments", e.getMessage());
+      assertEquals("parameter 1 is not optional but null was provided", e.getMessage());
     }
   }
 

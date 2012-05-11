@@ -79,10 +79,7 @@ class InstantiatorImpl<T> implements Instantiator<T> {
         Object[] parameters = new Object[converters.length];
         Iterator<String> valuesIterator = values.iterator();
         for (int i = 0; i < converters.length; i++) {
-          if (!valuesIterator.hasNext()) {
-            throw new IllegalArgumentException("wrong number of arguments");
-          }
-          String value = valuesIterator.next();
+          String value = valuesIterator.hasNext() ? valuesIterator.next() : null;
           Converter<?> converter = converters[i];
           // TODO(pascal): properly handle predicates.
           Object parameter;
