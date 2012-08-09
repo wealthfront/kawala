@@ -11,6 +11,7 @@
 package com.kaching.platform.converters;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static java.lang.String.format;
 
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class FiniteConverter<T> extends NullHandlingConverter<T> {
     if (o != null) {
       return o;
     } else {
-      throw new IllegalArgumentException(representation);
+      throw new IllegalArgumentException(format("Invalid representation: \"%s\"", representation));
     }
   }
 
