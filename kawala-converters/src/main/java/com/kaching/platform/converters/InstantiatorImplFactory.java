@@ -61,6 +61,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.internal.MoreTypes;
 import com.kaching.platform.common.Errors;
 import com.kaching.platform.common.Option;
+import com.kaching.platform.common.types.Types;
 import com.kaching.platform.common.types.Unification;
 import com.kaching.platform.converters.ConstructorAnalysis.AnalysisResult;
 import com.kaching.platform.converters.ConstructorAnalysis.FormalParameter;
@@ -260,14 +261,14 @@ class InstantiatorImplFactory<T> {
     List<Function<Type, Option<? extends Converter<?>>>> functions = binder.getFunctions();
     if (instances != null) {
       for (Entry<TypeLiteral<?>, Converter<?>> entry : instances.entrySet()) {
-        if (MoreTypes.isInstance(entry.getKey().getType(), targetType)) {
+        if (Types.isInstance(entry.getKey().getType(), targetType)) {
           return Option.some(entry.getValue());
         }
       }
     }
     if (bindings != null) {
       for (Entry<TypeLiteral<?>, Class<? extends Converter<?>>> entry : bindings.entrySet()) {
-        if (MoreTypes.isInstance(entry.getKey().getType(), targetType)) {
+        if (Types.isInstance(entry.getKey().getType(), targetType)) {
           for (Converter<?> converter : instantiateConverter(entry.getValue(), targetType)) {
             return Option.some(converter);
           }
