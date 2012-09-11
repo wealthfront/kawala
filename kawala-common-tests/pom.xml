@@ -17,6 +17,13 @@
 	<description>This module contains the unit tests for com.kaching.platform:kawala-common.
 		It is required because the tests, com.kaching.platform:kawala-common test scope,
 		introduces a cycle in the dependency graph between [...]:kawala-common and [...]:kawala-testing.</description>
+
+    <scm>
+        <connection>scm:git:git@github.com:wealthfront/kawala.git</connection>
+        <developerConnection>scm:git:git@github.com:wealthfront/kawala.git</developerConnection>
+        <url>git@github.com:wealthfront/kawala.git</url>
+    </scm>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
