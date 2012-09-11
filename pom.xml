@@ -6,13 +6,13 @@
 	<parent>
 		<groupId>com.kaching.platform</groupId>
 		<artifactId>kawala-parent</artifactId>
-		<version>0.1.1-SNAPSHOT</version>
+		<version>0.1.1</version>
 		<relativePath>./kawala-parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>kawala</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>0.1.1</version>
 	<packaging>pom</packaging>
 
 	<name>Kawala</name>
