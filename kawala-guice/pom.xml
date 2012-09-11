@@ -12,8 +12,26 @@
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>kawala-guice</artifactId>
 	<version>0.1.1-SNAPSHOT</version>
-
+  <packaging>jar</packaging>
 	<name>Kawala - Guice</name>
+  <description>Guice helpers</description>
+  <url>http://github.com/wealthfront/kawala</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+      <developer>
+        <id>wealthfront-eng</id>
+        <name>Wealthfront Engineering</name>
+        <email>kawala@wealthfront.com</email>
+      </developer>
+    </developers>
 
     <scm>
         <connection>scm:git:git@github.com:wealthfront/kawala.git</connection>

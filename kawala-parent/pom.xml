@@ -9,7 +9,8 @@
     <packaging>pom</packaging>
 
     <name>Kawala - Parent Maven Configuration</name>
-    <url>http://code.google.com/p/kawala</url>
+    <description>Shared pom for kawala subprojects</description>
+    <url>http://github.com/wealthfront/kawala</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
