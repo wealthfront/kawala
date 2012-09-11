@@ -26,6 +26,11 @@
 		<module>kawala-hibernate</module>
 		<module>kawala-converters</module>
 	</modules>
+    <scm>
+        <connection>scm:git:git@github.com:wealthfront/kawala.git</connection>
+        <developerConnection>scm:git:git@github.com:wealthfront/kawala.git</developerConnection>
+        <url>git@github.com:wealthfront/kawala.git</url>
+    </scm>
   <build>
     <plugins>
       <plugin>
