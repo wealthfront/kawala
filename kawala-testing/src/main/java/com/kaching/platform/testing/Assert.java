@@ -58,6 +58,10 @@ public class Assert extends org.junit.Assert {
         d2.setScale(scale, RoundingMode.HALF_UP));
   }
 
+  public static void assertBigDecimalEquals(double d1, BigDecimal d2, int scale) {
+    assertBigDecimalEquals(valueOf(d1), d2, scale);
+  }
+
   public static void assertBigDecimalEquals(
       String message, BigDecimal d1, BigDecimal d2) {
     if (d1 == null && d2 == null) {
