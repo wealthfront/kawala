@@ -18,10 +18,13 @@ import java.net.InetAddress;
 import java.security.Permission;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.kaching.platform.common.logging.Log;
 
 /**
@@ -74,11 +77,19 @@ public class LessIOSecurityManager extends SecurityManager {
   private static final Log log = Log.getLog(LessIOSecurityManager.class);
   protected static final String JAVA_HOME = System.getProperty("java.home");
   protected static final String PATH_SEPARATOR = System.getProperty("path.separator");
-  protected static final List<String> CP_PARTS = ImmutableList.copyOf(System.getProperty("java.class.path").split(PATH_SEPARATOR));
+
+  // Updated at SecurityManager init and again at every ClassLoader init.
+  protected static final AtomicReference<List<String>> CP_PARTS =
+          new AtomicReference<List<String>>(getClassPath());
+
   protected static final String TMP_DIR = System.getProperty("java.io.tmpdir").replaceFirst("/$", "");
   private static final Set<Class<?>> whitelistedClasses = ImmutableSet.<Class<?>>of(
                                                             java.lang.ClassLoader.class,
                                                             java.net.URLClassLoader.class);
+
+  private static final int lowestEphemeralPort = Integer.getInteger("kawala.testing.low-ephemeral-port", 32768);
+  private static final int highestEphemeralPort = Integer.getInteger("kawala.testing.high-ephemeral-port", 65535);
+  private static final Set<Integer> allocatedEphemeralPorts = Sets.newSetFromMap(Maps.<Integer, Boolean>newConcurrentMap());
 
   /**
    * Any subclasses that override this method <b>must</b> include any Class<?>
@@ -107,6 +118,10 @@ public class LessIOSecurityManager extends SecurityManager {
 
   protected LessIOSecurityManager(boolean reporting) {
     this.reporting = reporting;
+  }
+
+  private static ImmutableList<String> getClassPath() {
+      return ImmutableList.copyOf(System.getProperty("java.class.path").split(PATH_SEPARATOR));
   }
 
   // {{ Allowed only via {@link @AllowNetworkAccess}, {@link @AllowDNSResolution}, or {@link @AllowNetworkMulticast})
@@ -154,7 +169,8 @@ public class LessIOSecurityManager extends SecurityManager {
             String portAsString = Integer.toString(port);
             if ((parts[0].equals(host) && parts[1].equals(portAsString))
                 || (parts[0].equals("*") && parts[1].equals(portAsString))
-                || (parts[0].equals(host) && parts[1].equals("*"))) {
+                || (parts[0].equals(host) && parts[1].equals("*"))
+                || (parts[0].equals(host) && parts[1].equals("0") && allocatedEphemeralPorts.contains(port))) {
               return true;
             }
           }
@@ -198,6 +214,12 @@ public class LessIOSecurityManager extends SecurityManager {
           }
 
           for (int p : a.ports()) {
+            if (p == 0) { // Check for access to ephemeral ports
+              if (port >= lowestEphemeralPort && port <= highestEphemeralPort) {
+                p = port;
+                allocatedEphemeralPorts.add(port);
+              }
+            }
             if (p == port) {
               return true;
             }
@@ -261,7 +283,7 @@ public class LessIOSecurityManager extends SecurityManager {
        * suboptimal location to avoid ClassCircularityErrors that can occur when
        * attempting to load an anonymous class.
        */
-      for (String part : CP_PARTS) {
+      for (String part : CP_PARTS.get()) {
         if (file.startsWith(part)) {
           // Files in the CLASSPATH are always allowed
           return;
@@ -310,8 +332,9 @@ public class LessIOSecurityManager extends SecurityManager {
       checkClassContextPermissions(classContext, new Predicate<Class<?>>() {
         @Override
         public boolean apply(Class<?> input) {
-          if (input.getAnnotation(AllowExternalProcess.class) != null) {
-            // AllowExternalProcess implies @AllowLocalFileAccess({"%FD%"}),
+          if (input.getAnnotation(AllowExternalProcess.class) != null
+              || input.getAnnotation(AllowNetworkAccess.class) != null) {
+            // AllowExternalProcess and AllowNetworkAccess imply @AllowLocalFileAccess({"%FD%"}),
             // since it's required.
             return true;
           }
@@ -443,7 +466,12 @@ public class LessIOSecurityManager extends SecurityManager {
 
   @Override public void checkSetFactory() {}
 
-  @Override public void checkCreateClassLoader() {}
+  @Override public void checkCreateClassLoader() {
+      // This is re-set on classloader creation in case the classpath has changed.
+      // In particular, Maven's Surefire booter changes the classpath after the security
+      // manager has been initialized.
+      CP_PARTS.set(getClassPath());
+  }
 
   @Override public void checkPropertiesAccess() {}
 
