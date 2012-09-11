@@ -58,7 +58,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.TypeLiteral;
-import com.google.inject.internal.MoreTypes;
 import com.kaching.platform.common.Errors;
 import com.kaching.platform.common.Option;
 import com.kaching.platform.common.types.Types;
@@ -415,13 +414,12 @@ class InstantiatorImplFactory<T> {
     return Option.some(new StringConstructorConverter<Object>(stringConstructor));
   }
 
-  // TODO(pascal) We should Guice this up.
   private Option<? extends Converter<?>> instantiateConverter(
       Class<? extends Converter<?>> converterClass, Type targetType) {
     try {
       Type producedType =
           Unification.getActualTypeArgument(converterClass, Converter.class, 0);
-      if (MoreTypes.isInstance(producedType, targetType)) {
+      if (Types.isInstance(producedType, targetType)) {
         Constructor<? extends Converter<?>> ctor = converterClass.getDeclaredConstructor();
         ctor.setAccessible(true);
         return Option.some(ctor.newInstance());
