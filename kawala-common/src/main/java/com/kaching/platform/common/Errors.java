@@ -13,8 +13,11 @@ package com.kaching.platform.common;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.EMPTY_LIST;
+import static java.util.Collections.emptyList;
 
 import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Object helping with capturing and propagating errors.
@@ -43,6 +46,13 @@ public class Errors {
       addMessage(message);
     }
     return this;
+  }
+
+  public List<String> getMessages() {
+    if (messages == null) {
+      return emptyList();
+    }
+    return ImmutableList.copyOf(messages);
   }
 
   public void throwIfHasErrors() {
