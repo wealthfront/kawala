@@ -12,7 +12,9 @@ package com.kaching.platform.common;
 
 import static java.lang.String.format;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -85,6 +87,11 @@ public abstract class Option<T> implements Iterable<T> {
     @Override
     public <U> Option<U> transform(Function<Object, U> function) {
       return Option.none();
+    }
+
+    @Override
+    public Set<Object> asSet() {
+      return Collections.emptySet();
     }
 
     @Override
@@ -182,6 +189,11 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public Set<U> asSet() {
+      return Collections.singleton(u);
+    }
+
+    @Override
     public int hashCode() {
       return u.hashCode();
     }
@@ -260,6 +272,8 @@ public abstract class Option<T> implements Iterable<T> {
   public abstract <U> U visit(OptionVisitor<? super T, U> visitor);
 
   public abstract <U> Option<U> transform(Function<? super T, U> function);
+
+  public abstract Set<T> asSet();
   
   /**
    * Gets the none object for the given type.
