@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.kaching.platform</groupId>
 		<artifactId>kawala-parent</artifactId>
-		<version>0.1.3</version>
+		<version>0.1.4-SNAPSHOT</version>
 		<relativePath>../kawala-parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>kawala-common</artifactId>
-	<version>0.1.3</version>
+	<version>0.1.4-SNAPSHOT</version>
   <packaging>jar</packaging>
 	<name>Kawala - Common</name>
   <url>http://github.com/wealthfront/kawala</url>

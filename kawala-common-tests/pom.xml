@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.kaching.platform</groupId>
 		<artifactId>kawala-parent</artifactId>
-		<version>0.1.3</version>
+		<version>0.1.4-SNAPSHOT</version>
 		<relativePath>../kawala-parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>kawala-common-tests</artifactId>
-	<version>0.1.3</version>
+	<version>0.1.4-SNAPSHOT</version>
 
 	<name>Kawala - Common - Tests</name>
 	<description>This module contains the unit tests for com.kaching.platform:kawala-common.
@@ -28,19 +28,19 @@
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-common</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-converters</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-testing</artifactId>
-			<version>0.1.3</version>
+			<version>0.1.4-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 
