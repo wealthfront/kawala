@@ -14,12 +14,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
-import com.google.common.base.Function;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.MapMaker;
 import com.kaching.platform.common.Option;
 
 /**
@@ -28,18 +28,18 @@ import com.kaching.platform.common.Option;
  */
 public class NumberedEnum {
 
-  private static ConcurrentMap<Class<?>, Map<Integer, Enum<?>>> mappings =
-      new MapMaker().makeComputingMap(new Function<Class<?>, Map<Integer, Enum<?>>>() {
+  private static LoadingCache<Class<?>, Map<Integer, Enum<?>>> mappings =
+      CacheBuilder.newBuilder().build(new CacheLoader<Class<?>, Map<Integer, Enum<?>>>() {
         @Override
-        public Map<Integer, Enum<?>> apply(Class<?> from) {
+        public Map<Integer, Enum<?>> load(Class<?> from) {
           try {
-            Builder<Integer, Enum<?>> builder = ImmutableMap.<Integer, Enum<?>> builder();
+            Builder<Integer, Enum<?>> builder = ImmutableMap.<Integer, Enum<?>>builder();
             // Multiple casts valid from type parameter bounds declared in valueOf().
             Method method = from.getMethod("values");
             method.setAccessible(true);
             Enum<?>[] values = (Enum<?>[]) method.invoke(null);
             for (Enum<?> value : values) {
-              builder.put(((NumberedValue)value).getNumber(), value);
+              builder.put(((NumberedValue) value).getNumber(), value);
             }
             return builder.build();
           } catch (Exception e) {
@@ -57,7 +57,7 @@ public class NumberedEnum {
   @SuppressWarnings("unchecked")
   public static <E extends Enum<E> & NumberedValue> Option<E> valueOf(final Class<E> type, int number) {
     checkNotNull(type);
-    E value = (E) mappings.get(type).get(number);
+    E value = (E) mappings.getUnchecked(type).get(number);
     return Option.of(value);
   }
 }

@@ -29,9 +29,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.collect.MapMaker;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.io.Files;
 
 public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCodeSnippetsRunner.CodeSnippets> {
@@ -112,18 +113,20 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
 
   private void checkBadCodeSnippet(
       Check check, String fileExtension) throws IOException {
-    Map<Snippet, Set<File>> snippetsToUses = new MapMaker().makeComputingMap(
-        new Function<Snippet, Set<File>>() {
+    LoadingCache<Snippet, Set<File>> snippetsToUses = CacheBuilder.newBuilder().build(
+        new CacheLoader<Snippet, Set<File>>() {
           @Override
-          public Set<File> apply(Snippet key) {
+          public Set<File> load(Snippet key) {
             return newHashSet();
-          }});
-    Map<Snippet, Pattern> compiledPatterns = new MapMaker().makeComputingMap(
-        new Function<Snippet, Pattern>() {
+          }
+        });
+    LoadingCache<Snippet, Pattern> compiledPatterns = CacheBuilder.newBuilder().build(
+        new CacheLoader<Snippet, Pattern>() {
           @Override
-          public Pattern apply(Snippet key) {
+          public Pattern load(Snippet key) {
             return Pattern.compile(key.value());
-          }});
+          }
+        });
 
     Map<Snippet, Set<File>> snippetsToExceptions = snippetsToExceptions(check.snippets());
     Set<Snippet> snippets = snippetsToExceptions.keySet();
@@ -135,7 +138,7 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
         new CombinedAssertionFailedError("bad code uses");
     for (Snippet snippet : snippets) {
       Set<File> exceptions = snippetsToExceptions.get(snippet);
-      Set<File> uses = snippetsToUses.get(snippet);
+      Set<File> uses = snippetsToUses.getUnchecked(snippet);
       List<File> spuriousExceptions = newArrayList(exceptions);
       spuriousExceptions.removeAll(uses);
 
@@ -177,14 +180,14 @@ public class BadCodeSnippetsRunner extends AbstractDeclarativeTestRunner<BadCode
 
   private void collectUses(
       String fileExtension, File f, Iterable<Snippet> patterns,
-      Map<Snippet, Set<File>> uses, Map<Snippet, Pattern> compiledPatterns)
+      LoadingCache<Snippet, Set<File>> uses, LoadingCache<Snippet, Pattern> compiledPatterns)
       throws IOException {
     if (f.isFile()) {
       if (f.getName().endsWith("." + fileExtension)) {
         String code = Files.toString(f, UTF_8);
         for (Snippet p : patterns) {
-          if (compiledPatterns.get(p).matcher(code).find()) {
-            uses.get(p).add(f);
+          if (compiledPatterns.getUnchecked(p).matcher(code).find()) {
+            uses.getUnchecked(p).add(f);
           }
         }
       }
