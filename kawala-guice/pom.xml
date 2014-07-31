@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>com.kaching.platform</groupId>
 		<artifactId>kawala-parent</artifactId>
-		<version>0.1.4</version>
+		<version>0.1.5-SNAPSHOT</version>
 		<relativePath>../kawala-parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>com.kaching.platform</groupId>
 	<artifactId>kawala-guice</artifactId>
-	<version>0.1.4</version>
+	<version>0.1.5-SNAPSHOT</version>
   <packaging>jar</packaging>
 	<name>Kawala - Guice</name>
   <description>Guice helpers</description>
@@ -43,12 +43,12 @@
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-common</artifactId>
-			<version>0.1.4</version>
+			<version>0.1.5-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-testing</artifactId>
-			<version>0.1.4</version>
+			<version>0.1.5-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 
