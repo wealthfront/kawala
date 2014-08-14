@@ -15,11 +15,11 @@ import com.kaching.platform.testing.ParsedElements.ParsedConstructor;
 import com.kaching.platform.testing.ParsedElements.ParsedField;
 import com.kaching.platform.testing.ParsedElements.ParsedMethod;
 
-class DefaultParsedElementVisitor<T> implements ParsedElementVisitor<T> {
+public class DefaultParsedElementVisitor<T> implements ParsedElementVisitor<T> {
 
   private final T defaultValue;
 
-  DefaultParsedElementVisitor(T defaultValue) {
+  public DefaultParsedElementVisitor(T defaultValue) {
     this.defaultValue = defaultValue;
   }
 

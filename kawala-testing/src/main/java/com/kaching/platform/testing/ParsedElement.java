@@ -13,7 +13,7 @@ package com.kaching.platform.testing;
 /**
  * An element parsed from a byte array conforming to the Java class file format.
  */
-interface ParsedElement {
+public interface ParsedElement {
 
   <T> T visit(ParsedElementVisitor<T> visitor);
 

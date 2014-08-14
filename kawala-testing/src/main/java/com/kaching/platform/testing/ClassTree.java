@@ -16,7 +16,7 @@ import static java.util.Collections.unmodifiableList;
 import java.io.File;
 import java.util.List;
 
-class ClassTree {
+public class ClassTree {
   
   private final File root;
 
