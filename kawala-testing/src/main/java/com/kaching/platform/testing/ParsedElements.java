@@ -25,13 +25,13 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 
-class ParsedElements {
+public class ParsedElements {
 
-  static class ParsedClass implements ParsedElement {
+  public static class ParsedClass implements ParsedElement {
 
     private final String name;
 
-    ParsedClass(String name) {
+    public ParsedClass(String name) {
       this.name = name.replace("/", ".");
     }
 
@@ -39,7 +39,7 @@ class ParsedElements {
       return name.substring(0, name.split("\\$")[0].lastIndexOf('.'));
     }
 
-    String getOwner() {
+    public String getOwner() {
       return name.split("\\$")[0];
     }
 
@@ -88,7 +88,7 @@ class ParsedElements {
 
   }
 
-  static class ParsedConstructor implements ParsedElement {
+  public static class ParsedConstructor implements ParsedElement {
 
     // TODO
 
@@ -99,12 +99,12 @@ class ParsedElements {
 
   }
 
-  static class ParsedField implements ParsedElement {
+  public static class ParsedField implements ParsedElement {
 
     private final ParsedClass owner;
     private final String name;
 
-    ParsedField(ParsedClass owner, String name) {
+    public ParsedField(ParsedClass owner, String name) {
       this.owner = owner;
       this.name = name;
     }
@@ -117,7 +117,7 @@ class ParsedElements {
       return field.getAnnotation(annotation);
     }
 
-    ParsedClass getOwner() {
+    public ParsedClass getOwner() {
       return owner;
     }
 
@@ -163,19 +163,19 @@ class ParsedElements {
 
   }
 
-  static class ParsedMethod implements ParsedElement {
+  public static class ParsedMethod implements ParsedElement {
 
     private final ParsedClass owner;
     private final String name;
     private final String descriptor;
 
-    ParsedMethod(ParsedClass owner, String name, String descriptor) {
+    public ParsedMethod(ParsedClass owner, String name, String descriptor) {
       this.owner = owner;
       this.name = name;
       this.descriptor = descriptor;
     }
 
-    ParsedClass getOwner() {
+    public ParsedClass getOwner() {
       return owner;
     }
 
