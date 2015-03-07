@@ -242,4 +242,18 @@ public class OptionTest {
     }));
   }
   
+  @Test
+  public void matchNone() {
+    assertTrue(Option.none().match(
+        (x) -> false,
+        () -> true));
+  }
+
+
+  @Test
+  public void matchSome() {
+    assertTrue(Option.some(true).match(
+        (b) -> b,
+        () -> false));
+  }
 }

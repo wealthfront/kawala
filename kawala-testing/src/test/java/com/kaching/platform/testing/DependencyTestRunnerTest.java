@@ -186,7 +186,7 @@ public class DependencyTestRunnerTest {
     violation.javaPackage.addClass(new JavaClass("a.BigC"));
 
     assertEquals(
-        "package a cannot depend on package b (classes BigA, BigB)",
+        "package a cannot depend on package b (classes BigB, BigA)",
         violation.toString());
   }
 

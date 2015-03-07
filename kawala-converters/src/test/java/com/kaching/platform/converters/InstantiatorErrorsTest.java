@@ -96,7 +96,7 @@ public class InstantiatorErrorsTest {
   public void cannotSpecifyDefaultValueAndConstant() throws Exception {
     check(
         "cannot specify both a default constant and a default value " +
-        "@Optional(constant=FOO, value=4)",
+        "@Optional(value=4, constant=FOO)",
         InstantiatorErrors.cannotSpecifyDefaultValueAndConstant(
             new Errors(), inspectMeCannotSpecifyDefaultValueAndConstant(8)));
   }

@@ -72,13 +72,13 @@ public class SingleTestExecutorTest {
     final RunNotifier notifier = mockery.mock(RunNotifier.class);
     final Sequence execution = mockery.sequence("execution");
     mockery.checking(new Expectations() {{
-      one(notifier).fireTestStarted((Description) with(anything()));
+      one(notifier).fireTestStarted((Description) with(any(Description.class)));
           inSequence(execution);
       if (!success) {
-        one(notifier).fireTestFailure((Failure) with(anything()));
+        one(notifier).fireTestFailure((Failure) with(any(Failure.class)));
             inSequence(execution);
       }
-      one(notifier).fireTestFinished((Description) with(anything()));
+      one(notifier).fireTestFinished((Description) with(any(Description.class)));
           inSequence(execution);
     }});
     return notifier;

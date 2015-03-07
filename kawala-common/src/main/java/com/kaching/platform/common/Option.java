@@ -85,6 +85,11 @@ public abstract class Option<T> implements Iterable<T> {
     }
 
     @Override
+    public <U> U match(Function<Object, U> caseSome, CaseNone<U> caseNone) {
+      return caseNone.apply();
+    }
+
+    @Override
     public <U> Option<U> transform(Function<Object, U> function) {
       return Option.none();
     }
@@ -182,7 +187,12 @@ public abstract class Option<T> implements Iterable<T> {
     public <V> V visit(OptionVisitor<? super U, V> visitor) {
       return visitor.caseSome(u);
     }
-    
+
+    @Override
+    public <V> V match(Function<? super U, V> caseSome, CaseNone<V> caseNone) {
+      return caseSome.apply(u);
+    }
+
     @Override
     public <V> Option<V> transform(Function<? super U, V> function) {
       return Option.of(function.apply(u));
@@ -270,6 +280,8 @@ public abstract class Option<T> implements Iterable<T> {
    * Visits the {@code Option} using the {@code visitor}.
    */
   public abstract <U> U visit(OptionVisitor<? super T, U> visitor);
+
+  public abstract <U> U match(Function<? super T, U> caseSome, CaseNone<U> caseNone);
 
   public abstract <U> Option<U> transform(Function<? super T, U> function);
 
