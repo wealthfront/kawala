@@ -14,7 +14,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Set;
 
+import jdepend.framework.JavaPackage;
 import org.junit.Test;
 
 import com.kaching.platform.testing.CyclicDependencyTestRunner.Packages;
@@ -76,11 +78,13 @@ public class CyclicDependencyTestRunnerTest {
     Result result = runner.getTestResults(BasePackage.class.getAnnotation(Packages.class));
     assertTrue(result.numClasses > 0);
     assertEquals(1, result.getUniqueCycles().size());
-    assertEquals("Strongly connected components: {\n" +
-        "[com.kaching.platform.testing.testexamples.a,\n"
-        + " com.kaching.platform.testing.testexamples.b,\n"
-        + " com.kaching.platform.testing.testexamples.c]\n"
-        + "}", result.toString());
+
+    Set<JavaPackage> packages = result.getUniqueCycles().iterator().next();
+
+    assertEquals(3, packages.size());
+    assertTrue(packages.contains(new JavaPackage("com.kaching.platform.testing.testexamples.a")));
+    assertTrue(packages.contains(new JavaPackage("com.kaching.platform.testing.testexamples.b")));
+    assertTrue(packages.contains(new JavaPackage("com.kaching.platform.testing.testexamples.c")));
   }
 
 }

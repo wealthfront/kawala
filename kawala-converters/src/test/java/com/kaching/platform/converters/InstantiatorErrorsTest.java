@@ -12,6 +12,7 @@ package com.kaching.platform.converters;
 
 import static com.kaching.platform.converters.InstantiatorErrors.noSuchField;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
@@ -95,8 +96,7 @@ public class InstantiatorErrorsTest {
   @Test
   public void cannotSpecifyDefaultValueAndConstant() throws Exception {
     check(
-        "cannot specify both a default constant and a default value " +
-        "@Optional(constant=FOO, value=4)",
+        "cannot specify both a default constant and a default value ",
         InstantiatorErrors.cannotSpecifyDefaultValueAndConstant(
             new Errors(), inspectMeCannotSpecifyDefaultValueAndConstant(8)));
   }
@@ -122,7 +122,7 @@ public class InstantiatorErrorsTest {
       errors.throwIfHasErrors();
       fail();
     } catch (RuntimeException e) {
-      assertEquals("1) " + expected, e.getMessage());
+      assertTrue(e.getMessage(), e.getMessage().startsWith("1) " + expected));
     }
   }
 

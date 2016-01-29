@@ -13,6 +13,7 @@ package com.kaching.platform.testing;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import jdepend.framework.JavaClass;
 import jdepend.framework.JavaPackage;
@@ -183,11 +184,33 @@ public class DependencyTestRunnerTest {
     classB.addImportedPackage(violation.efferent);
     violation.javaPackage.addClass(classB);
 
-    violation.javaPackage.addClass(new JavaClass("a.BigC"));
+    JavaClass classC = new JavaClass("a.BigC");
+    violation.javaPackage.addClass(classC);
 
-    assertEquals(
-        "package a cannot depend on package b (classes BigA, BigB)",
-        violation.toString());
+    String message = violation.toString();
+
+    String packageName = violation.javaPackage.getName();
+
+    assertTrue(message, message.contains("package a cannot depend on package b"));
+    assertTrue(
+        message,
+        message.contains(
+            classA.getName().substring(packageName.length() + 1)
+        )
+    );
+    assertTrue(
+        message,
+        message.contains(
+            classB.getName().substring(packageName.length() + 1)
+        )
+    );
+    assertFalse(
+        message,
+        message.contains(
+            classC.getName().substring(packageName.length() + 1)
+        )
+    );
+
   }
 
   @Test
