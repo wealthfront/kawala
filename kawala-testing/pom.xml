@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>com.kaching.platform</groupId>
 			<artifactId>kawala-common</artifactId>
-			<version>0.1.6-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>jdepend</groupId>
